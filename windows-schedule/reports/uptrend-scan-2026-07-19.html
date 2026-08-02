@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Uptrend Scan Dashboard - VN Equity</title>
+<style>
+    :root {
+        --bg-color: #f4f6f8;
+        --container-bg: #ffffff;
+        --text-main: #212529;
+        --text-muted: #6c757d;
+        --border-color: #dee2e6;
+        --danger-color: #dc3545;
+        --warning-color: #ffc107;
+        --success-color: #198754;
+        --active-bg: #e8f0fe;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-main);
+        line-height: 1.5;
+        padding: 20px;
+        -webkit-font-smoothing: antialiased;
+    }
+    .container {
+        max-width: 1100px;
+        margin: 0 auto;
+        background: var(--container-bg);
+        padding: 24px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .header {
+        border-bottom: 2px solid var(--text-main);
+        padding-bottom: 12px;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+    }
+    .header h1 { font-size: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .header .date { font-size: 14px; color: var(--text-muted); font-weight: 500; }
+    .summary-widgets {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    .widget { border: 1px solid var(--border-color); padding: 14px; border-radius: 6px; background: #fff; }
+    .widget-title { font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin-bottom: 4px; letter-spacing: 0.2px; }
+    .widget-value { font-size: 18px; font-weight: 700; }
+    .text-danger { color: var(--danger-color); }
+    .text-warning { color: #b58900; }
+    .text-success { color: var(--success-color); }
+    .grid-layout {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 32px;
+        margin-bottom: 8px;
+    }
+    section { margin-bottom: 24px; }
+    h2 { font-size: 14px; text-transform: uppercase; border-bottom: 1px solid var(--border-color); padding-bottom: 6px; margin-bottom: 12px; font-weight: 700; color: #343a40; }
+    .info-list { list-style: none; }
+    .info-list li { font-size: 14px; margin-bottom: 10px; position: relative; padding-left: 14px; }
+    .info-list li::before { content: "•"; position: absolute; left: 0; color: var(--text-muted); font-weight: bold; }
+    .info-list li strong { font-weight: 600; color: #000; }
+    .sub-list { list-style: none; margin-left: 16px; margin-top: 6px; }
+    .sub-list li { font-size: 13.5px; color: #495057; margin-bottom: 6px; }
+    .sub-list li::before { content: "—"; font-weight: normal; }
+    .alert-box {
+        font-size: 13.5px;
+        background: #fff3cd;
+        padding: 14px;
+        border-radius: 6px;
+        border-left: 4px solid var(--warning-color);
+        color: #664d03;
+        line-height: 1.6;
+    }
+    .badge {
+        display: inline-block;
+        padding: 3px 6px;
+        font-size: 11px;
+        font-weight: 700;
+        border-radius: 4px;
+        text-transform: uppercase;
+    }
+    .badge-danger { background-color: #f8d7da; color: var(--danger-color); }
+    .badge-success { background-color: #d1e7dd; color: var(--success-color); }
+    .badge-warning { background-color: #fff3cd; color: #b58900; }
+    .source-footer {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-top: 24px;
+        text-align: center;
+        border-top: 1px dashed var(--border-color);
+        padding-top: 12px;
+    }
+    @media (max-width: 768px) {
+        body { padding: 10px; }
+        .container { padding: 16px; }
+        .header { flex-direction: column; align-items: flex-start; gap: 4px; padding-bottom: 10px; }
+        .header h1 { font-size: 17px; }
+        .summary-widgets { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .widget { padding: 10px; }
+        .widget-title { font-size: 10px; }
+        .widget-value { font-size: 15px !important; }
+        .grid-layout { grid-template-columns: 1fr; gap: 24px; }
+        h2 { font-size: 13px; }
+        .info-list li { font-size: 13.5px; margin-bottom: 12px; }
+    }
+</style>
+</head>
+<body>
+<div class="container">
+
+	<!-- HEADER -->
+	<div class="header">
+		<div><h1 id="view-title">UPTREND SCAN · HOSE+HNX</h1></div>
+		<div class="date" id="view-date">Báo cáo ngày: 2026-07-19 · cửa sổ 2 tuần (05/07–19/07, phiên gần nhất 17/7)</div>
+	</div>
+
+	<!-- KHỐI TRẠNG THÁI NHANH -->
+	<div class="summary-widgets">
+		<div class="widget" id="widget-regime" style="border-left: 4px solid var(--danger-color);">
+			<div class="widget-title">Market Regime</div>
+			<div class="widget-value text-danger" id="view-regime">RISK-OFF (dưới MA20/MA50, breadth yếu)</div>
+		</div>
+		<div class="widget" id="widget-passed" style="border-left: 4px solid var(--danger-color);">
+			<div class="widget-title">Kết quả Quét</div>
+			<div class="widget-value text-danger" id="view-passed">0 MÃ ĐẠT CHUẨN ≥5/8</div>
+		</div>
+		<div class="widget" style="border-left: 4px solid #ced4da;">
+			<div class="widget-title">Tỷ trọng đề xuất</div>
+			<div class="widget-value" id="view-allocation" style="font-size: 15px;">20–30% (Tiền mặt)</div>
+		</div>
+		<div class="widget" style="border-left: 4px solid #ced4da;">
+			<div class="widget-title">Độ rộng (Trên MA20/MA50)</div>
+			<div class="widget-value" id="view-breadth" style="font-size: 15px;">~24% / ~28% (14/7/2026)</div>
+		</div>
+	</div>
+
+	<!-- DỰ BÁO KINH TẾ & MÃ TIỀM NĂNG (full-width, top-down) -->
+	<div class="grid-layout" style="grid-template-columns:1fr 1fr">
+		<section>
+			<h2>🧭 Dự báo Kinh tế &amp; Nhóm ngành Khả quan (Quý tới)</h2>
+			<ul class="info-list" id="view-macro">
+				<li><strong>Dầu khí (thượng nguồn/dịch vụ kỹ thuật):</strong> GDP Q2/2026 +8,39% (H1 +8,18%), giá dầu Brent bình quân Q2 neo cao ~97 USD/thùng nhờ căng thẳng Trung Đông; backlog Lô B lớn cho PVS; BSR dự báo LNST +381,9% YoY <span class="badge badge-success">Khả quan</span>
+					<ul class="sub-list"><li>độ tin cậy: cao · nguồn: baochinhphu.vn (GDP Q2), vneconomy.vn (LN BSR), nguoiquansat.vn (LN PVS/PVD)</li></ul>
+				</li>
+				<li><strong>Bán lẻ – tiêu dùng:</strong> tiêu dùng nội địa phục hồi, LNST Q2/2026 nhóm hàng không thiết yếu tăng mạnh: MWG +34%, DGW +38%, FRT +60% YoY <span class="badge badge-success">Khả quan</span>
+					<ul class="sub-list"><li>độ tin cậy: cao · nguồn: elibook.vn (LNST Q2 bán lẻ), vneconomy.vn</li></ul>
+				</li>
+				<li><strong>Ngân hàng (tăng trưởng tín dụng cao):</strong> đầu tư công + FDI + xuất khẩu kéo tín dụng tăng tốc nửa cuối năm, NHNN duy trì lãi suất ổn định dù áp lực tỷ giá còn <span class="badge badge-success">Khả quan</span>
+					<ul class="sub-list"><li>độ tin cậy: vừa · nguồn: thoibaonganhang.vn (KBSV), vneconomy.vn (CSTT 2026)</li></ul>
+				</li>
+				<li><strong>Thép – Vật liệu xây dựng – Hạ tầng:</strong> đầu tư công lớn (cao tốc Bắc–Nam GĐ2, sân bay Long Thành, +5–8% nhu cầu thép 2026) + BĐS dân dụng phục hồi (NQ171) <span class="badge badge-success">Khả quan</span>
+					<ul class="sub-list"><li>độ tin cậy: vừa · nguồn: nguoiquansat.vn (HPG/NKG/HSG), VCBS (HPG DT 2026 +24,5%)</li></ul>
+				</li>
+				<li><strong>Khu công nghiệp – FDI – Logistics:</strong> vốn FDI đăng ký T3/2026 đạt 9,1 tỷ USD (gấp 2,45 lần cùng kỳ); lợi nhuận nhóm KCN thuần phân hóa mạnh (SZC −65%, VGC −50%) <span class="badge badge-warning">Khả quan thận trọng</span>
+					<ul class="sub-list"><li>độ tin cậy: vừa (LN phân hóa) · nguồn: vietbao.vn (FDI/quỹ ngoại), elibook.vn (IDC)</li></ul>
+				</li>
+				<li><strong>Cổ phiếu đầu cơ vốn hóa nhỏ tăng trần liên tục, thanh khoản mỏng</strong> <span class="badge badge-danger">Tránh</span> — ví dụ ANI +230%/2 tuần với 7 phiên trần, dấu hiệu bơm-xả rõ. Nguồn: cafef.vn</li>
+				<li><strong>Nhóm chứng khoán vốn hóa nhỏ vừa tăng nóng đầu T7</strong> <span class="badge badge-danger">Tránh</span> — BVS/VDS/AGR/APS/PSI/MBS/VFS đã chạy mạnh không nghỉ, dòng tiền "chững lại" giữa T7. Nguồn: vietstock.vn</li>
+			</ul>
+		</section>
+		<section>
+			<h2>🌱 Mã Tiềm năng Tăng mạnh (1 tháng tới)</h2>
+			<ul class="info-list" id="view-potential">
+				<li><strong>PVS (HNX) · Dầu khí – dịch vụ kỹ thuật</strong>
+					<ul class="sub-list">
+						<li>Catalyst: siêu dự án Lô B – Ô Môn, giá dầu Brent Q2 cao (~97$/thùng), LNST Q2 dự báo 428 tỷ (+18,5%), giá mục tiêu Vietcap 60.000đ</li>
+						<li>Kỹ thuật: giá 38.300đ, 7 ngày +5,8% (bứt tốc), rating MA "Mua mạnh" · vùng quan tâm: vượt 39.000–40.000đ kèm KLGD</li>
+						<li>Rủi ro chính: chưa xác minh KLGD/TB20 cụ thể; giá dầu có thể hạ nhiệt · nguồn: nhipsongkinhdoanh.vn, simplize.vn/co-phieu/PVS</li>
+					</ul>
+				</li>
+				<li><strong>STB (HOSE) · Ngân hàng Sài Gòn Thương Tín</strong>
+					<ul class="sub-list">
+						<li>Catalyst: đổi thương hiệu, chu kỳ tăng trưởng tín dụng mới, ROE dẫn đầu nhóm tư nhân</li>
+						<li>Kỹ thuật: giá 73.500đ (+2,37%), YTD +26,72%; đỉnh lịch sử 76.800đ (12/5) — vẫn thấp hơn ~4,3%, chưa breakout · vùng quan tâm: vượt hẳn 76.800đ kèm volume</li>
+						<li>Rủi ro chính: phiên 17/7 cả khối ngoại lẫn tự doanh đều xả STB — tín hiệu phân phối · nguồn: dnse.com.vn, vietstock.vn</li>
+					</ul>
+				</li>
+				<li><strong>HDB (HOSE) · Ngân hàng Phát triển TPHCM</strong>
+					<ul class="sub-list">
+						<li>Catalyst: LN 2026 dự báo +32% (HD Saison, HDS IPO), khối ngoại mua ròng >13 triệu cp từ đầu T7</li>
+						<li>Kỹ thuật: giá 27.250đ, YTD +8,25%; đỉnh lịch sử 30.000đ (21/1) — đang tích lũy, chưa breakout · vùng quan tâm: vượt 28.500–30.000đ</li>
+						<li>Rủi ro chính: chưa có breakout xác nhận · nguồn: 24hmoney.vn, simplize.vn/co-phieu/HDB</li>
+					</ul>
+				</li>
+				<li><strong>HPG (HOSE) · Tập đoàn Hòa Phát</strong>
+					<ul class="sub-list">
+						<li>Catalyst: đầu tư công hạ tầng lớn, BĐS dân dụng phục hồi; khối ngoại "gom bất thường" dù giá giảm ~29% từ đỉnh — phân kỳ giá trị dài hạn</li>
+						<li>Kỹ thuật: giá 21.850đ, ĐANG DƯỚI MA20 (~24.170đ)/MA50/MA200 · vùng quan tâm: breakout qua MA20 kèm volume</li>
+						<li>Rủi ro chính: xu hướng ngắn hạn yếu, tự doanh vừa xả HPG · nguồn: dnse.com.vn, cafef.vn</li>
+					</ul>
+				</li>
+				<li><strong>FRT (HOSE) · FPT Retail</strong>
+					<ul class="sub-list">
+						<li>Catalyst: LNST Q2 dự báo +60% YoY, cao nhất nhóm bán lẻ (Long Châu mở rộng)</li>
+						<li>Kỹ thuật: tín hiệu tổng hợp "Mua Mạnh", giá trên MA5 và MA50 · vùng quan tâm: chưa xác minh điểm breakout cụ thể</li>
+						<li>Rủi ro chính: định giá đã phản ánh một phần tăng trưởng · nguồn: elibook.vn, investing.com</li>
+					</ul>
+				</li>
+				<li><strong>VNM (HOSE) · Vinamilk</strong>
+					<ul class="sub-list">
+						<li>Catalyst: chi trả cổ tức tiền mặt ~3.900 tỷ (18,5%), khối ngoại mua ròng mạnh nhất tuần (328 tỷ)</li>
+						<li>Kỹ thuật: +4,98% lên 59.000đ (17/7) — hồi phục kỹ thuật/cổ tức, CHƯA phải breakout Stage-2 · vùng quan tâm: giữ vùng 57.000–59.000đ</li>
+						<li>Rủi ro chính: có thể chỉ là phản ứng ngắn hạn quanh ngày chốt quyền · nguồn: kinhtechungkhoan.vn, tinnhanhchungkhoan.vn</li>
+					</ul>
+				</li>
+				<li><strong>IDC (HOSE) · Tổng công ty IDICO (KCN)</strong>
+					<ul class="sub-list">
+						<li>Catalyst: FDI đăng ký phục hồi mạnh (T3/2026 +2,45 lần cùng kỳ), mô hình KCN sinh thái, ACBS upside +29,2%</li>
+						<li>Kỹ thuật: nhóm BĐS KCN đi ngang 6 tháng đầu năm, chưa breakout · vùng quan tâm: theo dõi tích lũy</li>
+						<li>Rủi ro chính: LN nhóm KCN thuần dự báo khiêm tốn/giảm · nguồn: vietbao.vn, elibook.vn, 24hmoney.vn</li>
+					</ul>
+				</li>
+			</ul>
+		</section>
+	</div>
+
+	<!-- CHI TIẾT NỘI DUNG -->
+	<div class="grid-layout">
+		<!-- CỘT TRÁI -->
+		<div>
+			<section>
+				<h2>Bối cảnh Thị trường (Market Action)</h2>
+				<ul class="info-list" id="view-market-action">
+					<li><strong>VN-Index:</strong> đóng cửa phiên 17/7 tại 1.787,45đ, giảm 16,79đ (−0,93%), thủng mốc 1.800đ; so đỉnh tháng (~1.920–1.930đ) đã điều chỉnh −7%. HNX-Index ngược lại +1,17% lên 291,70đ.
+						<ul class="sub-list"><li>Độ rộng chỉ ~24% mã trên MA20, ~28% trên MA50 (14/7). Nguồn: nhandan.vn, dnse.com.vn, masvn.com (14/7)</li></ul>
+					</li>
+					<li><strong>Thanh khoản:</strong> tổng 3 sàn phiên 17/7 chỉ ~11.600–12.505 tỷ đồng (giảm ~40% so phiên trước) — thấp nhất ~1 tháng.
+						<ul class="sub-list"><li>Nguồn: vietnambiz.vn, dnse.com.vn (17/7)</li></ul>
+					</li>
+					<li><strong>Khối ngoại / Tự doanh:</strong> tuần 13–17/7 khối ngoại bán ròng ~2.104 tỷ đồng; phiên 17/7 riêng lẻ bán ròng ~692–700 tỷ (TCB, MBB, VPB, CTG, PNJ). Tự doanh tuần bán ròng gần 500 tỷ, phiên 17/7 xả STB và HPG. Điểm sáng: VNM mua ròng mạnh nhất tuần (328 tỷ).
+						<ul class="sub-list"><li>Nguồn: tinnhanhchungkhoan.vn, vietstock.vn (dòng tiền cá mập 17/07)</li></ul>
+					</li>
+					<li><strong>Nhóm ngành dẫn dắt:</strong> HDB/STB/ACB dẫn đầu phục hồi 16/7; dầu khí bứt phá đầu–giữa T7 rồi chững; chứng khoán vốn hóa nhỏ nóng sớm rồi "chững lại" giữa T7 — thị trường phân hóa, thiếu đồng thuận rộng.
+						<ul class="sub-list"><li>Nguồn: cafef.vn (16/7, 14/7), vietstock.vn</li></ul>
+					</li>
+				</ul>
+			</section>
+			<section>
+				<h2>Danh sách Theo dõi (Chưa phải lệnh mua)</h2>
+				<ul class="info-list" id="view-watchlist">
+					<li><strong>Không có mã đạt chuẩn ≥5/8 — không vào lệnh mới.</strong>
+						<ul class="sub-list">
+							<li>Đã quét ~20 candidate (HOSE+HNX), verify số liệu cụ thể ~11 mã.</li>
+							<li>STB gần nhất (RS YTD +26,72%, volume ~2,1x TB20) nhưng FAIL B3 (giá 73.500đ vẫn dưới đỉnh lịch sử 76.800đ) và E7 (khối ngoại + tự doanh đều xả STB phiên 17/7).</li>
+							<li>PVS có momentum (+5,8%/7 ngày) nhưng không xác minh được KLGD/TB20 cụ thể (fail C5).</li>
+							<li>HPG hiện dưới cả 3 đường MA, chưa đạt A1.</li>
+							<li>Theo nguyên tắc bảo toàn vốn, KHÔNG nới tiêu chí cho đủ 5 mã.</li>
+						</ul>
+					</li>
+				</ul>
+			</section>
+		</div>
+		<!-- CỘT PHẢI -->
+		<div>
+			<section>
+				<h2>Nguyên tắc Hành động</h2>
+				<div class="alert-box" id="view-principle">
+					Thị trường đang trong nhịp điều chỉnh Risk-Off: VN-Index thủng mốc 1.800đ, độ rộng yếu (~24–28%), thanh khoản thấp nhất ~1 tháng, cả khối ngoại và tự doanh đều bán ròng. KHÔNG giải ngân mới tuần này — giữ tỷ trọng tiền mặt 70–80%. Chỉ theo dõi (không mua đuổi) các mã tiềm năng 1 tháng, chờ xác nhận breakout thực sự (đóng cửa trên đỉnh cũ + volume ≥1,5x TB20). Chờ VN-Index lấy lại MA20/MA50 và độ rộng vượt bền vững 50% mã trên MA20 trước khi nâng tỷ trọng.
+				</div>
+			</section>
+			<section>
+				<h2>Danh sách Đã Loại (Tránh FOMO)</h2>
+				<ul class="info-list" id="view-eliminated">
+					<li><strong>ANI</strong> <span class="badge badge-danger">LOẠI</span> — tăng phi mã +230%/2 tuần, 7 phiên trần liên tiếp, dấu hiệu bơm-xả. Nguồn: cafef.vn</li>
+					<li><strong>PNJ</strong> <span class="badge badge-danger">LOẠI</span> — giảm sàn 3 phiên (>25%) sau sự cố kim cương, vẫn thấp hơn đỉnh cũ ~45%, khối ngoại vẫn rút vốn — "bắt dao rơi". Nguồn: vietstock.vn</li>
+					<li><strong>DGW</strong> <span class="badge badge-danger">LOẠI</span> — tín hiệu kỹ thuật "Bán Mạnh" (0 mua/12 bán), dưới MA5/MA50/MA200. Nguồn: investing.com</li>
+					<li><strong>GAS</strong> <span class="badge badge-danger">LOẠI</span> — biên độ hẹp, không breakout (7 ngày chỉ +1,33%). Nguồn: simplize.vn</li>
+					<li><strong>PVD</strong> <span class="badge badge-danger">LOẠI</span> — đã tăng +63,6%/năm, momentum 7 ngày chỉ +0,42% — hụt hơi. Nguồn: simplize.vn</li>
+					<li><strong>BVS, VDS, AGR, APS, PSI, MBS, VFS</strong> <span class="badge badge-danger">LOẠI</span> — nhóm CK nhỏ chạy mạnh không nghỉ đầu T7, dòng tiền chững lại giữa T7 — rủi ro đuổi đỉnh. Nguồn: vietstock.vn</li>
+				</ul>
+			</section>
+		</div>
+	</div>
+
+	<!-- FOOTER -->
+	<div class="source-footer">
+		Tổng: quét ~20 candidate / verify ~11 mã / 0 mã đạt chuẩn TOP5 / 7 mã tiềm năng 1 tháng.<br>
+		Nguồn tham chiếu: vietstock.vn, cafef.vn, simplize.vn, tinnhanhchungkhoan.vn, dnse.com.vn, vietnambiz.vn, baochinhphu.vn, vneconomy.vn, elibook.vn, nguoiquansat.vn, 24hmoney.vn, vietbao.vn, investing.com, nhandan.vn. <br>
+		⚠️ Báo cáo tự động — không phải khuyến nghị đầu tư.
+	</div>
+
+</div>
+</body>
+</html>

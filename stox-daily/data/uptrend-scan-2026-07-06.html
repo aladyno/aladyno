@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Uptrend Scan Dashboard - VN Equity</title>
+<style>
+    :root {
+        --bg-color: #f4f6f8;
+        --container-bg: #ffffff;
+        --text-main: #212529;
+        --text-muted: #6c757d;
+        --border-color: #dee2e6;
+        --danger-color: #dc3545;
+        --warning-color: #ffc107;
+        --success-color: #198754;
+        --active-bg: #e8f0fe;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-main);
+        line-height: 1.5;
+        padding: 20px;
+        -webkit-font-smoothing: antialiased;
+    }
+    .container {
+        max-width: 1100px;
+        margin: 0 auto;
+        background: var(--container-bg);
+        padding: 24px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .header {
+        border-bottom: 2px solid var(--text-main);
+        padding-bottom: 12px;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+    }
+    .header h1 { font-size: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .header .date { font-size: 14px; color: var(--text-muted); font-weight: 500; }
+    .summary-widgets {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    .widget { border: 1px solid var(--border-color); padding: 14px; border-radius: 6px; background: #fff; }
+    .widget-title { font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin-bottom: 4px; letter-spacing: 0.2px; }
+    .widget-value { font-size: 18px; font-weight: 700; }
+    .text-danger { color: var(--danger-color); }
+    .text-warning { color: #b58900; }
+    .text-success { color: var(--success-color); }
+    .grid-layout {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 32px;
+        margin-bottom: 8px;
+    }
+    section { margin-bottom: 24px; }
+    h2 { font-size: 14px; text-transform: uppercase; border-bottom: 1px solid var(--border-color); padding-bottom: 6px; margin-bottom: 12px; font-weight: 700; color: #343a40; }
+    .info-list { list-style: none; }
+    .info-list li { font-size: 14px; margin-bottom: 10px; position: relative; padding-left: 14px; }
+    .info-list li::before { content: "•"; position: absolute; left: 0; color: var(--text-muted); font-weight: bold; }
+    .info-list li strong { font-weight: 600; color: #000; }
+    .sub-list { list-style: none; margin-left: 16px; margin-top: 6px; }
+    .sub-list li { font-size: 13.5px; color: #495057; margin-bottom: 6px; }
+    .sub-list li::before { content: "—"; font-weight: normal; }
+    .alert-box {
+        font-size: 13.5px;
+        background: #fff3cd;
+        padding: 14px;
+        border-radius: 6px;
+        border-left: 4px solid var(--warning-color);
+        color: #664d03;
+        line-height: 1.6;
+    }
+    .badge {
+        display: inline-block;
+        padding: 3px 6px;
+        font-size: 11px;
+        font-weight: 700;
+        border-radius: 4px;
+        text-transform: uppercase;
+    }
+    .badge-danger { background-color: #f8d7da; color: var(--danger-color); }
+    .badge-success { background-color: #d1e7dd; color: var(--success-color); }
+    .source-footer {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-top: 24px;
+        text-align: center;
+        border-top: 1px dashed var(--border-color);
+        padding-top: 12px;
+    }
+    @media (max-width: 768px) {
+        body { padding: 10px; }
+        .container { padding: 16px; }
+        .header { flex-direction: column; align-items: flex-start; gap: 4px; padding-bottom: 10px; }
+        .header h1 { font-size: 17px; }
+        .summary-widgets { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .widget { padding: 10px; }
+        .widget-title { font-size: 10px; }
+        .widget-value { font-size: 15px !important; }
+        .grid-layout { grid-template-columns: 1fr; gap: 24px; }
+        h2 { font-size: 13px; }
+        .info-list li { font-size: 13.5px; margin-bottom: 12px; }
+    }
+</style>
+</head>
+<body>
+<div class="container">
+
+	<!-- HEADER -->
+	<div class="header">
+		<div><h1 id="view-title">UPTREND SCAN · HOSE+HNX</h1></div>
+		<div class="date" id="view-date">Báo cáo ngày: 2026-07-06 · cửa sổ 2 tuần (22/06–06/07)</div>
+	</div>
+
+	<!-- KHỐI TRẠNG THÁI NHANH -->
+	<div class="summary-widgets">
+		<div class="widget" id="widget-regime" style="border-left: 4px solid var(--warning-color);">
+			<div class="widget-title">Market Regime</div>
+			<div class="widget-value text-warning" id="view-regime">TRUNG TÍNH (phân hóa)</div>
+		</div>
+		<div class="widget" id="widget-passed" style="border-left: 4px solid var(--danger-color);">
+			<div class="widget-title">Kết quả Quét</div>
+			<div class="widget-value text-danger" id="view-passed">0 MÃ ĐẠT CHUẨN ≥5/8</div>
+		</div>
+		<div class="widget" style="border-left: 4px solid #ced4da;">
+			<div class="widget-title">Tỷ trọng đề xuất</div>
+			<div class="widget-value" id="view-allocation" style="font-size: 15px;">30–40% (thận trọng)</div>
+		</div>
+		<div class="widget" style="border-left: 4px solid #ced4da;">
+			<div class="widget-title">Độ rộng (Trên MA20)</div>
+			<div class="widget-value" id="view-breadth" style="font-size: 13px;">N/A — cần xác minh (proxy 3/7: 304 tăng/411 giảm)</div>
+		</div>
+	</div>
+
+	<!-- DỰ BÁO KINH TẾ & MÃ TIỀM NĂNG (full-width, top-down) -->
+	<div class="grid-layout" style="grid-template-columns:1fr 1fr">
+		<section>
+			<h2>🧭 Dự báo Kinh tế &amp; Nhóm ngành Khả quan (Quý tới)</h2>
+			<ul class="info-list" id="view-macro">
+				<li><strong>Ngân hàng:</strong> GDP quý II/2026 +8,39% (H1 +8,18%), tín dụng tăng mạnh (VPB ~28,4% YoY), Vietcap khuyến nghị tăng tỷ trọng <span class="badge badge-success">Khả quan</span>
+					<ul class="sub-list"><li>độ tin cậy: cao · nguồn: nso.gov.vn, nhadautu.vn</li></ul>
+				</li>
+				<li><strong>Chứng khoán / Tài chính:</strong> FTSE Russell nâng hạng chính thức từ 21/9/2026, margin ngành +51% YoY Q1, ADTV dự phóng 34.000 tỷ/phiên H2, P/B ngành 1,75x dưới TB 5 năm <span class="badge badge-success">Khả quan</span>
+					<ul class="sub-list"><li>độ tin cậy: cao · nguồn: vneconomy.vn, cafef.vn</li></ul>
+				</li>
+				<li><strong>Xây dựng hạ tầng & Vật liệu XD (đầu tư công):</strong> vốn ĐTC 2026 kỷ lục ~995.400 tỷ (+10,4%), NQ168 yêu cầu giải ngân 100%, mới giải ngân 25,7% → còn ~748.700 tỷ cho H2 <span class="badge badge-success">Khả quan</span>
+					<ul class="sub-list"><li>độ tin cậy: cao · nguồn: vneconomy.vn, nguoiquansat.vn</li></ul>
+				</li>
+				<li><strong>Thủy sản xuất khẩu (tôm, cá tra):</strong> thuế CBPG 0% tại Mỹ cho DN đầu ngành, mùa cao điểm đơn hàng T7-T8, giá nguyên liệu neo cao <span class="badge badge-success">Khả quan</span>
+					<ul class="sub-list"><li>độ tin cậy: vừa (rủi ro POR20 T9/2026) · nguồn: tinnhanhchungkhoan.vn, elibook.vn</li></ul>
+				</li>
+				<li><strong>Bán lẻ tiêu dùng:</strong> Vietcap khuyến nghị tăng tỷ trọng đón phục hồi du lịch, dịch vụ, thu nhập hộ gia đình <span class="badge badge-success">Khả quan</span>
+					<ul class="sub-list"><li>độ tin cậy: vừa · nguồn: nhadautu.vn</li></ul>
+				</li>
+				<li><strong>Dệt may xuất khẩu</strong> <span class="badge badge-danger">Tránh</span> — rủi ro thuế đối ứng Mỹ, đơn hàng có thể giảm do tồn kho cao. Nguồn: vneconomy.vn</li>
+				<li><strong>BĐS họ Vingroup (VHM)</strong> <span class="badge badge-danger">Tránh</span> — kế hoạch phát hành CP lớn nhất lịch sử (pha loãng), khối ngoại bán ròng mạnh nhất tuần. Nguồn: cafef.vn</li>
+			</ul>
+		</section>
+		<section>
+			<h2>🌱 Mã Tiềm năng Tăng mạnh (1 tháng tới)</h2>
+			<ul class="info-list" id="view-potential">
+				<li><strong>SHS (HNX) · Chứng khoán</strong>
+					<ul class="sub-list">
+						<li>Catalyst: FTSE nâng hạng, margin & ADTV ngành dự phóng tăng mạnh</li>
+						<li>Kỹ thuật: tích lũy tam giác vùng 17.x, bứt phá 3/7 (~9,9tr cp), TradingView Buy ngày/tuần/tháng, giá 19.300đ (tuần +6,04%) · vùng quan tâm: 18.500–19.500đ</li>
+						<li>Rủi ro chính: còn cách đỉnh 52 tuần (29.200đ), volume breakout chưa rõ ≥1,5x TB20 · nguồn: tradingview.com/HNX-SHS</li>
+					</ul>
+				</li>
+				<li><strong>SSI (HOSE) · Chứng khoán</strong>
+					<ul class="sub-list">
+						<li>Catalyst: hưởng lợi FTSE, định giá dưới TB 5 năm</li>
+						<li>Kỹ thuật: giá 27.350đ (+3,21% tuần) nhưng rating tuần Sell (mixed) · vùng quan tâm: 26.000–28.000đ</li>
+						<li>Rủi ro chính: tín hiệu kỹ thuật ngắn hạn chưa đồng thuận · nguồn: tradingview.com/HOSE-SSI</li>
+					</ul>
+				</li>
+				<li><strong>VCI (HOSE) · Chứng khoán</strong>
+					<ul class="sub-list">
+						<li>Catalyst: hưởng lợi FTSE nâng hạng</li>
+						<li>Kỹ thuật: giá 25.100đ (+4,15% tuần) nhưng -7,16% 1 năm, hồi phục từ đáy · vùng quan tâm: 24.000–26.000đ</li>
+						<li>Rủi ro chính: xu hướng dài hạn còn yếu, rating tuần Sell · nguồn: tradingview.com/HOSE-VCI</li>
+					</ul>
+				</li>
+				<li><strong>VCG (HOSE) · Xây dựng hạ tầng/ĐTC</strong>
+					<ul class="sub-list">
+						<li>Catalyst: tăng tốc giải ngân ĐTC H2, tăng trần +6,9% phiên 29/6</li>
+						<li>Kỹ thuật: giá 20.700đ, rating tuần & tháng đều Sell, YTD -8,61% · vùng quan tâm: 19.500–21.500đ</li>
+						<li>Rủi ro chính: có thể chỉ là hồi kỹ thuật trong downtrend · nguồn: tradingview.com/HOSE-VCG</li>
+					</ul>
+				</li>
+				<li><strong>PC1 (HOSE) · Xây dựng điện/Năng lượng</strong>
+					<ul class="sub-list">
+						<li>Catalyst: giải ngân hạ tầng điện, dự án năng lượng mở rộng</li>
+						<li>Kỹ thuật: giá 22.000đ, 1 tháng +17,02%, rating Neutral (tháng cho tín hiệu mua) · vùng quan tâm: 20.500–23.000đ</li>
+						<li>Rủi ro chính: chưa xác nhận volume breakout cụ thể · nguồn: tradingview.com/HOSE-PC1</li>
+					</ul>
+				</li>
+				<li><strong>VPB (HOSE) · Ngân hàng</strong>
+					<ul class="sub-list">
+						<li>Catalyst: tín dụng tăng mạnh (~28,4% YoY), GDP hỗ trợ ngành, ETF dự báo mua ròng</li>
+						<li>Kỹ thuật: giá 27.800đ, tuần +3,93%, tháng +5,30%, 1 năm +49,87% · vùng quan tâm: 27.000–29.000đ</li>
+						<li>Rủi ro chính: định giá đã tăng nhiều, theo dõi margin an toàn · nguồn: tradingview.com/HOSE-VPB</li>
+					</ul>
+				</li>
+				<li><strong>ANV (HOSE) · Thủy sản (cá tra)</strong>
+					<ul class="sub-list">
+						<li>Catalyst: LNST Q2/2026 ~408 tỷ (+23% YoY), giá cá tra/rô phi neo cao</li>
+						<li>Kỹ thuật: giá 20.950đ, 7 ngày +4,56%, YTD +18,48% · vùng quan tâm: 20.000–21.500đ</li>
+						<li>Rủi ro chính: định giá đã phản ánh phần tin tốt, biến động thuế Mỹ · nguồn: elibook.vn</li>
+					</ul>
+				</li>
+				<li><strong>VHC (HOSE) · Thủy sản (cá tra)</strong>
+					<ul class="sub-list">
+						<li>Catalyst: doanh thu Mỹ +46% YoY, lợi thế thuế CBPG 0% duy trì</li>
+						<li>Kỹ thuật: N/A — cần xác minh giá/khối lượng hiện tại · vùng quan tâm: N/A</li>
+						<li>Rủi ro chính: cạnh tranh giá cá tra, tỷ giá · nguồn: tinnhanhchungkhoan.vn</li>
+					</ul>
+				</li>
+				<li><strong>FMC (HOSE) · Thủy sản (tôm)</strong>
+					<ul class="sub-list">
+						<li>Catalyst: mùa cao điểm đơn hàng T7-T8, thuế CBPG thấp tại Mỹ</li>
+						<li>Kỹ thuật: giá 35.100đ, YTD +5,16% nhưng phiên gần nhất -1,54% · vùng quan tâm: 33.000–36.000đ</li>
+						<li>Rủi ro chính: thanh khoản RẤT MỎNG (TB10 phiên ~11.390 cp) · nguồn: simplize.vn/co-phieu/FMC</li>
+					</ul>
+				</li>
+			</ul>
+		</section>
+	</div>
+
+	<!-- CHI TIẾT NỘI DUNG -->
+	<div class="grid-layout">
+		<!-- CỘT TRÁI -->
+		<div>
+			<section>
+				<h2>Bối cảnh Thị trường (Market Action)</h2>
+				<ul class="info-list" id="view-market-action">
+					<li><strong>VN-Index:</strong> 1.862 điểm, giảm ~10 điểm tuần 29/6-3/7 (7 ngày ~-0,53%), phiên gần nhất -0,23%; 1 tháng +2,37%, YTD +4,35%
+						<ul class="sub-list"><li>vừa để vuột mốc 1.900đ cuối tháng 6; vị thế vs MA20/50/200 N/A — cần xác minh bảng giá live. Nguồn: simplize.vn/chi-so/VNINDEX, vietstock.vn (04/07/2026)</li></ul>
+					</li>
+					<li><strong>Thanh khoản:</strong> GTGD tuần ~27.500 tỷ, thấp hơn nhiều mức >40.500 tỷ khi VN-Index áp sát 1.900đ cuối T1/2026; bình quân 2026 ~26.000 tỷ/phiên, giảm mạnh so 2025
+						<ul class="sub-list"><li>dòng tiền phòng thủ, chờ cơ hội. Nguồn: cafef.vn, Vietstock Weekly 06-10/07</li></ul>
+					</li>
+					<li><strong>Khối ngoại / Tự doanh:</strong> khối ngoại bán ròng ~2.900-3.200 tỷ tuần 29/6-3/7 trên HOSE (VHM -616 tỷ, HPG -317 tỷ, VNM -269 tỷ, TCB -265 tỷ), lũy kế từ đầu 2026 ~80.000 tỷ. Tự doanh ngược dòng mua ròng ~2.484 tỷ, tập trung ngân hàng + BĐS/tài chính
+						<ul class="sub-list"><li>phân kỳ ngoại/nội đáng chú ý. Nguồn: vietstock.vn, tinnhanhchungkhoan.vn, nguoiquansat.vn</li></ul>
+					</li>
+					<li><strong>Nhóm ngành / Breadth:</strong> họ Vingroup (VIC/VHM/VPL) là lực cản chính; ngân hàng & chứng khoán là điểm sáng đầu T7 nhưng thiếu lan tỏa (~50% mã tăng khi vượt 1.900đ); phiên 3/7 toàn TT có 304 mã tăng/411 mã giảm
+						<ul class="sub-list"><li>dòng tiền chọn lọc hẹp, chưa lan tỏa. Nguồn: vietstock.vn, cafef.vn</li></ul>
+					</li>
+				</ul>
+			</section>
+			<section>
+				<h2>Danh sách Theo dõi (Chưa phải lệnh mua)</h2>
+				<ul class="info-list" id="view-watchlist">
+					<li><strong>Không có mã đạt chuẩn ≥5/8 — không vào lệnh mới.</strong>
+						<ul class="sub-list">
+							<li>Thị trường phân hóa mạnh (304 tăng/411 giảm phiên 3/7), thanh khoản dưới TB. Ứng viên kiểm tra được (SHS, SSI, VCI, VCG, PC1) đều có tín hiệu kỹ thuật tuần Neutral/Sell hoặc thiếu xác nhận volume breakout ≥1,5x TB20 + MA20/50 chính xác qua nguồn tra cứu được.</li>
+							<li>Đây là "thị trường thiếu setup" — ưu tiên quan sát nhóm mã tiềm năng 1 tháng, chờ mùa KQKD Q2/2026 làm phép thử dòng tiền. Khuyến nghị chạy agent vn-equity-analyst để X-ray sâu SHS/PC1/VPB trước khi cân nhắc giải ngân.</li>
+						</ul>
+					</li>
+				</ul>
+			</section>
+		</div>
+		<!-- CỘT PHẢI -->
+		<div>
+			<section>
+				<h2>Nguyên tắc Hành động</h2>
+				<div class="alert-box" id="view-principle">
+					Thị trường phân hóa, độ rộng yếu và thanh khoản dưới trung bình — KHÔNG giải ngân mới cho mã chưa có breakout xác nhận bằng volume ≥1,5x TB20 và giá đóng cửa trên pivot rõ ràng. Ưu tiên quan sát nhóm ngành thuận gió (ngân hàng, chứng khoán, đầu tư công, thủy sản) qua watchlist 1 tháng. Giữ tỷ trọng 30–40%, phần còn lại chờ mùa KQKD quý 2/2026 (giữa–cuối tháng 7) làm phép thử dòng tiền trước khi tăng tỷ trọng. Không đuổi giá các mã đã tăng nóng (LPB, GEE) đang trong nhịp điều chỉnh.
+				</div>
+			</section>
+			<section>
+				<h2>Danh sách Đã Loại (Tránh FOMO)</h2>
+				<ul class="info-list" id="view-eliminated">
+					<li><strong>LPB</strong> <span class="badge badge-danger">LOẠI</span> — đã tăng nóng lên đỉnh lịch sử 58.300đ (13/5/2026) rồi điều chỉnh về 51.000đ (-12,5% từ đỉnh), phiên gần nhất tiếp tục -2,11%. Nguồn: simplize.vn/co-phieu/LPB</li>
+					<li><strong>VHM</strong> <span class="badge badge-danger">LOẠI</span> — sắp phát hành CP lớn nhất lịch sử (pha loãng), bị khối ngoại bán ròng mạnh nhất tuần (-616 tỷ). Nguồn: cafef.vn</li>
+					<li><strong>GEE</strong> <span class="badge badge-danger">LOẠI</span> — giảm mạnh từ đỉnh lịch sử 140.600đ (5/1/2026), tuần -2,54%, tháng -13,10%, đang downtrend. Nguồn: search tổng hợp GEE 07/2026</li>
+					<li><strong>HPG</strong> <span class="badge badge-danger">LOẠI</span> — khối ngoại bán ròng mạnh (-317 tỷ tuần qua), nhóm thép chưa xác nhận breakout. Nguồn: vietstock.vn</li>
+					<li><strong>HHV, LCG</strong> <span class="badge badge-danger">LOẠI</span> — dù tăng ngày 29/6 cùng nhóm ĐTC, các phiên sau quay đầu giảm (HHV -0,88%, LCG -1,62%) → chỉ là hồi kỹ thuật, chưa đảo chiều. Nguồn: simplize.vn</li>
+				</ul>
+			</section>
+		</div>
+	</div>
+
+	<!-- FOOTER -->
+	<div class="source-footer">
+		Nguồn tham chiếu dữ liệu: vietstock.vn, cafef.vn, simplize.vn, vn.tradingview.com, vneconomy.vn, nguoiquansat.vn, tinnhanhchungkhoan.vn, nso.gov.vn, elibook.vn. <br>
+		⚠️ Báo cáo tự động — không phải khuyến nghị đầu tư.
+	</div>
+
+</div>
+</body>
+</html>

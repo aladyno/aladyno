@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Uptrend Scan Dashboard - VN Equity</title>
+<style>
+    :root {
+        --bg-color: #f4f6f8;
+        --container-bg: #ffffff;
+        --text-main: #212529;
+        --text-muted: #6c757d;
+        --border-color: #dee2e6;
+        --danger-color: #dc3545;
+        --warning-color: #ffc107;
+        --success-color: #198754;
+        --active-bg: #e8f0fe;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-main);
+        line-height: 1.5;
+        padding: 20px;
+        -webkit-font-smoothing: antialiased;
+    }
+    .container {
+        max-width: 1100px;
+        margin: 0 auto;
+        background: var(--container-bg);
+        padding: 24px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .header {
+        border-bottom: 2px solid var(--text-main);
+        padding-bottom: 12px;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+    }
+    .header h1 { font-size: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .header .date { font-size: 14px; color: var(--text-muted); font-weight: 500; }
+    .summary-widgets {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    .widget { border: 1px solid var(--border-color); padding: 14px; border-radius: 6px; background: #fff; }
+    .widget-title { font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin-bottom: 4px; letter-spacing: 0.2px; }
+    .widget-value { font-size: 18px; font-weight: 700; }
+    .text-danger { color: var(--danger-color); }
+    .text-warning { color: #b58900; }
+    .text-success { color: var(--success-color); }
+    .grid-layout {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 32px;
+        margin-bottom: 8px;
+    }
+    section { margin-bottom: 24px; }
+    h2 { font-size: 14px; text-transform: uppercase; border-bottom: 1px solid var(--border-color); padding-bottom: 6px; margin-bottom: 12px; font-weight: 700; color: #343a40; }
+    .info-list { list-style: none; }
+    .info-list li { font-size: 14px; margin-bottom: 10px; position: relative; padding-left: 14px; }
+    .info-list li::before { content: "•"; position: absolute; left: 0; color: var(--text-muted); font-weight: bold; }
+    .info-list li strong { font-weight: 600; color: #000; }
+    .sub-list { list-style: none; margin-left: 16px; margin-top: 6px; }
+    .sub-list li { font-size: 13.5px; color: #495057; margin-bottom: 6px; }
+    .sub-list li::before { content: "— "; font-weight: normal; }
+    .alert-box {
+        font-size: 13.5px;
+        background: #fff3cd;
+        padding: 14px;
+        border-radius: 6px;
+        border-left: 4px solid var(--warning-color);
+        color: #664d03;
+        line-height: 1.6;
+    }
+    .badge {
+        display: inline-block;
+        padding: 3px 6px;
+        font-size: 11px;
+        font-weight: 700;
+        border-radius: 4px;
+        text-transform: uppercase;
+    }
+    .badge-danger { background-color: #f8d7da; color: var(--danger-color); }
+    .badge-success { background-color: #d1e7dd; color: var(--success-color); }
+    .source-footer {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-top: 24px;
+        text-align: center;
+        border-top: 1px dashed var(--border-color);
+        padding-top: 12px;
+    }
+    @media (max-width: 768px) {
+        body { padding: 10px; }
+        .container { padding: 16px; }
+        .header { flex-direction: column; align-items: flex-start; gap: 4px; padding-bottom: 10px; }
+        .header h1 { font-size: 17px; }
+        .summary-widgets { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .widget { padding: 10px; }
+        .widget-title { font-size: 10px; }
+        .widget-value { font-size: 15px !important; }
+        .grid-layout { grid-template-columns: 1fr; gap: 24px; }
+        h2 { font-size: 13px; }
+        .info-list li { font-size: 13.5px; margin-bottom: 12px; }
+    }
+</style>
+</head>
+<body>
+<div class="container">
+
+	<!-- HEADER -->
+	<div class="header">
+		<div><h1 id="view-title">UPTREND SCAN · HOSE+HNX</h1></div>
+		<div class="date" id="view-date">Bao cao ngay: 2026-06-17</div>
+	</div>
+
+	<!-- KHOI TRANG THAI NHANH -->
+	<div class="summary-widgets">
+		<div class="widget" id="widget-regime" style="border-left: 4px solid #ffc107;">
+			<div class="widget-title">Market Regime</div>
+			<div class="widget-value text-warning" id="view-regime">TRUNG TINH</div>
+		</div>
+		<div class="widget" id="widget-passed" style="border-left: 4px solid #198754;">
+			<div class="widget-title">Ket qua Quet</div>
+			<div class="widget-value text-success" id="view-passed">4 MA DAT CHUAN</div>
+		</div>
+		<div class="widget" style="border-left: 4px solid #ced4da;">
+			<div class="widget-title">Ty trong de xuat</div>
+			<div class="widget-value" id="view-allocation" style="font-size: 15px;">40-50% Co phieu</div>
+		</div>
+		<div class="widget" style="border-left: 4px solid #ced4da;">
+			<div class="widget-title">Do rong (Tren MA20)</div>
+			<div class="widget-value" id="view-breadth" style="font-size: 15px;">~62% (187/300, HOSE)</div>
+		</div>
+	</div>
+
+	<!-- CHI TIET NOI DUNG -->
+	<div class="grid-layout">
+		<!-- COT TRAI -->
+		<div>
+			<section>
+				<h2>Boi canh Thi truong (Market Action)</h2>
+				<ul class="info-list" id="view-market-action">
+					<li><strong>VN-Index:</strong> 1.807,94 diem (+8,63 diem / +0,48%) phien 16/6/2026. Tang phien thu 2 lien tiep, vuot moc 1.800 nhung chua pha duoc khang cu 1.820-1.835 (vung MA50).
+						<ul class="sub-list">
+							<li>Gia tri trên MA10, duoi MA50 (~1.835) va duoi MA200 (~1.750 ho tro). RSI ~42 (chua manh).</li>
+							<li>Ho tro: 1.780-1.800. Khang cu: 1.820-1.835. Can volume manh hon moi xac nhan dao chieu.</li>
+						</ul>
+					</li>
+					<li><strong>Thanh khoan:</strong> HOSE 16/6: ~16.673 ty dong (giam ~34% so TB 20 phien). Phien sang 17/6 chi ~5.909 ty, giam 37% so sang hom truoc.
+						<ul class="sub-list">
+							<li>Thanh khoan thap la diem tru lon: thi truong chua co dong tien lon ung ho da tang.</li>
+						</ul>
+					</li>
+					<li><strong>Khoi ngoai / Tu doanh:</strong> Khoi ngoai ban rong ~368 ty tren ca 3 san ngay 16/6 (ban VHM -150 ty, MBB -102 ty, TCB -92 ty). Tu doanh mua rong manh: +1.260 ty ngay 15/6 (chu yeu TCB +1.030 ty, HPG +104 ty).
+						<ul class="sub-list">
+							<li>Khoi ngoai ban rong phien thu 6 lien tiep (khop lenh). Co phien mua rong thoa thuan VIC +4.490 ty ngay 15/6.</li>
+						</ul>
+					</li>
+					<li><strong>Nhom nganh / Breadth:</strong> 187 ma tang / 113 ma giam (HOSE 16/6). 13/21 nganh tang diem. Nhom chung khoan dan dat manh: EVS, BSI, CTS, APG, FTS tang tran; VIX +2,27%, SSI +2,03%, VND +3,11%. Ngoai ra HVN tang tran lan 2, NLG tang tot.
+						<ul class="sub-list">
+							<li>Dong tien phan hoa: nhom chung khoan va hang khong tang; blue-chip (ngân hang lon, BĐS lon) yeu hon.</li>
+						</ul>
+					</li>
+				</ul>
+			</section>
+			<section>
+				<h2>Danh sach Theo doi (Chua phai lenh mua)</h2>
+				<ul class="info-list" id="view-watchlist">
+					<li><strong>1. GMD (HOSE) · 8/8</strong> <span class="badge badge-success">SETUP</span>
+						<ul class="sub-list">
+							<li>Khoi phat: Break nen tich luy 76.000-76.200 (3 tuan tu dau T6) ngay 15/6 voi volume 4,15 trieu (gap 3,6x TB 20 phien ~1,15 trieu). Big White Candle + MACD cat len.</li>
+							<li>MA20 uoc ~76.500, MA50/100 xac nhan (Vietstock 9/6: "nam tren SMA50/100"). YTD +34,28%, 1Y +49,54% vs VN-Index. RS rat manh.</li>
+							<li>Entry 79.600-80.000 (retest nen / gia hien tai) · Stop 75.500 (-5,1%) · TP1 84.000 / TP2 89.500 · R:R 2,4:1 (TP1)</li>
+							<li>Smart money: Tu doanh mua HPG/TCB (dong nganh logistics/port). Khong co tin xau. EPS 4.424, ROE 14,64%, Q1/26 lai 650 ty.</li>
+						</ul>
+					</li>
+					<li><strong>2. SHS (HNX) · 8/8</strong> <span class="badge badge-success">SETUP</span>
+						<ul class="sub-list">
+							<li>Khoi phat: Breakout vung sideways 17.100-18.400 (T5-dau T6) voi volume spike 15/6: 33 trieu cp (gap 2,2x TB 20 phien ~15 trieu). 7D: +6,67%, 1Y: +46,56%.</li>
+							<li>Gia 19.200-19.400, tren MA20 uoc ~18.200. Nhom chung khoan HNX dan dat. Q2/26 kha quan (BK tang 51,46%, loi nhuan +33%).</li>
+							<li>Entry 19.000-19.400 (breakout zone) · Stop 17.500 (-7,9% tu 19.000) · TP1 21.500 / TP2 23.500 · R:R 2,6:1 (TP1)</li>
+							<li>Smart money: Khong co tin xau. Co dong noi bo khong ban rong. Thanh khoan tot (avg 15M cp/phien).</li>
+						</ul>
+					</li>
+					<li><strong>3. FTS (HOSE) · 7/8</strong> <span class="badge badge-success">SETUP</span>
+						<ul class="sub-list">
+							<li>Khoi phat: Break vung tich luy 23.000-24.500 (T5-dau T6) ngay 16/6 voi volume 2,46 trieu cp (gap 4,6x TB 10 phien ~536K). Tang +6,95% dong cua tai dinh phien.</li>
+							<li>Gia 25.400, MA20 uoc ~23.500-24.000. 7D: +9,96%, YTD: +13,58%. RS manh trong 2 tuan. FPT Group backing.</li>
+							<li>Entry retest 23.750-24.500 (cho pullback an toan hon) · Stop 22.500 (-5,3% tu 23.750) · TP1 27.000 / TP2 30.000 · R:R 2,6:1 (TP1)</li>
+							<li>Smart money: Khoi ngoai ho tro nhe ngang nhom CK. Khong tin xau. Nen Stage chuyen tiep (gia hien tai ~54% so ATH 47.450 T3/25).</li>
+						</ul>
+					</li>
+					<li><strong>4. BSI (HOSE) · 6/8</strong> <span class="badge badge-success">SETUP</span>
+						<ul class="sub-list">
+							<li>Khoi phat: Break nen tich luy 30.272-31.863 (toan bo T5-dau T6, ~4-5 tuan) ngay 15-16/6. Volume breakout: avg 166.510 cp/phien, ngay 15/6 dat 259.200-1.150.200 (~7x TB). Tang +6,95% ngay 16/6.</li>
+							<li>Gia 33.850, MA20 uoc ~31.200-31.500. 7D: +7,10%. Kiem toan Big4 (EY). BIDV Group backing. Khong tin xau quan tri.</li>
+							<li>Entry retest 31.500-32.500 (pullback sau breakout) · Stop 29.500 (-7,8% tu 32.000) · TP1 36.000 / TP2 40.000 · R:R 2,5:1 (TP1)</li>
+							<li>Smart money: BIDV la co dong lon, ho tro ve uy tin. Tuy nhien RS 1 nam yeu (gia hien tai xa duoi ATH 51.820). Uu tien entry pullback.</li>
+						</ul>
+					</li>
+				</ul>
+			</section>
+		</div>
+		<!-- COT PHAI -->
+		<div>
+			<section>
+				<h2>Nguyen tac Hanh dong</h2>
+				<div class="alert-box" id="view-principle">
+					Thi truong TRUNG TINH: chi so hoi phuc nhung volume thap, khang cu 1.820-1.835 chua bi pha, khoi ngoai van ban rong. Chi vao lenh khi gia retest breakout zone (khong duoi phien gap 5-7% khoi nen). Dat stoploss tuyet doi truoc khi vao lenh (GMD dưoi 75.500; SHS duoi 17.500; FTS duoi 22.500; BSI duoi 29.500). Position size toi da 40-50% tong danh muc; moi ma khong qua 10-15%. Neu VN-Index khong giu duoc 1.780 thi reduce 50%.
+				</div>
+			</section>
+			<section>
+				<h2>Danh sach Da Loai (Tranh FOMO)</h2>
+				<ul class="info-list" id="view-eliminated">
+					<li><strong>HVN</strong> <span class="badge badge-danger">LOAI</span> — Rui ro tai chinh cuc lon: lo luy ke 22.300 ty, no ngan han 57.946 ty >> TS ngan han 35.730 ty. Tang tran 2 phien la catalyst su kien (ĐHCD, tuyen bay Amsterdam), khong phai uptrend co cau truc. Stoploss khong bound duoc.</li>
+					<li><strong>TCB</strong> <span class="badge badge-danger">LOAI</span> — Gia 31.750 DUOI MA50 (35.213) va MA200 (34.432). Technical Strong Sell (12 tin hieu ban, 0 mua). Xu huong con yeu.</li>
+					<li><strong>VNM</strong> <span class="badge badge-danger">LOAI</span> — Gia 59.100-59.600 DUOI MA20 (68.050) va MA50 (64.802). Downtrend ngan han/trung han. Volume spike lon nhat T5 la phien ban (gia giam). Khong co setup.</li>
+					<li><strong>MBB</strong> <span class="badge badge-danger">LOAI</span> — Gia sideway 24.700-25.200, khong co breakout ro rang. Volume khong spike. Khoi ngoai ban rong (-102 ty ngay 16/6). Score ~2/8.</li>
+					<li><strong>VIX</strong> <span class="badge badge-danger">LOAI</span> — Gia 18.000, con xa duoi ATH 40.450 (~44%). Downtrend lon chua phuc hoi. Volume breakout khong du 1,5x TB. Score 4/8, duoi nguong toi thieu 5/8.</li>
+					<li><strong>TPB</strong> <span class="badge badge-danger">LOAI</span> — Dang test day T3/2026 (15.100-15.600). MACD duoi 0. Xu huong giam trung han.</li>
+					<li><strong>VPB</strong> <span class="badge badge-danger">LOAI</span> — MACD cat xuong, gap gan day T3/2026. Xu huong yeu.</li>
+					<li><strong>DPM / GEX</strong> <span class="badge badge-danger">LOAI</span> — DPM quay lai da giam, GEX MACD cat xuong. Xu huong xau.</li>
+					<li><strong>NLG</strong> <span class="badge badge-danger">LOAI</span> — Stochastic dao chieu xuong, phan van. Khong co breakout ro rang du khoi ngoai mua +83 ty.</li>
+					<li><strong>PHP</strong> <span class="badge badge-danger">LOAI</span> — San UPCOM. Khong nam trong pham vi quet HOSE+HNX.</li>
+				</ul>
+			</section>
+		</div>
+	</div>
+
+	<!-- FOOTER -->
+	<div class="source-footer">
+		Nguon tham chieu du lieu: vietstock.vn, cafef.vn, simplize.vn, 24hmoney.vn, tinnhanhchungkhoan.vn, vneconomy.vn, dnse.com.vn, baomoi.com<br>
+		Quet 19 candidate / Verify 15 / Pass 4 ma (GMD 8/8, SHS 8/8, FTS 7/8, BSI 6/8).<br>
+		Bao cao tu dong 2026-06-17 — khong phai khuyen nghi dau tu. Set Entry/Stop/TP theo bang gia live, R:R >= 2:1.
+	</div>
+
+</div>
+</body>
+</html>
