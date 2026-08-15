@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Vertex — Depth Sells</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="A scroll-driven 3D interaction demo — Three.js camera choreography married to editorial copy, built to show what depth does for engagement." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+
+<style>
+  :root {
+    --bg: #060a14;
+    --bg-raise: #0b1120;
+    --panel: rgba(15, 22, 40, 0.62);
+    --panel-border: rgba(255, 255, 255, 0.08);
+    --ink: #eef2ff;
+    --ink-dim: #97a2c2;
+    --ink-faint: #5c6689;
+    --teal: #2ee6c8;
+    --teal-dim: #1c8f7d;
+    --navy-accent: #4667ff;
+    --glow: rgba(46, 230, 200, 0.35);
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: auto; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Inter", system-ui, sans-serif;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  h1, h2, h3 {
+    font-family: "Space Grotesk", "Inter", sans-serif;
+    margin: 0;
+    letter-spacing: -0.02em;
+  }
+
+  p { margin: 0; }
+
+  a { color: inherit; }
+
+  ::selection { background: var(--teal); color: #04120f; }
+
+  #bg-canvas {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    display: block;
+    z-index: 0;
+    background: radial-gradient(ellipse at 50% 20%, #0d1730 0%, var(--bg) 60%, #030509 100%);
+  }
+
+  #content {
+    position: relative;
+    z-index: 1;
+    isolation: isolate;
+  }
+
+  .nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px clamp(20px, 5vw, 64px);
+    pointer-events: none;
+  }
+
+  .nav::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    height: 100px;
+    background: linear-gradient(var(--bg) 0%, rgba(6, 10, 20, 0.75) 55%, transparent 100%);
+    backdrop-filter: blur(6px);
+    -webkit-mask-image: linear-gradient(black 0%, black 55%, transparent 100%);
+    mask-image: linear-gradient(black 0%, black 55%, transparent 100%);
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  .nav .mark {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: -0.01em;
+  }
+
+  .nav .mark .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--teal);
+    box-shadow: 0 0 14px 3px var(--glow);
+  }
+
+  .nav .cta {
+    pointer-events: auto;
+    padding: 9px 18px;
+    border-radius: 999px;
+    border: 1px solid var(--panel-border);
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(10px);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--ink);
+    transition: border-color 0.25s ease, transform 0.25s ease, background 0.25s ease;
+  }
+
+  .nav .cta:hover {
+    border-color: var(--teal);
+    background: rgba(46, 230, 200, 0.1);
+    transform: translateY(-1px);
+  }
+
+  section {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 0 clamp(20px, 6vw, 96px);
+  }
+
+  /* ---------- Hero ---------- */
+
+  .hero {
+    min-height: 100vh;
+    justify-content: flex-start;
+  }
+
+  .hero-inner {
+    max-width: 720px;
+    position: relative;
+  }
+
+  .hero-glow {
+    position: absolute;
+    width: 520px;
+    height: 520px;
+    left: -220px;
+    top: -180px;
+    background: radial-gradient(circle, var(--glow) 0%, transparent 68%);
+    filter: blur(10px);
+    pointer-events: none;
+    z-index: -1;
+    will-change: transform;
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--panel-border);
+    background: var(--panel);
+    backdrop-filter: blur(10px);
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--teal);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.6rem, 6.4vw, 5.2rem);
+    font-weight: 700;
+    line-height: 1.02;
+    margin-top: 22px;
+  }
+
+  .hero h1 .accent {
+    background: linear-gradient(100deg, var(--teal), var(--navy-accent) 85%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .hero p.lede {
+    margin-top: 22px;
+    font-size: clamp(1rem, 1.6vw, 1.2rem);
+    color: var(--ink-dim);
+    max-width: 540px;
+    line-height: 1.6;
+  }
+
+  .hero-actions {
+    margin-top: 34px;
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    padding: 14px 26px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+  }
+
+  .btn-primary {
+    background: linear-gradient(100deg, var(--teal), #22b8ff);
+    color: #041613;
+    box-shadow: 0 12px 30px -10px rgba(46, 230, 200, 0.55);
+  }
+
+  .btn-primary:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 16px 36px -8px rgba(46, 230, 200, 0.7); }
+
+  .btn-ghost {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--panel-border);
+    color: var(--ink);
+  }
+
+  .btn-ghost:hover { border-color: var(--ink-dim); transform: translateY(-2px); }
+
+  .scroll-cue {
+    position: absolute;
+    bottom: 42px;
+    left: clamp(20px, 6vw, 96px);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.78rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .scroll-cue .rail {
+    width: 1px;
+    height: 34px;
+    background: linear-gradient(var(--ink-faint), transparent);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .scroll-cue .rail::after {
+    content: "";
+    position: absolute;
+    top: -20px;
+    left: 0;
+    width: 100%;
+    height: 20px;
+    background: linear-gradient(var(--teal), transparent);
+    animation: railDrop 1.8s ease-in-out infinite;
+  }
+
+  @keyframes railDrop {
+    0% { top: -20px; }
+    100% { top: 34px; }
+  }
+
+  /* ---------- Story sections (camera checkpoints) ---------- */
+
+  .story {
+    min-height: 100vh;
+    justify-content: flex-end;
+  }
+
+  .story.align-left { justify-content: flex-start; }
+  .story.align-center { justify-content: center; text-align: center; }
+
+  .story-card {
+    max-width: 460px;
+    padding: 34px clamp(22px, 3vw, 38px);
+    border-radius: 20px;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    backdrop-filter: blur(14px);
+    box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.6);
+  }
+
+  .story-card .tag {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--teal);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .story-card h2 {
+    font-size: clamp(1.6rem, 3vw, 2.3rem);
+    margin-top: 12px;
+    line-height: 1.15;
+  }
+
+  .story-card p {
+    margin-top: 14px;
+    color: var(--ink-dim);
+    line-height: 1.65;
+    font-size: 1rem;
+  }
+
+  /* ---------- Features ---------- */
+
+  .features {
+    min-height: auto;
+    padding-top: 140px;
+    padding-bottom: 100px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 56px;
+  }
+
+  .features-head {
+    max-width: 640px;
+  }
+
+  .features-head .tag {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--teal);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .features-head h2 {
+    font-size: clamp(1.9rem, 3.6vw, 2.8rem);
+    margin-top: 14px;
+  }
+
+  .features-head p {
+    margin-top: 16px;
+    color: var(--ink-dim);
+    font-size: 1.05rem;
+    line-height: 1.6;
+    max-width: 560px;
+  }
+
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+  }
+
+  .feature-card {
+    padding: 30px 26px;
+    border-radius: 18px;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    backdrop-filter: blur(12px);
+    transform: perspective(800px) rotateX(0deg);
+    transition: border-color 0.3s ease, transform 0.3s ease, background 0.3s ease;
+  }
+
+  .feature-card:hover {
+    border-color: rgba(46, 230, 200, 0.4);
+    background: rgba(46, 230, 200, 0.06);
+  }
+
+  .feature-card .icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(46, 230, 200, 0.18), rgba(70, 103, 255, 0.18));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--teal);
+  }
+
+  .feature-card h3 {
+    margin-top: 20px;
+    font-size: 1.15rem;
+    font-weight: 600;
+  }
+
+  .feature-card p {
+    margin-top: 10px;
+    color: var(--ink-dim);
+    font-size: 0.92rem;
+    line-height: 1.6;
+  }
+
+  /* ---------- Closing CTA ---------- */
+
+  .closing {
+    min-height: 90vh;
+    justify-content: center;
+    text-align: center;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+  }
+
+  .closing-glow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 50%, rgba(46, 230, 200, 0.22) 0%, transparent 55%);
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .closing .tag {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--teal);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .closing h2 {
+    margin-top: 18px;
+    font-size: clamp(2.2rem, 6vw, 4rem);
+    max-width: 780px;
+    line-height: 1.08;
+  }
+
+  .closing p {
+    margin-top: 18px;
+    color: var(--ink-dim);
+    max-width: 480px;
+    font-size: 1.05rem;
+    line-height: 1.6;
+  }
+
+  .closing .hero-actions { justify-content: center; margin-top: 36px; }
+
+  footer {
+    position: relative;
+    z-index: 1;
+    padding: 30px clamp(20px, 6vw, 96px) 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--ink-faint);
+    font-size: 0.82rem;
+    border-top: 1px solid var(--panel-border);
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  footer a { color: var(--ink-dim); text-decoration: none; }
+  footer a:hover { color: var(--teal); }
+
+  @media (max-width: 900px) {
+    .feature-grid { grid-template-columns: repeat(2, 1fr); }
+    .story-card { max-width: 400px; }
+  }
+
+  @media (max-width: 580px) {
+    .feature-grid { grid-template-columns: 1fr; }
+    .nav .cta { display: none; }
+    .story { justify-content: center; }
+    .story-card { max-width: 100%; }
+    section { padding-left: 20px; padding-right: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<div id="content">
+  <nav class="nav">
+    <div class="mark"><span class="dot"></span>VERTEX</div>
+    <a class="cta" href="#closing-cta">Book a walkthrough</a>
+  </nav>
+
+  <section class="hero" id="hero">
+    <div class="hero-glow" id="hero-glow"></div>
+    <div class="hero-inner">
+      <span class="eyebrow js-reveal">Scroll-driven 3D · built on Three.js</span>
+      <h1 class="js-reveal"><span class="accent">Depth sells.</span><br />Flat pages don't.</h1>
+      <p class="lede js-reveal">
+        This page is the pitch: one continuous 3D scene, a camera that reads your scroll
+        position like a script, and copy that arrives exactly when the shot calls for it.
+        No cuts, no reloads — just motion doing the persuading.
+      </p>
+      <div class="hero-actions js-reveal">
+        <a class="btn btn-primary" href="#closing-cta">See it on your site</a>
+        <a class="btn btn-ghost" href="#story-1">Keep scrolling ↓</a>
+      </div>
+    </div>
+    <div class="scroll-cue"><div class="rail"></div>Scroll to drive the camera</div>
+  </section>
+
+  <section class="story align-left" id="story-1">
+    <div class="story-card">
+      <span class="tag">Checkpoint 01 · The Torus</span>
+      <h2>The camera doesn't cut. It commits.</h2>
+      <p>
+        Every keyframe below is a point on one continuous curve. As you scroll, we walk
+        the camera along it — smoothed, never jumpy — so the ring, the sphere and the box
+        each get their moment without a single hard transition.
+      </p>
+    </div>
+  </section>
+
+  <section class="story align-right" id="story-2" style="justify-content: flex-end;">
+    <div class="story-card">
+      <span class="tag">Checkpoint 02 · The Sphere</span>
+      <h2>Objects react to you, not just to time.</h2>
+      <p>
+        Rotation and drift here are tied to scroll progress, not a clock — so the scene
+        always matches where the reader actually is, whether they scroll fast, slow, or
+        stop to read.
+      </p>
+    </div>
+  </section>
+
+  <section class="story align-left" id="story-3">
+    <div class="story-card">
+      <span class="tag">Checkpoint 03 · The Box + Knot</span>
+      <h2>Business case, not just eye candy.</h2>
+      <p>
+        Teams that ship a scroll-choreographed hero see longer time-on-page and a clearer
+        story arc for what they sell — because the format forces a beginning, middle and
+        end instead of a wall of sections.
+      </p>
+    </div>
+  </section>
+
+  <section class="features" id="features">
+    <div class="features-head">
+      <span class="tag js-reveal">How it's built</span>
+      <h2 class="js-reveal">Three ingredients, one smooth ride.</h2>
+      <p class="js-reveal">
+        No engine, no build step — just Three.js reading your scroll position every
+        frame and translating it into a camera path, with GSAP handling the words that
+        ride alongside it.
+      </p>
+    </div>
+    <div class="feature-grid">
+      <div class="feature-card js-card">
+        <div class="icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 4 6 4 9s-1.5 6.3-4 9c-2.5-2.7-4-6-4-9s1.5-6.3 4-9z"/></svg>
+        </div>
+        <h3>Scroll-synced camera</h3>
+        <p>A Catmull-Rom curve through every checkpoint, sampled by scroll progress and eased with a frame-rate-independent lerp — smooth on a trackpad or a scroll wheel.</p>
+      </div>
+      <div class="feature-card js-card">
+        <div class="icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-6-3.46a2 2 0 0 0-2 0l-6 3.46A2 2 0 0 0 5 8v8a2 2 0 0 0 1 1.73l6 3.46a2 2 0 0 0 2 0l6-3.46A2 2 0 0 0 21 16z"/><path d="M3.27 6.96 12 12l8.73-5.04M12 22.08V12"/></svg>
+        </div>
+        <h3>GPU-light objects</h3>
+        <p>Four primitives, standard materials, one directional light and a rim light — the whole scene stays under budget on a mid-range laptop or a phone.</p>
+      </div>
+      <div class="feature-card js-card">
+        <div class="icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+        </div>
+        <h3>Plug-and-play sections</h3>
+        <p>Every text block is a plain HTML section with a scroll checkpoint id. Add one, add a matching camera keyframe, done — no re-authoring the scene.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="closing" id="closing-cta">
+    <div class="closing-glow"></div>
+    <span class="tag js-reveal">Ready when you are</span>
+    <h2 class="js-reveal">Give your next launch page something to walk through.</h2>
+    <p class="js-reveal">Copy this file, swap the copy and the palette, and point the camera curve at whatever you're selling.</p>
+    <div class="hero-actions js-reveal">
+      <a class="btn btn-primary" href="#hero">Back to the top</a>
+      <a class="btn btn-ghost" href="#features">Review the build</a>
+    </div>
+  </section>
+
+  <footer>
+    <span>Vertex — a scroll-driven 3D demo</span>
+    <a href="#hero">↑ Back to top</a>
+  </footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js" integrity="sha384-qOkzR5Ke/XkQxuGVJ9hpFEpDlcoLtWwVYhnJf06cLIZa2vaIptSqaubivErzmD5O" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" integrity="sha384-g4NTh/Iv5PPU4xPyhEWqPcwtNXOvdaDI8LLnyYfyNZOjKJeYQyjzQ9X5275eBjpt" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" integrity="sha384-Z3REaz79l2IaAZqJsSABtTbhjgOUYyV3p90XNnAPCSHg3EMTz1fouunq9WZRtj3d" crossorigin="anonymous"></script>
+
+<script>
+  (function () {
+    "use strict";
+
+    /* ============ Three.js scroll-driven scene ============ */
+
+    var canvas = document.getElementById("bg-canvas");
+    var scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x060a14, 0.028);
+
+    var camera = new THREE.PerspectiveCamera(
+      55,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      100
+    );
+
+    var renderer = new THREE.WebGLRenderer({
+      canvas: canvas,
+      antialias: true,
+      alpha: false,
+      powerPreference: "high-performance",
+    });
+    renderer.setClearColor(0x060a14, 1);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    /* Lighting */
+    var keyLight = new THREE.DirectionalLight(0xbfe9ff, 1.1);
+    keyLight.position.set(6, 8, 6);
+    scene.add(keyLight);
+
+    var rimLight = new THREE.PointLight(0x2ee6c8, 6, 40, 2);
+    rimLight.position.set(-6, 2, -4);
+    scene.add(rimLight);
+
+    var ambient = new THREE.AmbientLight(0x1a2440, 1.4);
+    scene.add(ambient);
+
+    /* Materials */
+    function makeMat(color, emissive, rough) {
+      return new THREE.MeshStandardMaterial({
+        color: color,
+        emissive: emissive || 0x000000,
+        emissiveIntensity: 0.35,
+        metalness: 0.35,
+        roughness: rough != null ? rough : 0.35,
+      });
+    }
+
+    var tealMat = makeMat(0x2ee6c8, 0x0e463d, 0.25);
+    var blueMat = makeMat(0x4667ff, 0x0c1650, 0.3);
+    var ghostMat = makeMat(0x8fa2ff, 0x10142c, 0.5);
+    var coralMat = makeMat(0xff7a59, 0x3a1206, 0.4);
+
+    /* Objects — spaced along the camera's path */
+    var torus = new THREE.Mesh(new THREE.TorusGeometry(1.6, 0.5, 32, 120), tealMat);
+    torus.position.set(2.2, 0.4, -2);
+    scene.add(torus);
+
+    var sphere = new THREE.Mesh(new THREE.SphereGeometry(1.35, 48, 48), blueMat);
+    sphere.position.set(-3, -0.6, -16);
+    scene.add(sphere);
+
+    var box = new THREE.Mesh(new THREE.BoxGeometry(1.9, 1.9, 1.9), coralMat);
+    box.position.set(2.6, 0.8, -30);
+    scene.add(box);
+
+    var knot = new THREE.Mesh(new THREE.TorusKnotGeometry(1.05, 0.34, 140, 20), ghostMat);
+    knot.position.set(-2.4, -0.3, -44);
+    scene.add(knot);
+
+    var meshes = [torus, sphere, box, knot];
+
+    /* Ambient starfield for depth cueing */
+    (function addStars() {
+      var count = 600;
+      var positions = new Float32Array(count * 3);
+      for (var i = 0; i < count; i++) {
+        positions[i * 3] = (Math.random() - 0.5) * 60;
+        positions[i * 3 + 1] = (Math.random() - 0.5) * 40;
+        positions[i * 3 + 2] = (Math.random() - 0.5) * 70 - 10;
+      }
+      var geo = new THREE.BufferGeometry();
+      geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+      var mat = new THREE.PointsMaterial({ color: 0x5c6689, size: 0.045, transparent: true, opacity: 0.7 });
+      scene.add(new THREE.Points(geo, mat));
+    })();
+
+    /* Camera path: one keyframe per story checkpoint, smoothed with Catmull-Rom */
+    var camPoints = [
+      new THREE.Vector3(0, 1.4, 6),      // hero
+      new THREE.Vector3(2.6, 0.8, -1),   // checkpoint 1 — torus
+      new THREE.Vector3(-1.4, 0.2, -14), // checkpoint 2 — sphere
+      new THREE.Vector3(4.5, 1.8, -26),  // checkpoint 3 — box (pulled back so it frames, not clips)
+      new THREE.Vector3(-1.0, 1.0, -36), // features — wide establishing shot, clear of the box
+      new THREE.Vector3(0, 1.0, -47),    // closing
+    ];
+    var lookPoints = [
+      new THREE.Vector3(2.2, 0.4, -2),
+      new THREE.Vector3(2.2, 0.4, -2),
+      new THREE.Vector3(-3, -0.6, -16),
+      new THREE.Vector3(2.6, 0.8, -30),
+      new THREE.Vector3(-2.4, -0.3, -44),
+      new THREE.Vector3(-2.4, -0.3, -44),
+    ];
+    var camCurve = new THREE.CatmullRomCurve3(camPoints, false, "catmullrom", 0.4);
+    var lookCurve = new THREE.CatmullRomCurve3(lookPoints, false, "catmullrom", 0.4);
+
+    /* ============ Scroll progress (rAF-smoothed) ============ */
+
+    var targetProgress = 0;
+    var currentProgress = 0;
+
+    function computeScrollProgress() {
+      var doc = document.documentElement;
+      var max = doc.scrollHeight - window.innerHeight;
+      if (max <= 0) return 0;
+      return Math.min(1, Math.max(0, window.scrollY / max));
+    }
+
+    window.addEventListener(
+      "scroll",
+      function () {
+        targetProgress = computeScrollProgress();
+      },
+      { passive: true }
+    );
+
+    window.addEventListener("resize", function () {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      targetProgress = computeScrollProgress();
+    });
+
+    targetProgress = computeScrollProgress();
+    currentProgress = targetProgress;
+
+    /* ============ Mouse parallax (HTML layer only) ============ */
+
+    var mouseX = 0, mouseY = 0, mouseTX = 0, mouseTY = 0;
+    var heroGlow = document.getElementById("hero-glow");
+
+    window.addEventListener(
+      "mousemove",
+      function (e) {
+        mouseTX = (e.clientX / window.innerWidth - 0.5) * 2;
+        mouseTY = (e.clientY / window.innerHeight - 0.5) * 2;
+      },
+      { passive: true }
+    );
+
+    /* ============ Render loop ============ */
+
+    var clock = new THREE.Clock();
+
+    function tick() {
+      var dt = clock.getDelta();
+      var elapsed = clock.getElapsedTime();
+
+      currentProgress += (targetProgress - currentProgress) * 0.07;
+      mouseX += (mouseTX - mouseX) * 0.06;
+      mouseY += (mouseTY - mouseY) * 0.06;
+
+      var camPos = camCurve.getPointAt(currentProgress);
+      var lookPos = lookCurve.getPointAt(currentProgress);
+
+      camera.position.copy(camPos);
+      camera.position.x += mouseX * 0.15;
+      camera.position.y += -mouseY * 0.1;
+      camera.lookAt(lookPos);
+
+      /* Objects rotate by scroll progress + a light idle spin */
+      torus.rotation.x = currentProgress * Math.PI * 2.4 + elapsed * 0.15;
+      torus.rotation.y = currentProgress * Math.PI * 1.6;
+
+      sphere.rotation.y = currentProgress * Math.PI * 1.2 + elapsed * 0.1;
+      sphere.position.y = -0.6 + Math.sin(elapsed * 0.6) * 0.12;
+
+      box.rotation.x = currentProgress * Math.PI * 1.8;
+      box.rotation.y = currentProgress * Math.PI * 2.2 + elapsed * 0.12;
+
+      knot.rotation.x = elapsed * 0.2 + currentProgress * Math.PI;
+      knot.rotation.y = currentProgress * Math.PI * 1.4;
+
+      rimLight.position.x = Math.sin(elapsed * 0.3) * 6;
+
+      if (heroGlow) {
+        heroGlow.style.transform =
+          "translate3d(" + mouseX * 24 + "px, " + mouseY * 18 + "px, 0)";
+      }
+
+      renderer.render(scene, camera);
+      requestAnimationFrame(tick);
+    }
+
+    requestAnimationFrame(tick);
+
+    /* ============ GSAP: text reveals + card lift ============ */
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    gsap.set(".js-reveal", { opacity: 0, y: 26 });
+    gsap.set(".js-card", { opacity: 0, y: 34, rotateX: -8, transformPerspective: 800 });
+
+    var heroTl = gsap.timeline({ defaults: { ease: "back.out(1.6)" } });
+    heroTl.to(".hero .js-reveal", {
+      opacity: 1,
+      y: 0,
+      duration: 0.9,
+      stagger: 0.12,
+      delay: 0.15,
+    });
+
+    gsap.utils.toArray(".story-card").forEach(function (card) {
+      gsap.fromTo(
+        card,
+        { opacity: 0, y: 40, scale: 0.94 },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.8,
+          ease: "back.out(1.5)",
+          scrollTrigger: {
+            trigger: card,
+            start: "top 78%",
+            end: "top 30%",
+            toggleActions: "play reverse play reverse",
+          },
+        }
+      );
+    });
+
+    gsap.utils.toArray(".features .js-reveal").forEach(function (el, i) {
+      gsap.to(el, {
+        opacity: 1,
+        y: 0,
+        duration: 0.7,
+        ease: "back.out(1.6)",
+        delay: i * 0.08,
+        scrollTrigger: { trigger: el, start: "top 85%" },
+      });
+    });
+
+    gsap.utils.toArray(".js-card").forEach(function (card, i) {
+      gsap.to(card, {
+        opacity: 1,
+        y: 0,
+        rotateX: 0,
+        duration: 0.8,
+        ease: "back.out(1.7)",
+        delay: i * 0.1,
+        scrollTrigger: { trigger: card, start: "top 88%" },
+      });
+    });
+
+    gsap.utils.toArray(".closing .js-reveal").forEach(function (el, i) {
+      gsap.to(el, {
+        opacity: 1,
+        y: 0,
+        duration: 0.75,
+        ease: "back.out(1.6)",
+        delay: i * 0.1,
+        scrollTrigger: { trigger: el, start: "top 85%" },
+      });
+    });
+  })();
+</script>
+</body>
+</html>

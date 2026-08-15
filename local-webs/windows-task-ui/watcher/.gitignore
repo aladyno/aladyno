@@ -1,0 +1,7 @@
+secrets.json
+state.json
+activity.jsonl
+watcher.lock
+lastrun-*.txt
+result-*.json
+result-*.json.tmp

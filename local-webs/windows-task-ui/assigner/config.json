@@ -1,0 +1,18 @@
+{
+  "live": true,
+  "actModel": "claude-opus-4-8",
+  "claudeBin": "claude",
+  "assigneeAccountId": "640001ed0a4a47fb8d21bd60",
+  "ellisProjectKey": "ELS",
+  "cloudId": "8b950d46-25d2-4e85-8341-76e8196f1a17",
+  "linkType": "Relates",
+  "jql": "assignee = \"640001ed0a4a47fb8d21bd60\" AND project = BTBS AND issuetype in (Task, Sub-task, VOC) AND status = \"To Do\"",
+  "businessHours": {
+    "days": [1, 2, 3, 4, 5],
+    "start": 9,
+    "end": 17
+  },
+  "maxTasksPerTick": 20,
+  "maxConcurrentAgents": 2,
+  "actTimeoutMin": 20
+}

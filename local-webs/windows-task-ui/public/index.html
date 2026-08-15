@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Windows Task Scheduler UI</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #171a21;
+    --panel2: #1e222b;
+    --border: #2a2f3a;
+    --text: #e6e8ec;
+    --muted: #8b93a3;
+    --accent: #4f8cff;
+    --green: #2ecc71;
+    --amber: #f4b740;
+    --red: #ff5c5c;
+    --gray: #6b7280;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+  }
+  header {
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    background: var(--panel);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  header h1 { font-size: 17px; margin: 0; font-weight: 600; }
+  header h1 .sub { color: var(--muted); font-weight: 400; font-size: 13px; margin-left: 6px; }
+  .spacer { flex: 1; }
+  input, select, button { font: inherit; }
+  .search {
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 12px;
+    border-radius: 8px;
+    width: 240px;
+    outline: none;
+  }
+  .search:focus { border-color: var(--accent); }
+  select {
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 10px;
+    border-radius: 8px;
+    outline: none;
+  }
+  .btn {
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: .15s;
+  }
+  .btn:hover { border-color: var(--accent); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  /* Nút Làm mới: xanh lá chuối non */
+  #refresh { background: #a8d65c; border-color: #a8d65c; color: #16280a; font-weight: 600; }
+  #refresh:hover { background: #bce173; border-color: #bce173; }
+  /* Nút Chạy ngay: nhạt, kiểu không khuyến khích bấm */
+  #wrun { background: transparent; border-color: var(--border); color: var(--muted); font-weight: 500; opacity: .65; }
+  #wrun:hover { border-color: var(--gray); color: var(--text); opacity: 1; }
+  .checkbox { display: flex; align-items: center; gap: 6px; color: var(--muted); cursor: pointer; user-select: none; }
+
+  .tabs { display: flex; gap: 4px; padding: 14px 24px 0; }
+  .tab {
+    background: transparent;
+    border: 1px solid transparent;
+    border-bottom: none;
+    color: var(--muted);
+    padding: 9px 18px;
+    border-radius: 9px 9px 0 0;
+    cursor: pointer;
+    font-weight: 600;
+    transition: .15s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--text); background: var(--panel); border-color: var(--border); }
+  .tab .count {
+    background: var(--panel2);
+    border-radius: 100px;
+    padding: 1px 8px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .tab.active .count { background: var(--accent); color: #fff; }
+
+  .stats { display: flex; gap: 10px; padding: 16px 24px 0; flex-wrap: wrap; }
+  .stat {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 16px;
+    min-width: 110px;
+  }
+  .stat .num { font-size: 22px; font-weight: 700; }
+  .stat .lbl { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .stat.running .num { color: var(--green); }
+  .stat.disabled .num { color: var(--gray); }
+  .stat.failed .num { color: var(--red); }
+
+  .wrap { padding: 16px 24px 60px; }
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    text-align: left;
+    color: var(--muted);
+    font-weight: 500;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  thead th.sortable:hover { color: var(--text); }
+  tbody td { padding: 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tbody tr:hover { background: var(--panel); }
+  .name { font-weight: 600; }
+  .path { color: var(--muted); font-size: 12px; font-family: ui-monospace, monospace; }
+  .cmd { color: var(--muted); font-size: 12px; font-family: ui-monospace, monospace; max-width: 360px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sched { font-size: 12.5px; }
+  .muted { color: var(--muted); }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .badge .dot { width: 7px; height: 7px; border-radius: 50%; }
+  .b-running { background: rgba(46,204,113,.15); color: var(--green); }
+  .b-running .dot { background: var(--green); animation: pulse 1.3s infinite; }
+  .b-ready { background: rgba(79,140,255,.13); color: var(--accent); }
+  .b-ready .dot { background: var(--accent); }
+  .b-disabled { background: rgba(107,114,128,.18); color: var(--gray); }
+  .b-disabled .dot { background: var(--gray); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  .result { font-size: 12px; font-weight: 600; }
+  .r-ok { color: var(--green); }
+  .r-fail { color: var(--red); }
+  .r-na { color: var(--muted); }
+
+  .actions { display: flex; gap: 6px; }
+  .icon-btn {
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    width: 32px; height: 32px;
+    border-radius: 7px;
+    cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: .15s;
+  }
+  .icon-btn:hover { border-color: var(--accent); background: var(--panel); }
+  .icon-btn.danger:hover { border-color: var(--red); color: var(--red); }
+  .icon-btn:disabled { opacity: .3; cursor: not-allowed; }
+
+  .empty { text-align: center; color: var(--muted); padding: 60px 0; }
+
+  .wcfg { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .wcard { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; }
+  .wcard .k { color: var(--muted); font-size: 12px; }
+  .wcard .v { font-weight: 600; margin-top: 3px; }
+  .mode-badge { padding: 4px 12px; border-radius: 100px; font-weight: 700; font-size: 12px; }
+  .mode-observe { background: rgba(244,183,64,.15); color: var(--amber); }
+  .mode-live { background: rgba(46,204,113,.15); color: var(--green); }
+  .wtag { padding: 2px 9px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+  .t-IMPLEMENT { background: rgba(79,140,255,.15); color: var(--accent); }
+  .t-RE-CODE { background: rgba(244,183,64,.15); color: var(--amber); }
+  .t-error { background: rgba(255,92,92,.15); color: var(--red); }
+  .t-detect, .t-tick-done, .t-skip, .t-observe { background: var(--panel2); color: var(--muted); }
+
+  .jsonbox {
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    font-family: ui-monospace, monospace;
+    font-size: 12.5px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 70vh;
+    overflow: auto;
+  }
+  .notice {
+    padding: 14px 16px;
+    border-radius: 9px;
+    background: rgba(255,92,92,.08);
+    border: 1px solid rgba(255,92,92,.3);
+    color: var(--red);
+    font-size: 13px;
+  }
+
+  .recent-wrap { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .recent-lbl { color: var(--muted); font-size: 12px; }
+  .recent-chip {
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 4px 12px;
+    border-radius: 100px;
+    font-size: 12.5px;
+    font-family: ui-monospace, monospace;
+    cursor: pointer;
+    transition: .15s;
+  }
+  .recent-chip:hover { border-color: var(--accent); color: var(--accent); }
+
+  #toast {
+    position: fixed; bottom: 24px; right: 24px;
+    display: flex; flex-direction: column; gap: 8px; z-index: 100;
+  }
+  .toast {
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 12px 16px;
+    border-radius: 8px;
+    min-width: 240px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.4);
+    animation: slidein .2s;
+  }
+  .toast.ok { border-left-color: var(--green); }
+  .toast.err { border-left-color: var(--red); }
+  @keyframes slidein { from { transform: translateX(20px); opacity: 0; } }
+  .spin { animation: rot 1s linear infinite; display: inline-block; }
+  @keyframes rot { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<header>
+  <h1>🗓️ Aladyno Tools</h1>
+  <div class="spacer"></div>
+  <input id="search" class="search" placeholder="Tìm theo tên / lệnh…" />
+  <select id="filter">
+    <option value="all">Tất cả trạng thái</option>
+    <option value="running">Đang chạy</option>
+    <option value="ready">Ready</option>
+    <option value="disabled">Đã tắt</option>
+  </select>
+  <label class="checkbox"><input type="checkbox" id="showAll" /> Hiện task hệ thống</label>
+  <button id="refresh" class="btn primary">↻ Làm mới</button>
+</header>
+
+<div class="tabs" id="tabs">
+  <button class="tab active" data-tab="redis">🔑 Redis Key</button>
+  <button class="tab" data-tab="aladyn">⭐ Aladyn <span class="count" id="cnt-aladyn">0</span></button>
+  <button class="tab" data-tab="all">All Task Scheduler <span class="count" id="cnt-all">0</span></button>
+  <button class="tab" data-tab="watcher">🤖 Jira Watcher</button>
+</div>
+
+<div class="stats" id="stats"></div>
+
+<div class="wrap">
+  <table>
+    <thead>
+      <tr>
+        <th class="sortable" data-sort="name">Tên task</th>
+        <th>Trạng thái</th>
+        <th class="sortable" data-sort="lastRunTime">Lần chạy cuối</th>
+        <th>Kết quả</th>
+        <th class="sortable" data-sort="nextRunTime">Lần kế tiếp</th>
+        <th>Lịch / Lệnh</th>
+        <th>Thao tác</th>
+      </tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+  <div id="empty" class="empty" style="display:none">Không có task nào khớp.</div>
+</div>
+
+<div class="wrap" id="watcher-panel" style="display:none">
+  <div class="wcfg" id="wcfg"></div>
+  <div id="wrunning"></div>
+  <h3 style="margin:22px 0 10px;font-size:14px">Hoạt động gần đây</h3>
+  <table>
+    <thead><tr>
+      <th>Thời gian</th><th>Sự kiện</th><th>Task</th><th>Hành động</th><th>Chi tiết</th>
+    </tr></thead>
+    <tbody id="wrows"></tbody>
+  </table>
+  <div id="wempty" class="empty" style="display:none">Chưa có hoạt động nào. Bấm "Chạy ngay" để quét thử.</div>
+</div>
+
+<div class="wrap" id="redis-panel">
+  <div class="wcfg">
+    <input id="redisKey" class="search" style="width:420px" placeholder="Nhập Redis key…" autofocus />
+    <button id="redisGet" class="btn primary">🔍 Lấy dữ liệu</button>
+  </div>
+  <div id="redisRecent" style="margin-top:10px"></div>
+  <div id="redisResult" style="margin-top:16px"></div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+let TASKS = [];
+let sortKey = 'lastRunTime';
+let sortDir = -1;
+let currentTab = 'redis';
+
+const ALADYN_PREFIX = 'aladyn';
+function tabScoped() {
+  if (currentTab === 'aladyn') return TASKS.filter(t => t.name.toLowerCase().startsWith(ALADYN_PREFIX));
+  return TASKS;
+}
+
+const $ = (s) => document.querySelector(s);
+const RUNNING_CODE = 267009; // task currently running
+
+function fmtTime(iso) {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (isNaN(d) || d.getFullYear() < 2000) return null;
+  return d;
+}
+function relTime(iso) {
+  const d = fmtTime(iso);
+  if (!d) return '—';
+  const diff = (Date.now() - d.getTime()) / 1000;
+  const abs = Math.abs(diff);
+  const s = (n, u) => `${n} ${u}${n>1?'':''}`;
+  let rel;
+  if (abs < 60) rel = 'vừa xong';
+  else if (abs < 3600) rel = `${Math.round(abs/60)} phút`;
+  else if (abs < 86400) rel = `${Math.round(abs/3600)} giờ`;
+  else rel = `${Math.round(abs/86400)} ngày`;
+  const when = diff >= 0 ? `${rel} trước` : `sau ${rel}`;
+  return `<span title="${d.toLocaleString('vi-VN')}">${when}</span>`;
+}
+
+const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+function decodeDOW(mask) {
+  if (!mask) return '';
+  const out = [];
+  for (let i = 0; i < 7; i++) if (mask & (1 << i)) out.push(DOW[i]);
+  return out.join(',');
+}
+function scheduleText(t) {
+  if (!t.triggers || !t.triggers.length) return '<span class="muted">— (manual)</span>';
+  return t.triggers.map(tr => {
+    const sb = fmtTime(tr.startBoundary);
+    const time = sb ? sb.toLocaleTimeString('vi-VN', {hour:'2-digit',minute:'2-digit'}) : '';
+    let base;
+    switch (tr.type) {
+      case 'Daily': base = `Hằng ngày ${time}` + (tr.daysInterval > 1 ? ` (mỗi ${tr.daysInterval} ngày)` : ''); break;
+      case 'Weekly': base = `Hằng tuần ${decodeDOW(tr.daysOfWeek)} ${time}`; break;
+      case 'Boot': base = 'Khi khởi động'; break;
+      case 'Logon': base = 'Khi đăng nhập'; break;
+      case 'Time': base = `Một lần ${sb ? sb.toLocaleString('vi-VN') : ''}`; break;
+      case 'Registration': base = 'Khi đăng ký'; break;
+      default: base = (tr.type || 'Trigger') + ' ' + time;
+    }
+    if (tr.repetitionInterval) base += ` ⟳${tr.repetitionInterval.replace('PT','').toLowerCase()}`;
+    return base;
+  }).join('<br>');
+}
+function commandText(t) {
+  if (!t.actions || !t.actions.length) return '';
+  return t.actions.map(a => {
+    const exe = (a.execute || '').split(/[\\/]/).pop();
+    return `${exe} ${a.arguments || ''}`.trim();
+  }).join(' ; ');
+}
+
+function resultText(code) {
+  if (code === null || code === undefined) return '<span class="result r-na">—</span>';
+  if (code === 0) return '<span class="result r-ok">✓ OK</span>';
+  if (code === RUNNING_CODE) return '<span class="result muted">đang chạy…</span>';
+  if (code === 267011) return '<span class="result r-na">chưa chạy</span>';
+  const hex = '0x' + (code >>> 0).toString(16).toUpperCase();
+  return `<span class="result r-fail" title="${hex}">✕ ${code}</span>`;
+}
+
+function stateBadge(t) {
+  if (t.state === 'Running') return '<span class="badge b-running"><span class="dot"></span>Đang chạy</span>';
+  if (t.state === 'Disabled') return '<span class="badge b-disabled"><span class="dot"></span>Đã tắt</span>';
+  return '<span class="badge b-ready"><span class="dot"></span>Ready</span>';
+}
+
+function esc(s) { return (s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+function render() {
+  const q = $('#search').value.toLowerCase().trim();
+  const filter = $('#filter').value;
+  let list = tabScoped().filter(t => {
+    if (filter === 'running' && t.state !== 'Running') return false;
+    if (filter === 'ready' && t.state !== 'Ready') return false;
+    if (filter === 'disabled' && t.state !== 'Disabled') return false;
+    if (q) {
+      const hay = (t.name + ' ' + t.path + ' ' + commandText(t)).toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  list.sort((a, b) => {
+    let va = a[sortKey], vb = b[sortKey];
+    if (sortKey.includes('Time')) { va = fmtTime(va)?.getTime() || 0; vb = fmtTime(vb)?.getTime() || 0; }
+    else { va = (va||'').toString().toLowerCase(); vb = (vb||'').toString().toLowerCase(); }
+    return va < vb ? -sortDir : va > vb ? sortDir : 0;
+  });
+
+  const rows = $('#rows');
+  rows.innerHTML = list.map(t => {
+    const running = t.state === 'Running';
+    const id = encodeURIComponent(t.path + '|' + t.name);
+    return `<tr>
+      <td><div class="name">${esc(t.name)}</div><div class="path">${esc(t.path)}</div></td>
+      <td>${stateBadge(t)}</td>
+      <td>${relTime(t.lastRunTime)}</td>
+      <td>${resultText(t.lastResult)}</td>
+      <td>${relTime(t.nextRunTime)}</td>
+      <td><div class="sched">${scheduleText(t)}</div><div class="cmd" title="${esc(commandText(t))}">${esc(commandText(t))}</div></td>
+      <td><div class="actions">
+        <button class="icon-btn" title="Chạy ngay" onclick="doAction('run','${id}')" ${running?'disabled':''}>▶</button>
+        <button class="icon-btn danger" title="Dừng" onclick="doAction('stop','${id}')" ${running?'':'disabled'}>■</button>
+        ${t.enabled
+          ? `<button class="icon-btn" title="Tắt lịch" onclick="doAction('disable','${id}')">⏸</button>`
+          : `<button class="icon-btn" title="Bật lịch" onclick="doAction('enable','${id}')">⏵</button>`}
+      </div></td>
+    </tr>`;
+  }).join('');
+
+  $('#empty').style.display = list.length ? 'none' : 'block';
+  renderStats();
+}
+
+function renderStats() {
+  // cập nhật số đếm trên 2 tab
+  $('#cnt-aladyn').textContent = TASKS.filter(t => t.name.toLowerCase().startsWith(ALADYN_PREFIX)).length;
+  $('#cnt-all').textContent = TASKS.length;
+
+  const scoped = tabScoped();
+  const total = scoped.length;
+  const running = scoped.filter(t => t.state === 'Running').length;
+  const disabled = scoped.filter(t => t.state === 'Disabled').length;
+  const failed = scoped.filter(t => t.lastResult && t.lastResult !== 0 && t.lastResult !== RUNNING_CODE && t.lastResult !== 267011).length;
+  $('#stats').innerHTML = `
+    <div class="stat"><div class="num">${total}</div><div class="lbl">Tổng số</div></div>
+    <div class="stat running"><div class="num">${running}</div><div class="lbl">Đang chạy</div></div>
+    <div class="stat disabled"><div class="num">${disabled}</div><div class="lbl">Đã tắt</div></div>
+    <div class="stat failed"><div class="num">${failed}</div><div class="lbl">Lỗi lần cuối</div></div>`;
+}
+
+function toast(msg, type) {
+  const el = document.createElement('div');
+  el.className = 'toast ' + (type || '');
+  el.textContent = msg;
+  $('#toast').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+async function load() {
+  const btn = $('#refresh');
+  btn.innerHTML = '<span class="spin">↻</span> Đang tải';
+  try {
+    const all = $('#showAll').checked;
+    const r = await fetch('/api/tasks?all=' + all);
+    const data = await r.json();
+    if (!data.ok) throw new Error(data.error || 'Lỗi tải dữ liệu');
+    TASKS = data.tasks || [];
+    render();
+  } catch (e) {
+    toast('Lỗi: ' + e.message, 'err');
+  } finally {
+    btn.innerHTML = '↻ Làm mới';
+  }
+}
+
+async function doAction(action, id) {
+  const [taskPath, name] = decodeURIComponent(id).split('|');
+  const labels = { run: 'chạy', stop: 'dừng', enable: 'bật', disable: 'tắt' };
+  try {
+    const r = await fetch('/api/action', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, name, path: taskPath }),
+    });
+    const data = await r.json();
+    if (!data.ok) throw new Error(data.error || 'thất bại');
+    toast(`Đã ${labels[action]}: ${name}`, 'ok');
+    setTimeout(load, 600);
+  } catch (e) {
+    toast(`Không thể ${labels[action]} "${name}": ${e.message}`, 'err');
+  }
+}
+
+// tabs
+function applyTab() {
+  const isW = currentTab === 'watcher';
+  const isR = currentTab === 'redis';
+  $('#watcher-panel').style.display = isW ? 'block' : 'none';
+  $('#redis-panel').style.display = isR ? 'block' : 'none';
+  document.querySelector('.stats').style.display = (isW || isR) ? 'none' : 'flex';
+  document.querySelectorAll('.wrap')[0].style.display = (isW || isR) ? 'none' : 'block';
+  if (isW) loadWatcher();
+  else if (isR) $('#redisKey').focus();
+  else render();
+}
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    currentTab = tab.dataset.tab;
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t === tab));
+    applyTab();
+  });
+});
+
+async function loadWatcher() {
+  try {
+    const r = await fetch('/api/watcher');
+    const d = await r.json();
+    if (!d.ok) throw new Error(d.error || 'lỗi');
+    const c = d.config || {};
+    const modeCls = c.live ? 'mode-live' : 'mode-observe';
+    const modeTxt = c.live ? 'LIVE (giao agent tự chạy)' : 'OBSERVE (chưa giao agent)';
+    const bh = c.businessHours || {};
+    const days = (bh.days || []).map(x => ['CN','T2','T3','T4','T5','T6','T7'][x]).join(',');
+    const lastCheck = d.state && d.state.lastCheck ? new Date(d.state.lastCheck).toLocaleString('vi-VN') : '—';
+    $('#wcfg').innerHTML = `
+      <div class="wcard"><div class="k">Chế độ</div><div class="v"><span class="mode-badge ${modeCls}">${modeTxt}</span></div></div>
+      <div class="wcard"><div class="k">Lần quét cuối</div><div class="v">${lastCheck}</div></div>
+      <div class="wcard"><div class="k">Email</div><div class="v">${esc(c.email || '—')}</div></div>
+      <div class="wcard"><div class="k">Khung giờ</div><div class="v">${days} ${bh.start}–${bh.end}h</div></div>
+      <div class="wcard" style="flex:1;min-width:240px"><div class="k">JQL</div><div class="v" style="font-family:ui-monospace,monospace;font-size:12px;font-weight:400">${esc(c.jql || '')}</div></div>
+      <button class="btn" id="wrun">▶ Chạy ngay</button>`;
+    $('#wrun').onclick = runWatcher;
+
+    // banner: các agent đang chạy thật (pid còn sống)
+    const running = d.running || [];
+    if (running.length) {
+      const since = (iso) => { if (!iso) return ''; const m = Math.max(0, Math.round((Date.now() - new Date(iso)) / 60000)); return ` · ${m}'`; };
+      const chips = running.map(r => `${esc(r.key)}${r.action ? ` (${esc(r.action)})` : ''}${since(r.startedAt)}`).join(' &nbsp;·&nbsp; ');
+      $('#wrunning').innerHTML = `<div style="margin:14px 0;padding:11px 14px;border-radius:9px;background:#0f2a16;border:1px solid #1f7a3a;color:#7be39a;font-size:13px">🟢 <b>${running.length} task đang chạy</b> &nbsp;·&nbsp; ${chips}</div>`;
+    } else {
+      $('#wrunning').innerHTML = `<div style="margin:14px 0;padding:11px 14px;border-radius:9px;background:#1a1a1a;border:1px solid #333;color:#888;font-size:13px">⚪ Không có task nào đang chạy</div>`;
+    }
+
+    // gộp các log trùng sát nhau (cùng event+task+hành động trong 15s) -> 1 dòng
+    const raw = d.log || [];
+    const rows = [];
+    for (const e of raw) {
+      const last = rows[rows.length - 1];
+      if (last && last.event === e.event && (last.key || '') === (e.key || '') &&
+          (last.action || '') === (e.action || '') &&
+          Math.abs(new Date(last.ts) - new Date(e.ts)) < 15000) continue;
+      rows.push(e);
+    }
+    $('#wrows').innerHTML = rows.map(e => {
+      const t = new Date(e.ts).toLocaleString('vi-VN');
+      const act = e.action ? `<span class="wtag t-${e.action}">${e.action}</span>` : '';
+      let detail = e.detail || '';
+      if (!detail && e.event === 'detect') detail = `${e.count} task · $${(e.cost || 0).toFixed(3)} · ${(e.keys || []).join(', ')}`;
+      if (!detail && e.event === 'dispatch') detail = `pid ${e.agentPid || '?'}${e.branch ? ' · branch ' + e.branch : ''}`;
+      if (!detail && e.event === 'act-done') detail = e.ok ? `✅ ${esc(e.prUrl || 'done')}` : `❌ ${esc(e.error || e.reason || 'no PR')}`;
+      if (!detail && e.event === 'tick-done') detail = `${e.running || 0} đang chạy${(e.runningKeys && e.runningKeys.length) ? ': ' + e.runningKeys.join(', ') : ''}`;
+      if (!detail) detail = e.error || e.reason || '';
+      return `<tr><td class="muted" style="white-space:nowrap">${t}</td>
+        <td><span class="wtag t-${e.event}">${esc(e.event)}</span></td>
+        <td class="name">${esc(e.key || '')}</td><td>${act}</td>
+        <td class="muted">${esc(String(detail))}</td></tr>`;
+    }).join('');
+    $('#wempty').style.display = rows.length ? 'none' : 'block';
+  } catch (e) { toast('Watcher: ' + e.message, 'err'); }
+}
+
+async function runWatcher() {
+  const b = $('#wrun');
+  b.disabled = true; b.innerHTML = '<span class="spin">↻</span> Đang quét…';
+  try {
+    const r = await fetch('/api/watcher/run', { method: 'POST' });
+    const d = await r.json().catch(() => ({}));
+    if (d.alreadyRunning) toast('⚠️ Watcher đang chạy rồi — đã bỏ qua lần bấm này', 'err');
+    else toast('Đã kích hoạt quét (chạy nền, xem log bên dưới)', 'ok');
+    setTimeout(loadWatcher, 8000);
+    setTimeout(loadWatcher, 25000);
+  } catch (e) { toast('Lỗi: ' + e.message, 'err'); }
+  finally { setTimeout(() => { b.disabled = false; b.innerHTML = '▶ Chạy ngay'; }, 5000); }
+}
+
+let lastRedisJSON = '';
+const REDIS_RECENT_KEY = 'redisRecentKeys';
+const REDIS_RECENT_MAX = 5;
+
+function loadRecentKeys() {
+  try { return JSON.parse(localStorage.getItem(REDIS_RECENT_KEY)) || []; }
+  catch { return []; }
+}
+function pushRecentKey(key) {
+  const list = loadRecentKeys().filter(k => k !== key);
+  list.unshift(key);
+  localStorage.setItem(REDIS_RECENT_KEY, JSON.stringify(list.slice(0, REDIS_RECENT_MAX)));
+  renderRecentKeys();
+}
+function renderRecentKeys() {
+  const list = loadRecentKeys();
+  const box = $('#redisRecent');
+  if (!list.length) { box.innerHTML = ''; return; }
+  box.innerHTML = `<div class="recent-wrap"><span class="recent-lbl">Gần đây:</span>` +
+    list.map(k => `<span class="recent-chip" data-key="${esc(k)}">${esc(k)}</span>`).join('') +
+    `</div>`;
+  box.querySelectorAll('.recent-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      $('#redisKey').value = chip.dataset.key;
+      redisGet();
+    });
+  });
+}
+
+async function redisGet() {
+  const key = $('#redisKey').value.trim();
+  const box = $('#redisResult');
+  if (!key) { toast('Nhập key trước đã', 'err'); return; }
+  const btn = $('#redisGet');
+  btn.disabled = true; btn.innerHTML = '<span class="spin">↻</span> Đang tra...';
+  box.innerHTML = '';
+  lastRedisJSON = '';
+  pushRecentKey(key);
+  try {
+    const r = await fetch('/api/redis/get?key=' + encodeURIComponent(key));
+    const d = await r.json();
+    if (!d.ok) throw new Error(d.error || 'Lỗi không xác định');
+    if (!d.found) {
+      box.innerHTML = `<div class="notice">Không tìm thấy key <b>${esc(key)}</b> trong Redis.</div>`;
+    } else if (d.decodeError) {
+      box.innerHTML = `<div class="notice">${esc(d.decodeError)}</div>`;
+    } else {
+      lastRedisJSON = JSON.stringify(d.data, null, 2);
+      box.innerHTML = `<div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+        <button id="redisCopy" class="btn">📋 Copy</button>
+      </div><pre class="jsonbox">${esc(lastRedisJSON)}</pre>`;
+      $('#redisCopy').addEventListener('click', copyRedisJSON);
+    }
+  } catch (e) {
+    box.innerHTML = `<div class="notice">Lỗi: ${esc(e.message)}</div>`;
+  } finally {
+    btn.disabled = false; btn.innerHTML = '🔍 Lấy dữ liệu';
+  }
+}
+
+async function copyRedisJSON() {
+  try {
+    await navigator.clipboard.writeText(lastRedisJSON);
+    toast('Đã copy JSON vào clipboard', 'ok');
+  } catch (e) {
+    toast('Không copy được: ' + e.message, 'err');
+  }
+}
+
+$('#redisGet').addEventListener('click', redisGet);
+$('#redisKey').addEventListener('keydown', (e) => { if (e.key === 'Enter') redisGet(); });
+
+// events
+$('#search').addEventListener('input', render);
+$('#filter').addEventListener('change', render);
+$('#showAll').addEventListener('change', load);
+$('#refresh').addEventListener('click', load);
+document.querySelectorAll('th.sortable').forEach(th => {
+  th.addEventListener('click', () => {
+    const k = th.dataset.sort;
+    if (sortKey === k) sortDir *= -1; else { sortKey = k; sortDir = k.includes('Time') ? -1 : 1; }
+    render();
+  });
+});
+
+load();
+applyTab();
+renderRecentKeys();
+setInterval(() => { if (currentTab === 'watcher') loadWatcher(); else if (currentTab !== 'redis') load(); }, 15000);
+</script>
+</body>
+</html>

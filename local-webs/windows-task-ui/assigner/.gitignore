@@ -1,0 +1,6 @@
+state.json
+activity.jsonl
+assigner.lock
+lastrun-*.txt
+result-*.json
+result-*.json.tmp

@@ -30,6 +30,10 @@ windows-schedule/
   reports/                         # daily dashboard copies produced by the pipeline
 ```
 
+Note: hourly Jira epic-update notifications live outside this repo, in the separate (untracked)
+`local-webs/windows-task-ui/epic-notifier/` lean-watcher — see that folder's own scripts; it follows
+the same direct-Jira-REST, Claude-only-when-needed pattern as the sibling `assigner/`/`watcher/` tools there.
+
 ## Architecture: skill → agent delegation
 
 Skills in `.claude/skills/` are thin **entry points** (trigger phrases + expected output contract). The actual work is delegated to project-local agents in `.claude/agents/`, which are limited to `WebSearch`/`WebFetch` (plus `Read`/`Write`/email for the scanner):
