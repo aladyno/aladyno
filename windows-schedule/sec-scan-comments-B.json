@@ -1,0 +1,263 @@
+[
+  {
+    "type": "comment",
+    "key": "ELS-2226",
+    "id": "18616",
+    "author": "Tracy2",
+    "created": "2026-06-30T17:35:56.025+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2226",
+    "text": "Seller A — flag OFF (\"do not provide 3rd-party rates\"). - Business Trip In Vietnam\nSeller B — flag ON (\"provide 3rd-party rates\"). - OHMY TEST PREPAY\n\nPASSED - TC1 — Partner Dotbiz, seller does NOT provide 3rd-party -> only direct rates shown. Steps: login to the Dotbiz Platform as Seller A (flag OFF); search hotels for a destination with both direct and 3rd-party rates; open a hotel and view the room/rate list. Expected: hotel list shows only hotels where OMH has a direct contract; room/rate list shows only rates from the direct contract source, no rates labelled Hotelbeds, Agoda, EAN, Dida, Dotw, Fitruums or Rakuten.\n\nPASSED - TC2 — Partner Dotbiz, seller DOES provide 3rd-party -> full mix shown (regression). Login as Seller B (flag ON), repeat the TC1 search. Expected: result identical to what Seller B saw before this change; both direct and 3rd-party rates appear (main regression check).\n\nPASSED - TC3 — Admin Create Booking on B2B channel, seller does NOT provide 3rd-party -> only direct rates. On oh-admin open Create Booking, pick B2B channel and Seller A, run the hotel search and view rooms/rates. Expected: behaviour matches TC1 — only direct-contract rates shown.\n\nPASSED - TC4 — Admin Create Booking on B2B channel, seller DOES provide 3rd-party -> full mix (regression). Create Booking, B2B channel, Seller B, same search. Expected: same mix of rates as before, no regression on existing B2B sellers.\n\nPASSED - TC5 — B2C flow is untouched. Run a regular B2C search using the same hotel as TC1/TC3. Expected: both direct and 3rd-party rates show normally; the seller flag has no effect on B2C searches.\n\nPASSED - TC6 — Flipping the seller flag takes effect immediately on the next search. Start with Seller B (flag ON), run B2B search (direct + 3rd-party). Change Seller B flag to OFF and save, run again. Switch back to ON and save, run again. Expected: after OFF the search no longer shows 3rd-party rates; after ON the full mix returns; toggling reflected on the very next search (no wait, no manual cache clear)."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-660",
+    "id": "18577",
+    "author": "Justin",
+    "created": "2026-06-30T14:03:31.264+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-660",
+    "text": "@Harry — PR ohmyhotelco/ohmyhotel-monorepo#75 is ready for review (un-drafted).\n\nOMH-660 — web-pc layout + auth shell with JWT cookie crossover. Built the PC layout shell (header / footer / modal slot / toast) + the auth shell sharing the legacy {hostname}_userToken JWT cookie, so a user stays logged in across the legacy<->v2 Strangler flip.\n\nCrossover replicates the legacy storage contract exactly — key, keepOnLogin localStorage/cookie branch, JSON.stringify + URL-encode round-trip, sessionStorage-mirror fallback.\nLoader-direct SSR (no custom server): the root loader reads the request cookie and serializes only isAuthenticated (never the token); getServerApiClient(request) for authed loader fetches.\nAuth state via useSyncExternalStore: SSR cookie flag reconciled to the live client token — a keepOnLogin (localStorage) session shows logged-in after hydration; a session-expiry clears the token + flips the shell logged-out (legacy removeToken).\nMinimal-foundation scope: the login-modal port hands off to the legacy login; the full login form + SSO + current-user display are Phase 5 (OMH-460).\n\nVerified (Node 22): typecheck + lint + 38 unit/component tests + build + 3 E2E (incl. the auth-crossover acceptance: a legacy-shaped cookie renders the authed header). Converged over 2 rounds of dual independent review — codex SHIP + quality-reviewer 5/5 SHIP.\n\nStacked PRs merged. #71 (OMH-653) / #72 (OMH-659) / #73 (OMH-661) are all merged (as is the independent #74, OMH-662); #75 is rebased onto master and mergeable — ready to merge.\n\nDeferrals (see apps/web-pc/app/lib/auth/RECONCILE.md): full login/SSO + user-name display (OMH-460), i18n wiring for the shell strings, full legacy<->v2 dual-fire parity (fm-parity gate), runtime-env client injection (OMH-665/477)."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-669",
+    "id": "18610",
+    "author": "Zia",
+    "created": "2026-06-30T17:14:37.882+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-669",
+    "text": "@Dante Sorry, I completely missed this. Thanks for the reminder. I'll review it within the next 1 hour and get back to you."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-669",
+    "id": "18614",
+    "author": "Zia",
+    "created": "2026-06-30T17:31:52.745+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-669",
+    "text": "Dear @Dante I've completed the review. As expected, everything looks good from my side, so please include this in Thursday's production deployment. Thank you for your work!"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-669",
+    "id": "18615",
+    "author": "Dante",
+    "created": "2026-06-30T17:32:40.752+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-669",
+    "text": "@Zia Got it, thank you!"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-342",
+    "id": "18600",
+    "author": "Dante",
+    "created": "2026-06-30T16:27:55.265+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-342",
+    "text": "Dear @Lexi Today, we had the kickoff meeting for this feature, and I'd like to share a few updates:\n1. Regarding Quick Pay testing, the QA team will not be able to test this functionality because they do not have access to the required payment methods (such as Samsung Pay, Kakao Pay, etc.).\n2. I plan to start development next Monday, after completing OMH-678, which is expected to take about two days (1-day off on Friday).\nThanks, c/c: @Joseph @Harry"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-342",
+    "id": "18605",
+    "author": "Lexi",
+    "created": "2026-06-30T16:43:19.373+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-342",
+    "text": "@Dante Thanks for the update. Any questions on the spec? Here's my reply to what you shared after the dev team kickoff:\n1. Quick Pay testing: a. Could you check how the QA handled Quick Pay testing during the initial development of this feature? b. Just to double-check — is Samsung Pay specifically unable to process KRW payments from the VN side? Could you confirm this point again? c. Quick Pay support itself can be covered from the KR side, but we'll need to discuss the dev/stg environment payment setup internally on the KR side first. I'll let you know if any support from dev/QA is needed or if there are any updates.\n2. Schedule: OK"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-342",
+    "id": "18608",
+    "author": "Dante",
+    "created": "2026-06-30T17:11:06.806+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-342",
+    "text": "@Lexi a. The product was handed over from Traport before the QA team was established, so the QA team has never tested the Quick Pay functionality. b. No. Samsung Pay is not specifically unable to process KRW payments from the VN side. Thanks"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2065",
+    "id": "18606",
+    "author": "Joseph",
+    "created": "2026-06-30T17:04:23.878+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2065",
+    "text": "@Tan already created tlpush_dev user on Dev DB"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-653",
+    "id": "18594",
+    "author": "Justin",
+    "created": "2026-06-30T15:42:22.207+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-653",
+    "text": "Follow-up — parked (conditional / icebox), NOT an active task.\n\nSource: Harry's review note on OMH-659 (2026-06-30) — move the CI actions/upload-artifact uploads (Playwright HTML report + visual-regression PNG baselines) to S3 with a short lifecycle, to control GitHub Actions storage as CI scales.\n\nAssessment (reviewed against the current workflow + config): the storage-control goal is largely already met, so an S3 migration is not warranted yet —\nBoth uploads already set retention-days: 7 (the same 7-day expiry an S3 lifecycle would give).\nweb-pc-e2e.yml is workflow_dispatch-only today (no schedule, not on the PR gate), so artifacts are generated rarely.\nArtifacts are already lean: trace: on-first-retry, screenshot: only-on-failure, video off; the HTML report is a few MB and baselines upload only on capture runs.\nS3 also adds real cost — bucket + CI write role (OIDC) + lifecycle + aws s3 cp glue — and loses the native run-page artifact UX.\n\nCheaper levers to try first (one-liners, no infra): drop retention-days to 3; switch the report upload from if: always() to if: failure() (keep always() if we still want the report on green manual runs); keep video off.\n\nRevisit S3 only when: (1) the weekly E2E schedule OR a Playwright job on the PR gate has landed, AND (2) Actions storage is approaching the plan quota / incurring overage, and/or (3) artifacts need to be accessible outside GitHub. Suggested layout if/when we do it (Harry's): s3://omh-ci-artifacts/{playwright-reports,visual-baselines}/web-pc/<run_id>/, 7-day lifecycle.\n\nNo subtask created — tracked here as a conditional item until a trigger fires."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-662",
+    "id": "18559",
+    "author": "Justin",
+    "created": "2026-06-30T11:14:31.455+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-662",
+    "text": "@Harry — PR #74 (draft, base master) is up: new packages/shared-telemetry — the v2 central telemetry event bus + 6 sink adapters.\n\nDelivered:\ncreateTelemetry(): one track() validates against the shared-types DataLayerPush contract, applies cross-cutting (enable gate, per-currency money rounding, user-id hashing seam, purchase de-dup), then fans out SSR-safe (track no-ops on the server; a throwing sink can't break the others).\n6 adapters: gtm (GA4/dataLayer + the ecommerce-clear ordering), meta-pixel, criteo, dable, kakao, naver — each maps the canonical event to its own vocabulary.\n7th shared package (deviation from the six) — you confirmed the home; event schema reused from shared-types tracker-events. Documented in plan section 5 + RECONCILE.md.\n\nVerified (Node 22): typecheck + test (23/23) + lint + build green.\n\nDeferred: marketing events -> OMH-664 (GTM inventory); track() page wiring -> Phase 1+; external script loading -> host integration; Kakao OG <meta> -> route meta export. Note: typecheck uses tsc --noEmit because the repo's tsc -b --noEmit raises TS6310 on any references-package (breaks shared-data too) -> OMH-657 follow-up."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-662",
+    "id": "18563",
+    "author": "Justin",
+    "created": "2026-06-30T11:46:01.831+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-662",
+    "text": "Review round 1 (codex + quality-reviewer) — codex FIX-FIRST (6 MAJOR), quality-reviewer FIX-FIRST (3.5/5). Both independently flagged top-level money rounding + Criteo item fidelity. Fixed (commit b45ddb7b4, PR #74):\nTop-level money rounding — roundPushMoney now rounds the legacy MONEY_KEYS (price/discount/value/coupon_amount/tax/refund_amount/cancel_fee) at the top level too (payment_failure / coupon_apply / cancel_confirm), not just inside ecommerce; currency lookup case-insensitive + isFinite guard.\nPurchase de-dup ordering — split has/mark; the bus marks a transaction_id only AFTER a dispatch attempt, so a pre-dispatch failure can't poison the id and drop the retry.\nIsolation — each sink init() is wrapped, and the transform/dispatch body is wrapped, so a throwing init or a throwing host hashUserId never reaches the calling page.\nAdapter fidelity vs legacy — Criteo cart/basket/transaction send {id,price,quantity} item objects; Naver purchase uses wcs.cnv(\"1\", amount) -> wcs_do(_nasa) (not wcs.trans); Meta purchase includes contents/content_type/content_name.\nTests +5 -> 28 total. Verified (Node 22): typecheck + test (28/28) + lint + build green.\nDeferred: nested custom-dim passthrough (root cause in shared-types DataLayerEcommerceSchema/DataLayerItemSchema) -> OMH-654. Kept intentional: free-string event union, Meta device_type via config, single enabled gate (documented in RECONCILE.md).\nRound 2 (verify fixes + remaining) running now."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-662",
+    "id": "18567",
+    "author": "Justin",
+    "created": "2026-06-30T11:56:33.710+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-662",
+    "text": "Review round 2 — quality-reviewer 4.5/5 SHIP-READY (one actionable: Naver inflow); codex FIX-FIRST (rated the per-sink completeness gaps MAJOR vs QR's info). Converged both to faithful legacy coverage (commit 1b330e559, PR #74):\nround-money — ecommerce + items fall back to the top-level currency when ecommerce.currency is absent (legacy ecCurrency = ecommerce.currency ?? topCurrency).\nNaver — purchase now fires inflow before wcs_do; added the JOIN (sign_up) + CART (add_to_cart/begin_checkout) conversions via wcs.cnv (LOG_EVENT 2/3).\nMeta — Search adds search_string, CompleteRegistration adds user_id (hashed), InitiateCheckout adds num_items.\nCriteo — page_view -> viewPage, page_view_main -> viewHome.\nTests +7 -> 35 total, incl. the two bus failure paths (no transaction_id poison on a pre-dispatch throw; throwing init() isolation). Verified (Node 22): typecheck + test (35/35) + lint + build green.\nRound 3 (verify) running. Reviewed + left as-is: Kakao total_quantity / Criteo viewList category (non-conversion enrichment; SDKs accept the form)."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-662",
+    "id": "18570",
+    "author": "Justin",
+    "created": "2026-06-30T12:05:40.619+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-662",
+    "text": "Review round 3 — quality-reviewer 4.5/5 SHIP-READY, one defect (Naver CART); codex FIX-FIRST. QR's deeper analysis corrected my round-2 Naver mapping. Fixed (commit 04bc46c98, PR #74):\nNaver CART corrected — legacy fired CART(3) on the wishlist action only, value 1 (_sendWishLogToNaver) — not on add_to_cart/begin_checkout, and not the booking amount. Now add_to_wishlist -> CART(3, value 1); no Naver conversion on add_to_cart/begin_checkout.\nMeta num_items dropped — round-2 sum-derivation != legacy (top-level rooms); removed (enrichment; the call site sets it precisely when the funnel page migrates).\nCriteo search -> viewList(item, keywords) (legacy keyword search), not viewSearch.\nTests -> 36. Verified (Node 22): typecheck + test (36/36) + lint + build green. Deferred to dual-fire parity (documented): Criteo dates-viewSearch + viewList category; Kakao total_quantity. Round 4 (verify) running."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-662",
+    "id": "18571",
+    "author": "Justin",
+    "created": "2026-06-30T12:11:41.441+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-662",
+    "text": "Review round 4 — quality-reviewer SHIP 5/5; codex FIX-FIRST on one remaining completeness gap (Dable wishlist Lead). Fixed + a full sink-event enumeration (commit acadbb0cd, PR #74):\nDable — added add_to_wishlist -> 'Lead' (legacy dableService.lead() on a wishlist add).\nMeta docstring drift cleaned (no longer mentions the dropped num_items).\nFull legacy sink-event enumeration confirms the adapters now cover the complete set: Dable 7, Meta 8, Kakao 7, Criteo full + keyword viewList; Naver JOIN/CART/PURCHASE (RESERVATION/ETC are declared but have zero legacy call sites). Deferred (additive call-site payload): Meta content_category.\nTests -> 37. Verified (Node 22): typecheck + test (37/37) + lint + build green. Round 5 (convergence) running."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-662",
+    "id": "18572",
+    "author": "Justin",
+    "created": "2026-06-30T12:13:38.933+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-662",
+    "text": "Review round 5 (convergence) — both reviewers SHIP at HEAD acadbb0cd. codex: SHIP, no remaining blockers; quality-reviewer: SHIP 5/5 (the code meets the bar). Dable Lead fix + meta docstring confirmed; no documented deferrals re-flagged.\n5-round dual-review summary covers rounds 1 through 5 (codex and quality-reviewer scores from FIX-FIRST/3.5 up to SHIP/5.0), converging at round 5.\nFinal state: 37 tests, typecheck + lint + build green (Node 22). The 6 adapters now cover the complete legacy sink-event set; cross-cutting (validate / per-currency rounding / user-id hash / purchase de-dup / SSR-safe isolated fan-out) faithful to DataLayerService. Deferred items documented in RECONCILE.md (marketing events -> OMH-664; nested custom-dim passthrough -> OMH-654; tsc -b --noEmit -> OMH-657; dual-fire parity nuances -> later phases).\nPR #74 is ship-ready (still draft)."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-662",
+    "id": "18573",
+    "author": "Justin",
+    "created": "2026-06-30T12:16:21.850+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-662",
+    "text": "@Harry — PR #74 is now ready for review (un-drafted): packages/shared-telemetry — the v2 central telemetry event bus + 6 sink adapters.\nConverged over 5 rounds of dual independent review — codex SHIP + quality-reviewer SHIP 5/5. The 6 adapters (gtm / meta-pixel / criteo / dable / kakao / naver) cover the complete legacy sink-event set; the bus cross-cutting (validate against the shared-types DataLayerPush contract, per-currency money rounding, user-id hashing, purchase de-dup, SSR-safe isolated fan-out) is faithful to the legacy DataLayerService.\nVerified (Node 22): typecheck + test (37/37) + lint + build green. 7th shared package (deviation from the six, documented in plan section 5 + RECONCILE.md).\nDeferred (documented): marketing events -> OMH-664; nested custom-dim passthrough -> OMH-654; tsc -b --noEmit tooling -> OMH-657; dual-fire parity nuances -> later phases. No app overlap (new package + plan/tracker docs only)."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-659",
+    "id": "18590",
+    "author": "Harry",
+    "created": "2026-06-30T15:32:42.768+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-659",
+    "text": "Hi @Justin Just a heads-up for later, not a request for this PR — the two actions/upload-artifact steps work fine today. But as the harness scales (weekly schedule, more pages, maybe a Playwright job on the PR gate someday), the GitHub Actions storage quota will start filling up and we'll hit overage cost ($0.25/GB-month).\nWhen it makes sense to revisit, we could move both uploads to S3 with a lifecycle rule:\ns3://omh-ci-artifacts/playwright-reports/web-pc/<run_id>/ — HTML report, auto-expire 7 days\ns3://omh-ci-artifacts/visual-baselines/web-pc/<run_id>/ — captured PNGs, auto-expire 7 days\n(The bucket name and paths above are just my suggestion for reference — feel free to use whatever fits your team's naming convention.)\nNot urgent at all — totally fine to ship this PR as-is and revisit the S3 move whenever we add the weekly schedule or wire Playwright into the PR gate. Just parking the idea here so it's not lost.\nOne small thing before I approve: the PR seems to have conflicts with the base branch right now"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-659",
+    "id": "18593",
+    "author": "Justin",
+    "created": "2026-06-30T15:42:18.348+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-659",
+    "text": "Thanks @Harry. The base-branch conflict is resolved — I rebased OMH-659 onto current master (after OMH-661 merged) and force-pushed, so #72 is mergeable again: root.tsx now composes the 659 BrandProvider inside the 661 QueryClient/ApiClient shell, package.json devDeps unioned, and the lockfile regenerated. Good to re-check when you have a moment.\nOn the artifact-storage heads-up — agreed, not for this PR. I've parked the uploads -> S3 + 7-day lifecycle move as a follow-up on OMH-653, to revisit when we add the weekly schedule or wire Playwright into the PR gate. Thanks for parking it."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-726",
+    "id": "18602",
+    "author": "Lexi",
+    "created": "2026-06-30T16:29:12.500+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-726",
+    "text": "@Joseph Please check the questions. Thank you."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1700",
+    "id": "18599",
+    "author": "Tracy2",
+    "created": "2026-06-30T15:54:58.304+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1700",
+    "text": "@Dan retested on STG => passed"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2293",
+    "id": "18595",
+    "author": "Tom",
+    "created": "2026-06-30T15:44:44.727+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2293",
+    "text": "PR FE (ohmyhotel-partners) opened: https://github.com/ohmyhotelco/ohmyhotel-partners/pull/87\nBranch: ELS-2293-update-fe-ecs-partner-api-wt -> master\nChange: environment.prod.ts API_URL -> https://partners-api.ohmyhotel.com\nRisk: Low"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2293",
+    "id": "18598",
+    "author": "Tom",
+    "created": "2026-06-30T15:49:10.236+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2293",
+    "text": "PR BE (oh-api) opened: https://github.com/ohmyhotelco/oh-api/pull/880\nBranch: ELS-2293-add-ecs-partner-api-security -> master (rebased, 0 behind)\nChange: AuthorityWebFilter authorizes partner-api host (same as admin) + partner-api-url config across 9 env profiles\nRisk: High (auth core) — rollback: revert commit"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2040",
+    "id": "18585",
+    "author": "Tom",
+    "created": "2026-06-30T15:29:10.994+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2040",
+    "text": "@Tracy2 da deploy len PROD. please help me check again, thank you"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2040",
+    "id": "18592",
+    "author": "Tracy2",
+    "created": "2026-06-30T15:42:14.222+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2040",
+    "text": "@Tom tested on PROD => passed"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1990",
+    "id": "18589",
+    "author": "Tracy",
+    "created": "2026-06-30T15:32:33.607+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1990",
+    "text": "@Tan Verified and confirmed by JP team. https://ohmyjira.atlassian.net/browse/BTBS-691?focusedCommentId=18583"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2326",
+    "id": "18588",
+    "author": "Tracy",
+    "created": "2026-06-30T15:31:54.525+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2326",
+    "text": "Verified and confirmed by JP team. https://ohmyjira.atlassian.net/browse/BTBS-691?focusedCommentId=18583"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2272",
+    "id": "18578",
+    "author": "Roy",
+    "created": "2026-06-30T14:24:14.470+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2272",
+    "text": "@Calvin Please update the restore script so that it no longer uses OPEN_API_SEARCH_HOTEL_CONTENTS_V2-V8. This also needs to be deployed on Thursday, of course."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2272",
+    "id": "18586",
+    "author": "Calvin",
+    "created": "2026-06-30T15:29:18.362+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2272",
+    "text": "@Roy Just to confirm, there isn't any restore script or application code that recreates OPEN_API_SEARCH_HOTEL_CONTENTS_V2-V8. I also checked the current codebase, and only OPEN_API_SEARCH_HOTEL_CONTENTS_V9 is referenced."
+  }
+]

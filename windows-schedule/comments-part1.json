@@ -1,0 +1,362 @@
+[
+  {
+    "type": "comment",
+    "key": "ELS-2218",
+    "id": "18319",
+    "author": "Joo",
+    "created": "2026-06-26T10:51:58.099+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2218?focusedCommentId=18319",
+    "text": "@Daniel api rate mising currency:\n\n{\n\t\"operation\": \"CHANGED\",\n\t\"hotelCode\": 886622,\n\t\"rates\": [\n\t\t{\n\t\t\t\"roomTypeSeq\": 1269009,\n\t\t\t\"ratePlanSeq\": 794400,\n\t\t\t\"occupancy\": 0,\n\t\t\t\"date\": \"2026-06-28\",\n\t\t\t\"amounts\": {\n\t\t\t\t\"baseAmount\": 31500.0,\n\t\t\t\t\"netAmount\": 30000.0,\n\t\t\t\t\"grossAmount\": 0.0,\n\t\t\t\t\"contractAmount\": 30000.0,\n\t\t\t\t\"taxAmount\": 0.0,\n\t\t\t\t\"mspAmount\": 0.0\n\t\t\t},\n\t\t\t\"extraGuestAmounts\": {\"extraAdult\": 0.0, \"extraChild\": 0.0},\n\t\t\t\"restrictions\": {\"closed\": false, \"cta\": false, \"ctd\": false},\n\t\t\t\"lastModify\": \"2026-06-26T01:40:29.053Z\"\n\t\t},\n\t\t{\n\t\t\t\"roomTypeSeq\": 1269009, \"ratePlanSeq\": 794400, \"occupancy\": 0, \"date\": \"2026-06-29\",\n\t\t\t\"amounts\": {\"baseAmount\": 31500.0, \"netAmount\": 30000.0, \"grossAmount\": 0.0, \"contractAmount\": 30000.0, \"taxAmount\": 0.0, \"mspAmount\": 0.0},\n\t\t\t\"extraGuestAmounts\": {\"extraAdult\": 0.0, \"extraChild\": 0.0},\n\t\t\t\"restrictions\": {\"closed\": false, \"cta\": false, \"ctd\": false},\n\t\t\t\"lastModify\": \"2026-06-26T01:40:29.054Z\"\n\t\t},\n\t\t{\n\t\t\t\"roomTypeSeq\": 1269009, \"ratePlanSeq\": 794400, \"occupancy\": 0, \"date\": \"2026-06-30\",\n\t\t\t\"amounts\": {\"baseAmount\": 31500.0, \"netAmount\": 30000.0, \"grossAmount\": 0.0, \"contractAmount\": 30000.0, \"taxAmount\": 0.0, \"mspAmount\": 0.0},\n\t\t\t\"extraGuestAmounts\": {\"extraAdult\": 0.0, \"extraChild\": 0.0},\n\t\t\t\"restrictions\": {\"closed\": false, \"cta\": false, \"ctd\": false},\n\t\t\t\"lastModify\": \"2026-06-26T01:40:29.054Z\"\n\t\t}\n\t],\n\t\"channelId\": \"GoogleMetaSearch\"\n}"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2143",
+    "id": "18310",
+    "author": "Mon",
+    "created": "2026-06-25T18:10:12.768+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2143?focusedCommentId=18310",
+    "text": "Self test result Local passed\n\nCase selected on the promotion Manual\n\n[image]\n\nCase selected on the lastest location\n\n[image]\n\nCase selected on the 7th location\n\n[image]"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2247",
+    "id": "18216",
+    "author": "Tan",
+    "created": "2026-06-25T11:28:58.258+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2247?focusedCommentId=18216",
+    "text": "@Tracy @Tracy2 please help check and test it on DEV, thank you!"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2247",
+    "id": "18309",
+    "author": "Tracy2",
+    "created": "2026-06-25T17:51:25.193+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2247?focusedCommentId=18309",
+    "text": "@Tan please send me Import BK form that has the `GuestContact` column. Thank you"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2247",
+    "id": "18318",
+    "author": "Tan",
+    "created": "2026-06-26T10:17:05.592+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2247?focusedCommentId=18318",
+    "text": "@Tracy Do you have the booking import file? Could you please share it with me?\n@Tracy2 The only change needed is to add GuestContact at the end."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2210",
+    "id": "18274",
+    "author": "Daniel",
+    "created": "2026-06-25T16:00:26.564+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2210?focusedCommentId=18274",
+    "text": "Hi @Vicky Please help update size and try again.\n\n[image]"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2250",
+    "id": "18249",
+    "author": "Harry",
+    "created": "2026-06-25T13:51:07.425+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2250?focusedCommentId=18249",
+    "text": "[image]\n@Joseph @Dan flow request"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2250",
+    "id": "18251",
+    "author": "Harry",
+    "created": "2026-06-25T14:04:29.236+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2250?focusedCommentId=18251",
+    "text": "@Joseph @Dan\ni has summary , pls check"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2283",
+    "id": "18317",
+    "author": "Joo",
+    "created": "2026-06-25T19:57:08.794+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2283?focusedCommentId=18317",
+    "text": "Have 103 protimotion manual `Nth Nights Free`"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-647",
+    "id": "18213",
+    "author": "Lexi",
+    "created": "2026-06-25T11:10:14.618+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-647?focusedCommentId=18213",
+    "text": "@Dante By when can it be checked? I understand that you are busy, but please let me know at least an estimated schedule."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-647",
+    "id": "18316",
+    "author": "Dante",
+    "created": "2026-06-25T19:47:12.063+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-647?focusedCommentId=18316",
+    "text": "@Lexi Sorry for the delay. Could you please confirm the priority of this task? I'm currently handling several other tasks, and this one is also somewhat complex. I will need additional time to review it properly and estimate the schedule. Thank you."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2237",
+    "id": "18240",
+    "author": "Calvin",
+    "created": "2026-06-25T13:07:32.165+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2237?focusedCommentId=18240",
+    "text": "@Roy\nThanks for the analysis - your point that we should verify the actual source of traffic before finalizing the split target is spot on, especially if the real goal is reducing NetworkBytesOut / baseline bandwidth. I dug deeper into the key groups you listed; here's what I found:\n\n1/ OPEN_API_SEARCH_HOTEL_CONTENTS (V2~V9)\n- Used by the hotel-api service, current pattern: OPEN_API_SEARCH_HOTEL_CONTENTS_V9:*\n- Network out from this key scales directly with Open API traffic.\n- Entry size ranges from 0.01 MB to 0.7 MB.\n\n2/ HOTEL_IN_REGION:* and VD_VENDOR_HOTEL_MASTER:*\nThese two patterns serve the search functions of B2C / Admin / Partner.\n- Current B2C/Admin search traffic is very low and uneven.\n\n3/ Keys involved in a single hotel-api search request: ~11 key pattern groups, which expand to 90+ concrete keys\n[image]\n\nCurrent metrics:\n- hotel-api traffic: ~250,000 req/min\n- NetworkBytesOut: ~36 GB/min (across all 5 nodes), and this level is very stable with little fluctuation.\n[image]\n\nCross-check with the numbers: Average payload per request approx 36 GB / 250,000 approx 0.14 MB, which falls right within the 0.01-0.7 MB size range of the hotel-api search key group. Meanwhile, B2C/Admin search traffic is small and sporadic. This confirms that the search-related keys of the hotel-api (Open API) side for almost all of our NetworkBytesOut.\n\nConclusion & proposal:\nSince the main bandwidth source is the hotel-api search key group, splitting out the B2C/Admin/Partner runtime keys (or the HOTEL_IN_REGION / VD_VENDOR groups) - whether to a new cluster or kept in place - will not solve the NetworkBytesOut problem. This matches your concern that we could complete a low-risk split but still leave the main bottleneck untouched.\n\nSo I'd propose we instead look at splitting the keys within this search group - for example, moving only the OPEN_API_SEARCH_HOTEL_CONTENTS_V9 pattern out to a new cluster. There are a few reasons this pattern is the right candidate:\n- It carries the largest payload (0.01-0.7 MB per entry) and is the dominant contributor to outbound traffic.\n- It will keep growing over time - its footprint and outbound traffic scale up as the number of contracts increases, as more hotels are onboarded, and as QPS rises.\n- Isolating just this one pattern keeps the migration scope small and low-risk, while letting us distribute the bandwidth across clusters instead of keeping it all in one place.\n\nThis also gives us room to scale the cluster independently as QPS grows toward ~10k or our hotel contract count doubles.\n\nDoes this direction sound good?"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2237",
+    "id": "18255",
+    "author": "Roy",
+    "created": "2026-06-25T15:10:38.457+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2237?focusedCommentId=18255",
+    "text": "@Calvin First question,\n> OPEN_API_SEARCH_HOTEL_CONTENTS (V2~V9)\n- What exactly is OPEN_API_SEARCH_HOTEL_CONTENTS (V2~V9)?\n- Why are there nine versions, and why are all nine needed?\nPlease share everything else you know about it."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2237",
+    "id": "18262",
+    "author": "Calvin",
+    "created": "2026-06-25T15:29:35.985+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2237?focusedCommentId=18262",
+    "text": "@Roy\nOPEN_API_SEARCH_HOTEL_CONTENTS contains the static hotel content used by Open API search. It includes hotel contract information and room-plan mappings that determine which products are available for sale.\n\nFor example, hotel 803104 has five keys, one for each supported language:\n- OPEN_API_SEARCH_HOTEL_CONTENTS_V9:803104:EN\n- OPEN_API_SEARCH_HOTEL_CONTENTS_V9:803104:KO\n- OPEN_API_SEARCH_HOTEL_CONTENTS_V9:803104:JA\n- OPEN_API_SEARCH_HOTEL_CONTENTS_V9:803104:VI\n- OPEN_API_SEARCH_HOTEL_CONTENTS_V9:803104:ZH\n\nCurrently, only OPEN_API_SEARCH_HOTEL_CONTENTS_V9 is used by the system. Versions V2 through V8 are no longer referenced by any application flow and contain outdated data. They are legacy versions that have remained in Redis but are no longer actively used."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2237",
+    "id": "18266",
+    "author": "Roy",
+    "created": "2026-06-25T15:34:16.615+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2237?focusedCommentId=18266",
+    "text": "@Calvin Then is it okay to remove V2-V8? This is an important point, so I need to be sure."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2237",
+    "id": "18267",
+    "author": "Calvin",
+    "created": "2026-06-25T15:39:17.840+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2237?focusedCommentId=18267",
+    "text": "@Roy\nYes, it is safe to remove V2-V8.\nOnly OPEN_API_SEARCH_HOTEL_CONTENTS_V9 is currently used by the application."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2237",
+    "id": "18268",
+    "author": "Roy",
+    "created": "2026-06-25T15:43:23.085+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2237?focusedCommentId=18268",
+    "text": "@Calvin Thank you for looking into this. I think we should create a task to remove this as well and proceed with it."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2237",
+    "id": "18269",
+    "author": "Roy",
+    "created": "2026-06-25T15:44:37.515+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2237?focusedCommentId=18269",
+    "text": "@Calvin What do you think about creating a task to organize each version of OPEN_API_SEARCH_HOTEL_CONTENTS (V2~V9), including the background context and future action items?"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2237",
+    "id": "18272",
+    "author": "Calvin",
+    "created": "2026-06-25T15:55:16.879+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2237?focusedCommentId=18272",
+    "text": "@Roy Just to clarify, do you mean creating a task to document the purpose and status of each OPEN_API_SEARCH_HOTEL_CONTENTS version (V2-V9), and to clearly identify which versions can be cleaned up?\n\nI did another check and found that V2-V8 were last updated around July 2024. They appear to be very outdated and were likely experimental versions created by the Traport team in the past. Since then, the system has only been using V9.\n\nGiven that, it seems a task to remove V2-V8 and document the current state/history of these versions would be sufficient."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2237",
+    "id": "18273",
+    "author": "Calvin",
+    "created": "2026-06-25T15:59:49.110+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2237?focusedCommentId=18273",
+    "text": "@Roy\nI have created a ticket to remove this.\nhttps://ohmyjira.atlassian.net/browse/ELS-2272"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2237",
+    "id": "18284",
+    "author": "Roy",
+    "created": "2026-06-25T16:25:49.223+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2237?focusedCommentId=18284",
+    "text": "@Calvin As you mentioned below, I asked because if we organize the current state and create a task with the available context, even if some details are not perfectly accurate, it will help us define the action items we need to take next.\n\nDid that make sense?\n> I did another check and found that V2-V8 were last updated around July 2024. They appear to be very outdated and were likely experimental versions created by the Traport team in the past. Since then, the system has only been using V9."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2237",
+    "id": "18289",
+    "author": "Calvin",
+    "created": "2026-06-25T16:37:31.806+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2237?focusedCommentId=18289",
+    "text": "@Roy Got it, that makes sense."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2237",
+    "id": "18302",
+    "author": "Roy",
+    "created": "2026-06-25T17:35:06.904+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2237?focusedCommentId=18302",
+    "text": "@Calvin\nOne thing I want to make clear is that I don't expect splitting the clusters to make the situation exactly the same as it is now.\n\nWhat I'm focusing on is separating clusters by purpose so that we can prepare, at least to some extent, for future traffic growth, and then right-size each cluster accordingly by reducing the specifications where appropriate.\n\nThe question is what criteria we should use for the split:\n- Should we split by client perspective? (For example, the auth/access-control work we just completed.)\n- Should we split by B2C/B2B?\n- Or should we split by specific data usage patterns?\nThis is what I want us to think through and solve."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2237",
+    "id": "18315",
+    "author": "Calvin",
+    "created": "2026-06-25T19:39:16.161+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2237?focusedCommentId=18315",
+    "text": "@Roy\ncc @Joseph\nFollowing up with another angle that might be worth considering before we lock in the split.\n\nSince the analysis points to OPEN_API_SEARCH_HOTEL_CONTENTS_V9 as the dominant source of NetworkBytesOut, it might be worth attacking the bytes directly through value compression rather than (or before) splitting. The appeal is that it reduces outbound regardless of which cluster the key lives in, so it helps either way.\n\nThis key looks like a particularly good fit because its value structure has a lot of repeated fields - the entries share the same JSON schema across hotels and languages. With zstd (ideally with a trained dictionary), we'd expect a >90% size reduction on this data. Rough projection, to be validated:\n\nOPEN_API_SEARCH_HOTEL_CONTENTS_V9 storage (DEV): 0.9 GB -> ~0.09 GB\nNetworkBytesOut (cluster total): ~36 GB/min -> ~7 GB/min\nBaseline bandwidth out: ~45-52% -> ~10%\nPer-node out: ~7.27 GB/min -> ~1.4 GB/min\n\nOn cost, CPU shouldn't be a concern: the app runs on c7i.4xlarge (16 vCPU) at ~20% usage. zstd decode for the full 250k req/min adds well under 1% CPU per host, and even at a future 10k QPS it stays around ~1%.\n\nTo sanity-check before committing, I'd suggest we try it in the DEV environment first - compress the entire V9 keyset there and compare the total size before vs. after to get the real aggregate ratio at scale.\n\nThis is just an idea on my side."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1723",
+    "id": "18206",
+    "author": "Tracy2",
+    "created": "2026-06-25T10:35:49.744+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1723?focusedCommentId=18206",
+    "text": "@Tom please check a new update as Claire note above\n@Claire could we change the alert to \"If the information is not saved, it will be lost when navigating to a new tab.\"? I think this message would be clearer for users."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1723",
+    "id": "18224",
+    "author": "Claire",
+    "created": "2026-06-25T11:54:09.370+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1723?focusedCommentId=18224",
+    "text": "ok @Tracy2"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1723",
+    "id": "18236",
+    "author": "Tom",
+    "created": "2026-06-25T12:43:18.618+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1723?focusedCommentId=18236",
+    "text": "@Claire @Tracy2 chinh gi thi nen update document xong thi nhan anh nha -> chu thich trong task hoac document ngay update, ly do (neu co)\ncc: @Tracy"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1723",
+    "id": "18237",
+    "author": "Claire",
+    "created": "2026-06-25T12:47:06.929+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1723?focusedCommentId=18237",
+    "text": "oki a@Tom, I did update done in v4_25/06/2026 includes:\n- #US_2: Area tool tip is updated the content notify\n*Note: the revision history table will be updated into the document later"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1723",
+    "id": "18312",
+    "author": "Tom",
+    "created": "2026-06-25T18:35:44.343+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1723?focusedCommentId=18312",
+    "text": "@Tracy2 kiem tra giup anh 2 case tren dev:\n1/ Case dieu chinh icon :info: cua city\n2/ Case sync du lieu tao moi region -> search area. Bay gio duoi dev 30s-60s la da sync"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1723",
+    "id": "18314",
+    "author": "Tracy2",
+    "created": "2026-06-25T18:53:43.637+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1723?focusedCommentId=18314",
+    "text": "@Tom\nCase 1: Pop up confirm is displayed\n[image]\n@Tom Issue: when click :info: button, searched hotel still be cleared when back to hotel content tab again.\nExpected: Only setting pop up is closed, data on page still be keep\n[image]\nCase 2: Passed\n[image]"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2249",
+    "id": "18306",
+    "author": "Tom",
+    "created": "2026-06-25T17:46:22.779+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2249?focusedCommentId=18306",
+    "text": "ROOT CAUSE FOUND via the trace logs.\n\nThe [ELS-2249] logs on DEV all showed: region INSERT saved (regionCode=1) - every newly created region pushed regionCode=1 to OpenSearch, never the real generated code.\n\nCause: in AdminBasisRegionService.mergeRegion(), the insert branch did:\nint regionCode = adminBasisRegionMapper.insertRegion(conditionMap);\nBut insertRegion uses MyBatis useGeneratedKeys=\"true\" keyProperty=\"regionCode\" - the int return value is the affected-row count (always 1), and the real generated REGION_CODE is written back into conditionMap.get(\"regionCode\"). So the code pushed pkColumnData=1 to trigger-api -> it indexed region code 1 (not the new row) -> the new region was never indexed -> \"No areas found\" in Hotel Content > Add Area (f-04 / ELS-2232).\n\nThis is the real root cause of f-04, NOT the trigger-api :6220 connectivity (that may be a separate/secondary issue).\n\nFix (committed): read the generated key from conditionMap.get(\"regionCode\") and push that instead.\n- Commit: 25d5df7465 (branch ELS-2249-trace-opensearch-region-sync)\n- Trace logs (commit 7c70780f66) are still in place to confirm the fix on the next DEV deploy - please re-deploy and create a region: the log should now show the real regionCode (e.g. 9315xx) and Add Area should find it.\n\nTODO after verification: remove the temporary [ELS-2249] trace logs."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-652",
+    "id": "18313",
+    "author": "Harry",
+    "created": "2026-06-25T18:36:12.911+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-652?focusedCommentId=18313",
+    "text": "hi @Justin\nThanks - the design note is solid, and the as-built code on the branch matches what it claims. My calls on each open decision:\n\n1. Built Dockerfile + CI - Accept as the baseline, with two changes to bring web-pc-prod-ci.yml in line with the legacy flow:\n(a) Drop the push: [master] trigger - keep only workflow_dispatch. Right now the workflow is push: false so the trigger is cheap, but once Group B9 flips it to push: true for ECR, every master commit would auto-push an image - most of which we never deploy. That bloats the ECR repo (storage + scanning cost) and clutters the tag inventory. Setting the trigger right now means we don't have to remember to remove push: [master] later when B9 lands.\n(b) Apply D3 - set base: \"/build/\" in apps/web-pc/vite.config.ts - your throwaway-and-revert was the right move while the prefix was open; now that we're committing to it, land the one-line change in the same PR so the image actually ships the collision-disjoint prefix. /build/ confirmed as the value.\n\n2. Launcher hardening - Add all three: tini as PID 1 (Fargate scale-in sends SIGTERM frequently - without tini, in-flight requests don't drain cleanly -> 502s), ENV TZ=Asia/Seoul (dayjs is timezone-sensitive and the legacy host runs in KST), and non-root USER node (the node:22-alpine image already ships the user - zero-cost win). All three are low-risk and high-value; please fold them into the current Dockerfile.\n\n3. One image + OMH_ENV - Confirmed. Per-env images add operational overhead with no benefit since getPublicConfig(brand, env) is already a lookup, not a process.env read. The secrets seam at the task-def level handles per-env secrets cleanly when we get there.\n\n4. S3/SSM -> Fargate/ECR - Confirmed;\n\n5. SSM Parameter Store SecureString at Phase 4 - Agreed as the default. Secrets Manager is not warranted: PG-key rotation is vendor-coordinated and manual per 11.5 item 8, so automated rotation buys us nothing. Will revisit only if we hit a Secrets Manager-specific need (staged labels, resource policies). Code is invariant either way.\n\n6. OMH-503 Sibling A (CloudFront edge audit) - I'll register it this week and gate the production flip (not the CI/Docker landing) on its completion. The two-behavior split (/build/* immutable vs document no-cache + {hostname}_userToken cookie forward) is exactly what needs to be codified before prod traffic hits the v2 origin.\n\n7. Deploy-unit boundary - ECR push + ECS service wiring belongs to OMH-455 Group B9, not OMH-652. The current web-pc-prod-ci.yml (push: false) is the right shape for this task; the OIDC role github-actions-build-monorepo and the ECR repo are prerequisites for B9, not for here.\n\nOne sanity check: 8.1 references shared-data/src/client/axios-base.ts but that file isn't on the branch yet (shared-data is still a skeleton - export {}). The runtime-config design is still sound because getPublicConfig is already a lookup, but is createApiClient something we expect to land before OMH-652 closes, or is the env-threading deferred to OMH-455 Phase 0+? If deferred, please add a one-line note in 8.1 so the reference is clearly forward-looking.\n\nOnce you fold (1a), (1b), and (2) into the current Dockerfile/CI/vite config, I'm happy to ratify and close the design phase of OMH-652. Thanks for the thorough write-up."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2280",
+    "id": "18311",
+    "author": "Dan",
+    "created": "2026-06-25T18:26:09.214+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2280?focusedCommentId=18311",
+    "text": "Dear @Joseph @Vicky\n\nInvestigate booking and cancellation failures related to Temairazu integration. Initial log analysis indicates that requests failed due to Temairazu returning HTTP 503 Service Unavailable.\n\nNo maintenance notification was received from Temairazu prior to the outage.\nWe found the following booking failures:\nK26062510124H01 K26062510126H01 K26062510133H01 K26062510148H01 K26062510157H01 K26062510167H01 K26062510171H01 K26062510172H01 K26062510174H01 K26062510178H01 K26062510180H01 S26062510082H01 K26062510196H01 K26062510204H01 S26062510088H01 K26062510208H01 K26062510210H01 K26062510224H01 K26062510227H01 K26062510228H01 S26062510106H01 S26062510109H01 K26062510247H01 S26062510113H01 K26062510252H01 S26062510115H01 K26062510257H01 K26062510270H01 K26062510279H01 K26062510282H01 K26062510284H01 K26062510287H01 K26062510291H01 K26062510295H01 S26062510136H01"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2061",
+    "id": "18304",
+    "author": "Joseph",
+    "created": "2026-06-25T17:40:24.232+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2061?focusedCommentId=18304",
+    "text": "Amendment - add shared/ read scope to consuming service roles\n\nThe role policies defined here scope Secrets Manager access to omh/<env>/<service>/*. A new shared/ scope was introduced (see ELS-2274 + the proposal on ELS-2060) for cross-service encryption-key material such as api.kmsKey, stored at omh/<env>/shared/api-kms-key.\n\nProblem: the current omh/<env>/<service>/* resource ARN does NOT match omh/<env>/shared/*, so the existing roles cannot read the shared secret. This blocks ELS-2066 (wire + validate) unless the policy is amended.\n\nRequired change - add a second statement per consuming role. Keep the existing service-scoped statement; add a read-only statement for the shared path (NOT a wildcard over all of shared/* unless the role genuinely needs every shared secret - grant the specific secret where possible):\n\n{\n  \"Sid\": \"ReadSharedKmsKey\",\n  \"Effect\": \"Allow\",\n  \"Action\": [\"secretsmanager:GetSecretValue\", \"secretsmanager:DescribeSecret\"],\n  \"Resource\": \"arn:aws:secretsmanager:<region>:<acct>:secret:omh/<env>/shared/api-kms-key-*\"\n}\n\n- The kms:Decrypt statement (Resource * + kms:ViaService = secretsmanager.<region>.amazonaws.com) already covers decryption of the shared secret via the env CMK - no KMS change needed, only the Secrets Manager resource scope.\n- Note the trailing -* on the ARN: Secrets Manager appends a random 6-char suffix to the secret name.\n\nScope of this update:\n- Pilot now: add the statement to tl-push-api-<env> (Dev + Staging) so ELS-2066 can read omh/<env>/shared/api-kms-key.\n- Rollout later: when hotel-api / trigger-api move onto KMS (ELS-2073), add the same statement to their roles - one shared secret, multiple readers, each granted explicitly (least-privilege preserved).\n- Re-verify the existing isolation checks still hold: Dev role still cannot read Staging's shared/ secret (env prefix differs), and a role with no shared/ grant still gets AccessDenied.\n\nThis amends the completed role definitions; tracking as a comment per request (no new subtask). The shared/ scope itself still needs ratification on ELS-2060.\n@Dan please check this update"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2214",
+    "id": "18215",
+    "author": "Joo",
+    "created": "2026-06-25T11:28:38.421+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2214?focusedCommentId=18215",
+    "text": "1. Push data to google => Success\n[image]\n2. Open stop sell not active\nWhen i stop sell room or rate plan not push data to google\n@Daniel"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2214",
+    "id": "18257",
+    "author": "Daniel",
+    "created": "2026-06-25T15:23:34.010+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2214?focusedCommentId=18257",
+    "text": "@Joo\n[image]\n[image]\nFixed: OMH total room = Google total rooms"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2214",
+    "id": "18283",
+    "author": "Joo",
+    "created": "2026-06-25T16:20:09.893+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2214?focusedCommentId=18283",
+    "text": "@Daniel please help remove the rate plan for rooms that are closed for sale.\n[image]"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2214",
+    "id": "18308",
+    "author": "Daniel",
+    "created": "2026-06-25T17:49:27.020+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2214?focusedCommentId=18308",
+    "text": "@Joo fixed\n[image]"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2216",
+    "id": "18290",
+    "author": "Joo",
+    "created": "2026-06-25T16:46:18.280+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2216?focusedCommentId=18290",
+    "text": "@Daniel i setting checkin promotion day of week\n[image]\nbut body code not update:\n\n{\n  \"operation\": \"CHANGED\",\n  \"hotelCode\": 886622,\n  \"hotelName\": \"Seaesta Hotel Nha Trang\",\n  \"currency\": \"VND\",\n  \"promotions\": [\n    {\n      \"promotionSeq\": 640276, \"promotionCode\": \"PAC35933\", \"ratePlanSeq\": 794398, \"ratePlanCode\": \"PAA35449\", \"roomTypeSeq\": 1269008, \"roomTypeCode\": \"RAA11932\",\n      \"promotionName\": {\"en\": \"Test percen promotion\"},\n      \"promotionType\": \"PPT01\", \"status\": \"ACTIVE\",\n      \"discount\": {\"discountOrUpsell\": \"DISCOUNT\", \"rateOrAmount\": \"RATE\", \"value\": 10.0},\n      \"conditions\": {\"earlyBirdDays\": 1, \"lastMinuteDays\": null, \"minNights\": null, \"maxNights\": 99, \"nthNightFree\": null},\n      \"bookingDate\": {\"from\": \"2026-06-01 00:00:00\", \"to\": \"2099-06-30 23:59:59\", \"daysOfWeek\": {\"sun\": true, \"mon\": true, \"tue\": false, \"wed\": true, \"thu\": true, \"fri\": true, \"sat\": true}},\n      \"checkInDates\": [\n        {\"from\": \"2026-06-19\", \"to\": \"2026-07-01\", \"daysOfWeek\": {\"sun\": false, \"mon\": false, \"tue\": false, \"wed\": false, \"thu\": false, \"fri\": false, \"sat\": false}},\n        {\"from\": \"2026-07-04\", \"to\": \"2099-01-01\", \"daysOfWeek\": {\"sun\": false, \"mon\": false, \"tue\": false, \"wed\": false, \"thu\": false, \"fri\": false, \"sat\": false}}\n      ],\n      \"meals\": {\"planMealBasis\": true, \"mealBasisCode\": null, \"freeBreakfastCode\": null},\n      \"cancellationPolicy\": {\"isNonRefundable\": false, \"timeZone\": \"Asia/Ho_Chi_Minh\", \"penaltyBasis\": \"B\", \"policies\": [{\"daysBeforeCheckIn\": null, \"deadlineTime\": null, \"fromDateTime\": \"2026-06-24 00:00:00\", \"toDateTime\": \"2099-12-31 23:59:59\", \"rateOrAmount\": \"rate\", \"penaltyValue\": 100.0}]}\n    }\n  ],\n  \"channelId\": \"GoogleMetaSearch\"\n}"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2216",
+    "id": "18307",
+    "author": "Daniel",
+    "created": "2026-06-25T17:48:16.920+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2216?focusedCommentId=18307",
+    "text": "@Joo fixed\n[image]"
+  }
+]

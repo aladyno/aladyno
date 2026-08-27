@@ -1,0 +1,40 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<title>OMH/ELS Security Directive Scan</title>
+<style>
+ body{font-family:"Segoe UI",Roboto,Arial,sans-serif;color:#1e293b;line-height:1.55;background:#f8fafc;padding:20px}
+ .c{max-width:760px;margin:0 auto}
+ h1{font-size:1.25rem;color:#b91c1c;border-bottom:2px solid #fecaca;padding-bottom:8px}
+ .meta{color:#64748b;font-size:.9rem;margin-bottom:16px}
+ table{width:100%;border-collapse:collapse;font-size:.9rem}
+ th,td{text-align:left;padding:8px 10px;border-bottom:1px solid #e2e8f0;vertical-align:top}
+ th{background:#f1f5f9;color:#475569;text-transform:uppercase;font-size:.72rem;letter-spacing:.03em}
+ .sev{font-weight:700;border-radius:999px;padding:1px 9px;font-size:.72rem}
+ .CRITICAL{background:#fee2e2;color:#b91c1c}.HIGH{background:#ffedd5;color:#c2410c}
+ .MEDIUM{background:#fef9c3;color:#a16207}.LOW{background:#e0f2fe;color:#0369a1}
+ code{background:#f1f5f9;padding:1px 5px;border-radius:4px}
+ .rem{margin-top:18px;background:#fff7ed;border-left:4px solid #f97316;border-radius:8px;padding:12px 16px;font-size:.9rem}
+ .note{margin-top:12px;font-size:.82rem;color:#64748b}
+ a{color:#1d4ed8}
+</style></head>
+<body data-report="sec-directive-scan" data-date="2026-07-01">
+<div class="c">
+ <h1>&#9888;&#65039; Security Directive &#8212; Jira exposure scan</h1>
+ <div class="meta">Window: 2026-06-30T09:10:02+07:00 &#8594; 2026-07-01T09:10:05+07:00 &#183; Projects: OMH, ELS &#183; Items scanned: 87 &#183; Findings: 1</div>
+ <table>
+  <thead><tr><th>Sev</th><th>Issue</th><th>Type</th><th>Author</th><th>Category (directive)</th><th>Masked excerpt</th></tr></thead>
+  <tbody>
+   <tr><td><span class="sev HIGH">HIGH</span></td>
+       <td><a href="https://ohmyjira.atlassian.net/browse/OMH-702">OMH-702</a></td><td>comment</td><td>withheld (issue creator: Joseph)</td>
+       <td>Secret in Jira comment &#8212; blocked by API secret guard <small>(&#167;2/&#167;11)</small></td><td><code>(withheld &#8212; value not retrievable via API)</code></td></tr>
+  </tbody>
+ </table>
+ <div class="note">
+  <b>Why this is flagged:</b> The Atlassian API refused to return OMH-702's content via both <code>getJiraIssue</code> and <code>searchJiraIssuesUsingJql</code>, returning &#8220;a secret is being returned by the tool.&#8221; The issue <b>description is clean</b>; the secret sits in a <b>comment</b> (new activity 2026-06-30 17:37 KST, within scan window). The value is deliberately not retrieved, so no masked excerpt is available &#8212; <b>needs human confirmation</b>; treat as potentially CRITICAL until verified. Open the issue directly in Jira to inspect and remediate.
+ </div>
+ <div class="rem">
+  <b>Required handling (directive &#167;3):</b> report to Tech Lead + DevOps/Security owner &#8594;
+  immediately revoke/rotate the affected secret &#8594; review related credentials with the same privileges &#8594;
+  check Git history, CI/CD &amp; deployment logs and document-sharing history &#8594; register follow-up to prevent recurrence.
+  <b>Never</b> reply with the secret value itself (&#167;11).
+ </div>
+</div></body></html>

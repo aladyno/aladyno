@@ -1,0 +1,119 @@
+[
+  {
+    "type": "comment",
+    "key": "ELS-1716",
+    "id": "18252",
+    "author": "Tom",
+    "created": "2026-06-25T14:05:54.978+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1716?focusedCommentId=18252",
+    "text": "@Tan này hình như lỗi ở chỗ ghi log anh, nên sẽ không bị ảnh hưởng"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1716",
+    "id": "18256",
+    "author": "Tan",
+    "created": "2026-06-25T15:20:53.031+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1716?focusedCommentId=18256",
+    "text": "@Tom ý anh là fix luôn cho nó sạch log"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2097",
+    "id": "18239",
+    "author": "Tan",
+    "created": "2026-06-25T13:02:06.247+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2097?focusedCommentId=18239",
+    "text": "@Holden please check again on DEV, thanks!"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2097",
+    "id": "18244",
+    "author": "Holden",
+    "created": "2026-06-25T13:09:28.382+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2097?focusedCommentId=18244",
+    "text": "@Tan retested new issue => Passed"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1556",
+    "id": "18250",
+    "author": "Tan",
+    "created": "2026-06-25T14:04:17.821+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1556?focusedCommentId=18250",
+    "text": "@Joseph @Vicky @Dang Minh Duc (Ben)\n\nI have attached a file containing the old and new hotel codes."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2020",
+    "id": "18233",
+    "author": "Tom",
+    "created": "2026-06-25T12:32:57.441+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2020?focusedCommentId=18233",
+    "text": "Dear @Tracy2 , i have deploy on PROD. Please help me check again"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2020",
+    "id": "18235",
+    "author": "Tracy2",
+    "created": "2026-06-25T12:41:21.378+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2020?focusedCommentId=18235",
+    "text": "@Tom\n\nBefore\n\nAfter add permission & relog in > editor button appear & allow to edit"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-658",
+    "id": "18231",
+    "author": "Harry",
+    "created": "2026-06-25T12:20:23.652+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-658?focusedCommentId=18231",
+    "text": "@Justin\n\nI has reviewed"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2232",
+    "id": "18221",
+    "author": "Tom",
+    "created": "2026-06-25T11:49:30.444+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2232?focusedCommentId=18221",
+    "text": "@Tracy2 dưới dev thì tầm 15 min~30min nha em, trên PROD có thể nhanh hơn (PROD thì 3-5min)"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2215",
+    "id": "18220",
+    "author": "Joo",
+    "created": "2026-06-25T11:39:04.034+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2215?focusedCommentId=18220",
+    "text": "@Daniel When i stop sell rate plan, not update to google"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2231",
+    "id": "18219",
+    "author": "Tracy2",
+    "created": "2026-06-25T11:36:17.192+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2231?focusedCommentId=18219",
+    "text": "Tested on DEV => Passed"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2230",
+    "id": "18218",
+    "author": "Tracy2",
+    "created": "2026-06-25T11:33:50.645+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2230?focusedCommentId=18218",
+    "text": "Tested on DEV => passed"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2229",
+    "id": "18217",
+    "author": "Tracy2",
+    "created": "2026-06-25T11:32:07.299+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2229?focusedCommentId=18217",
+    "text": "Tested on DEV => passed"
+  }
+]

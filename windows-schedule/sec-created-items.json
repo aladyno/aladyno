@@ -1,0 +1,272 @@
+[
+ {
+  "type": "subtask",
+  "key": "ELS-2167",
+  "id": "16467",
+  "author": "Tom",
+  "created": "2026-06-23T11:02:58.315+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2167",
+  "text": "Design and implement fix for [Modify] button to support adding share rates\nBased on the investigation, update the \\[Modify\\] button functionality so that users can add share rates to existing properties without needing to release and remap room types."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2166",
+  "id": "16466",
+  "author": "Tom",
+  "created": "2026-06-23T11:01:57.399+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2166",
+  "text": "Investigate root cause of [Modify] button malfunction when adding share rates\nAnalyze the current implementation of the \\[Modify\\] button to determine why it does not allow adding share rates to existing properties. Identify any UI or backend logic issues that prevent this functionality."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2165",
+  "id": "16463",
+  "author": "Tracy",
+  "created": "2026-06-22T19:44:31.743+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2165",
+  "text": "Verify promotion after changed \nCheck the system to confirm whether  the Special Promotion have been changed to Member Promotion for Cross Hotel Kyoto."
+ },
+ {
+  "type": "task",
+  "key": "ELS-2164",
+  "id": "16462",
+  "author": "Joseph",
+  "created": "2026-06-22T19:44:06.844+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2164",
+  "text": "[Deployment] Make a release Notes – Deployment [1.0/06232026]\n**Request**:  \n\\[Deployment\\] Make a release Notes – Deployment \\[1.0/06232026\\]"
+ },
+ {
+  "type": "task",
+  "key": "ELS-2163",
+  "id": "16461",
+  "author": "Tracy",
+  "created": "2026-06-22T19:24:29.063+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2163",
+  "text": "Change Room type: 1001824 - Lumiere Boutique Vy Da\n| **Hotel**   \n**Code** | **HotelName** | **Room Type SEQ** | **RoomType** | **RQ Date** |\n| --- | --- | --- | --- | --- |\n| **Existing** | **Modify** |\n| 1001824 | Lumiere Boutique Vy Da | 83428650 | Multiple Bed | Double | 22-Jun |\n| 83428577 | Multiple Bed | Double | 22-Jun |\n| 83428894 | Multiple Bed | Double | 22-Jun |"
+ },
+ {
+  "type": "task",
+  "key": "ELS-2162",
+  "id": "16460",
+  "author": "Tracy",
+  "created": "2026-06-22T19:23:12.965+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2162",
+  "text": "Change room type: 897734 - Annova Nha Trang Hotel\n| **Hotel**   \n**Code** | **HotelName** | **Room Type SEQ** | **RoomType** | **RQ Date** |\n| --- | --- | --- | --- | --- |\n| **Existing** | **Modify** |\n| 897734 | Annova Nha Trang Hotel | 122196 | Multiple Bed | Double | 22-Jun |\n| 122198 | Multiple Bed | Double | 22-Jun |"
+ },
+ {
+  "type": "task",
+  "key": "ELS-2161",
+  "id": "16459",
+  "author": "Tracy",
+  "created": "2026-06-22T19:14:10.404+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2161",
+  "text": "Change date Request - K26060310389H01\nDear Team, \n\nDate change request\n\nK26060310389H01//SOTETSU GRAND FRESA TAKADANOBABA\n\nPlease kindly support us to amend the check-out date of this booking:\n\nOriginal: 2026-06-17 \\~ 2026-06-24  \n**New: 2026-06-17 \\~ 2026-06-20** \n\nReason: The hotel has agreed to cancel the last 4 nights of this booking free of charge and requested the new dates be reflected in our system. AGT has confirmed the amendment accordingly.\n\nThank you!\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=bee0a28f-5d5d-46a1-be8f-331dc98b96af&&collection=&height=173&occurrenceKey=null&width=377&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)"
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2160",
+  "id": "16458",
+  "author": "Tom",
+  "created": "2026-06-22T19:09:10.776+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2160",
+  "text": "Optimize Backend Queries and Data Retrieval\nReview and refactor dashboard-related backend queries. Add or improve database indexes, reduce unnecessary data retrieval, and optimize aggregation/reporting queries to improve efficiency."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2159",
+  "id": "16457",
+  "author": "Calvin",
+  "created": "2026-06-22T19:08:50.968+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2159",
+  "text": "[Deployment] Make a release Notes – Deployment [1.0/06242026]\n# Release Notes — Redis Access-Control Cluster Migration  \n\n| Field | Detail |\n| --- | --- |\n| **Deployment date** | _24/06/2026_ |\n| **Deployed by** | Calvin, Joseph |\n\n## Services to deploy:\n\n* Initialize SELLER_COMP_KEY:\\* key\n* Initialize ratelimiter:\\* key\n* hotel-api\n* channel-api\n* trigger-api\n* admin-api\n* ohmytrip-api\n* ohmyhotel-api\n\n## Tasks\n\n<custom data-type=\"smartlink\" data-id=\"id-0\">https://ohmyjira.atlassian.net/browse/ELS-1945</custom>"
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2158",
+  "id": "16456",
+  "author": "Tom",
+  "created": "2026-06-22T19:08:30.324+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2158",
+  "text": "Regression Testing for Dashboard Functionality\nPerform comprehensive regression testing to ensure that no functional regressions have occurred as a result of the performance optimizations."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2157",
+  "id": "16453",
+  "author": "Tracy",
+  "created": "2026-06-22T18:54:52.397+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2157",
+  "text": "Verify and update booking date for first line as per AC team confirmation\nReview the first booking line for Pandanus Resort and update the booking date to 2026-02-10, as confirmed by the AC team, ensuring all records are consistent and accurate."
+ },
+ {
+  "type": "task",
+  "key": "ELS-2156",
+  "id": "16451",
+  "author": "Tracy",
+  "created": "2026-06-22T18:00:44.310+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2156",
+  "text": "Request to change promotion category\nDear Team  \nRegarding, 327807 - Cross Hotel Kyoto  \nPlease change the promotion category.  \nThe target promotion is attached.\n\n   \n\\[Requested Change\\]  \nSpecial Promotion → Member Promotion  \nThat's all.  \nPlease feel free to contact us if you have any further questions.  \nThanks & Best Regards"
+ },
+ {
+  "type": "task",
+  "key": "ELS-2155",
+  "id": "16450",
+  "author": "Joseph",
+  "created": "2026-06-22T17:54:11.022+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2155",
+  "text": "Development of a Field for Entering Customer Contact Information\n\\[Mr. Hose Request\\]\n\n\\[Development of a Field for Entering Customer Contact Information\\]\n\nDear team,\n\nIt has been raised again that customer contact information is currently being captured as a request, which raises concerns about privacy violations when sending the reservation sheet to the hotel.\n\nTherefore, we would like to request the development of a separate field where customer contact information can be entered securely.\n\nThank you."
+ },
+ {
+  "type": "task",
+  "key": "ELS-2154",
+  "id": "16449",
+  "author": "Tracy",
+  "created": "2026-06-22T17:53:14.650+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2154",
+  "text": "Request to Amend the Buying Rate - S26062010280H01\n\\[Helen RQ\\]\n\nS26062010280H01 - JK Blossom Hotel  \n  \nPlease support to change data as below:  \n  \nV Payment: Change to Not Paid  \nVendor Add Amt: Change to 75,000  \nVendor Sum Amt: Change to 407,775  \nVendor Balance: Change to 407,775  \nVendor Revenue Amt: -60,322  \nBilling Revenue: -6,411\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=bb085103-17a8-4455-bbe6-1c574fe7a76b&&collection=&height=727&occurrenceKey=null&width=1792&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\nReason: Due to a wrong mapping issue, We will first cover the additional charge for this booking and then charge the agent accordingly. However, since the amount has already been charged once and then cancelled, we are unable to modify the payment amount.  \nTherefore, we kindly ask for your support in adjusting the buying rate for this booking. Thank you  \nThe total amount is 75,000won. ( 25,000 x 3)\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=73c82902-3a9c-4b70-9bc2-bcbf61a6a8a5&&collection=&height=164&occurrenceKey=null&width=1260&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)"
+ },
+ {
+  "type": "task",
+  "key": "ELS-2153",
+  "id": "16448",
+  "author": "Tracy",
+  "created": "2026-06-22T17:42:34.203+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2153",
+  "text": "[Request] Change the status of billing no. 769578\nThis billing was paid on 6/19 but the status is non-payment now. Please change the status to full-payment.  \n  \nBilling  \nPaid amount recorded but why the status of billing is Non-Payment. Please investigate and update data.\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=5203196f-e90c-4a00-a6bd-aa2fc28e5f58&&collection=&height=310&occurrenceKey=null&width=1680&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)"
+ },
+ {
+  "type": "task",
+  "key": "ELS-2152",
+  "id": "16447",
+  "author": "Tracy",
+  "created": "2026-06-22T17:37:10.305+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2152",
+  "text": "Check email sending error: 159571 - Wyndham Legend Halong Hotel\nhiện tại có email gửi được Booking, nhưng không gửi được VCC & ngược lại. Trường hợp này đang xảy ra ở nhiều booking, gần nhất là Booking K26062210831H01// Wyndham Legend Halong Hotel. \n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=499860ee-9016-4523-b011-62c09712f98f&&collection=&height=309&occurrenceKey=null&width=864&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)"
+ },
+ {
+  "type": "task",
+  "key": "ELS-2151",
+  "id": "16446",
+  "author": "Tracy",
+  "created": "2026-06-22T17:33:54.449+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2151",
+  "text": "Promotion removal request - 388184 - Shinagawa Prince Hotel N Tower\nDear Team,\n\n388184 - Shinagawa Prince Hotel N Tower\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=2df122f8-af89-44ec-aac2-80d58cad4f0c&&collection=&height=null&occurrenceKey=null&width=null&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)We would like to request the deletion of Promotions that have never generated any reservations.\n\nThe plan codes are attached for your reference.\n\nThank you for your assistance.\n\nBest regards,\n\nIf you have any questions, please feel free to contact us at @Ham Haeun."
+ },
+ {
+  "type": "task",
+  "key": "ELS-2150",
+  "id": "16444",
+  "author": "Tracy",
+  "created": "2026-06-22T17:25:47.323+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2150",
+  "text": "Flow due to CMS switching\nDear Team  \n **KOKO HOTEL Osaka Shinsaibashi**\n\n‌\n\nThis hotel's CMS will be changed from TL-Lincoln to Temairazu.\n\nAfter the migration is completed, cancellation notifications for reservations made through TL-Lincoln will need to be sent to the hotel's email address.\n\nWe would like to confirm the following:\n\n1. How can we continue using the same room types currently configured in TL-Lincoln within Temairazu?\n2. After completing the setup described in item 1, how can we configure cancellation notifications for existing TL-Lincoln reservations to be sent by email through the original TL-Lincoln system?\n\nWe would appreciate your guidance on the above points.\n\nThank you."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2149",
+  "id": "16443",
+  "author": "Tracy2",
+  "created": "2026-06-22T17:05:38.041+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2149",
+  "text": "Execute manual QA testing for image upload and sorting\nPerform manual QA testing based on the test plan to verify that image upload, rearrangement, and saving work as expected in the Content section. Document any issues found."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2148",
+  "id": "16442",
+  "author": "Calvin",
+  "created": "2026-06-22T16:52:28.998+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2148",
+  "text": "Pre-deployment Verification and Post-deployment monitoring for Access-Control Redis Cluster Migration\n**Objective**  \nTrack the remaining tasks and verification steps required before the deployment and post-deployment scheduled for Wednesday (24/06)  \n  \n**A/ Pre-deployment Checklist:**\n\n* Connect to the new access-control PROD cluster from the local environment (via HAProxy).\n* Initialize the required SELLER_COMP_KEY data in the new cluster.\n* Initialize the required rateLimiter data in the new cluster.\n* Verify search availability for the IT channel from the local environment.\n* Confirm that the application can successfully connect to the new cluster.\n* Re-initialize the required data again before the deployment on Wednesday.  \n\n**Notes**\n\n* This verification is only intended to confirm connectivity and basic setup.\n* No stress testing will be performed.\n* No login session testing will be performed.\n* Dual-write and fallback will remain enabled during the Wednesday deployment.\n* After the deployment is confirmed to be stable, the dual-write implementation will be removed in a subsequent deployment, and fallback will be disabled via a configuration flag change.\n\n**B/ Post-deployment monitoring:**  \n  \n**1. Open API (high priority)**  \n**Checks:**  \n\\- Confirm traffic reaches hotel-api; responses HTTP 200 for healthy paths (no mass 4xx/5xx).  \n\\- Run PROD search tests for all sellers.  \n**Pass criteria**:  \n\\- No sustained increase in `E00901`, `error.api-key.isEmpty`, `error.channel.signature`, `error.flight.affiliate.unregistered`.  \n**Issue occurred if**:  \n\\- Any critical seller cannot authenticate (100% fail on search)  \n\\- Mass HTTP 5xx on hotel-api Open API routes.  \n  \n**2.** **Rate limiting (QPS)**  \n**Checks**:  \n\\- Sellers with QPS > 0: limit still enforced  \n\\- Sellers with QPS = 0: disabled ratelimit\n\n**Pass criteria**:  \n\\- Known limited sellers still rate-limited.\n\n**Issue occurred if**:  \n\\- `rateLimiter:*` keys missing on new cluster, so QPS enforcement absent for sellers that should be limited (silent fail-open).\n\n**3. Sessions - B2C/Admin/Partner**  \n**Checks:**  \n\\- Fresh login **→** representative authenticated API calls succeed.  \n\\- Logout **→** subsequent calls fail with session expired / access denied.\n\n**Expected behavior:**  \n\\- Users logged in before deploy: may need re-login  \n\\- Users logging in after deploy: must work  \n**Pass criteria:**  \n\\- New logins succeed; logout invalidates session; representative authenticated API calls succeed\n\n**Issue occurred if**  \n\\- session expired spike  \n\\- Fresh login succeeds but immediate API calls fail session check.\n\n**4. Logs & metrics (1-30 min after deploy)**  \n**AWS / infrastructure (access-control cluster):**  \n\\- Network, CPU, memory, connections.\n\n  \n**Application logs**:  \n\\- `[SELLER_COMP_KEY] ... falling back to legacy cluster` : new cluster miss/error → fallback active  \n\\- `[Redis CB] AccessControl ... get failed `: New cluster timeout/error (300ms app timeout)\n\n  \n**How to determine fallback is working**  \n\\- Fallback is working if: new-cluster read fails/misses and request still succeeds and log shows `falling back to legacy cluster` without Open API auth errors.  \n\\- Fallback is a problem if: fallback logs are frequent/continuous (migration incomplete: keys not on new cluster, wrong endpoint, timeout) or fallback occurs and auth still fails.\n\n  \n**Pass criteria (monitoring window)**  \n\\- fallback logs near zero after initial warm-up\n\n  \n**Issue occurred if**   \n\\- Fallback rate > 5% of auth reads occurs continuously for 10 minutes.  \n\\- Session expired spike  \n  \n**5. After deployment is stable ( planned: next release 25/6 or 30/6)**  \n\\- Remove dual-write  \n\\- Remove fall-back  \n  \n**6. Rollback**  \n**When to rollback**  \n\\- Any Issue occurred criteria met and not resolved within 10 minutes.\n\n**Rollback steps:**  \n\\- Revert the deploy of web-api, hotel-api, trigger-api to the previous release.  \n\\- After rollback need verify:  \n + Open API auth works (legacy paths).  \n + Fresh login/session works.  \n + Error rates return to baseline.  \n + Document incident: time, symptoms, logs, whether a new cluster or deploy order caused it."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2147",
+  "id": "16438",
+  "author": "Roy",
+  "created": "2026-06-22T15:25:10.766+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2147",
+  "text": "Add the authentication-related PROD cluster to AWS\n## Purpose\n\nCreate the Valkey cluster for the access-control workload that will be used in the production environment.\n\n## Specification\n\n* Cluster name: `prod-access-control`\n* Engine: Valkey 9.0.0\n* Cluster mode: disabled\n* Shards: 1\n* Node type: `cache.m7g.large` (vCPU: 2, Memory: 6.38 GiB)\n* Nodes: 2\n* Multi-AZ: disabled\n* Auto failover: enabled\n* Parameter group: `default.valkey9`\n* Port: `6379`\n* Encryption at rest: enabled\n* Encryption in transit: enabled\n* Transit encryption mode: default\n* Security Group: inbound allowed only from PROD app servers and `prod-proxy`\n* Slow logs: enabled\n\n    * Destination: CloudWatch Logs\n    * Log format: JSON\n    * Log group: `redis/access-control`\n    * Status: Active\n    \n* Engine logs: enabled\n\n    * Destination: CloudWatch Logs\n    * Log format: JSON\n    * Log group: `redis/access-control`\n    * Status: Active\n    \n\n## **Done criteria**\n\n- [x] Registered the prod-access-control endpoint on prod-proxy (haproxy) and verified the connection via RedisInsight\n- [x] Verify CloudWatch metrics"
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2146",
+  "id": "16437",
+  "author": "Lexi",
+  "created": "2026-06-22T15:22:38.564+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2146",
+  "text": "Align rounding rules to HALF_UP across B2C, B2B, and Channel API (Policy Document Ticket)\n# \\[Final Policy\\] Unification of Amount Rounding Rules\n\n## 1. Decision\n\nThe amount rounding rule across all systems — B2C, B2B, and Channel API — is unified to **HALF_UP (round half up)**.\n\n* If the relevant decimal digit is 5 or above, round up; if below 5, round down.\n* The number of decimal places displayed differs by currency, but the rule of rounding at the next digit is applied identically to all currencies.\n\n| Type | Target currencies | Rounding behavior | Example |\n| --- | --- | --- | --- |\n| 0 decimal places | KRW, JPY, VND, IDR, THB, CNY, etc. | Round at the first decimal place to a whole number | KRW `5,692.4` → `5,692`, `5,692.5` → `5,693` |\n| 2 decimal places | USD, HKD, EUR, MMK, MYR, SGD, MOP, PHP | Round at the third decimal place to display two decimals | USD `2.513` → `2.51` |\n\n## 2. Scope of Application\n\n* Existing bookings are not changed (no retroactive application).\n* The rule applies only to **new bookings created after deployment**.\n\n## 3. Background\n\nPreviously, B2B / Channel API always used ROUND UP while B2C used HALF_UP, so the rules were inconsistent, causing small price mismatches in some booking details. In addition, admin settlement screens, settlement invoices, Profit-Share, and the dashboard handled truncation/integer processing differently per currency and module, which could cause a per-item difference of one minimum unit of the currency (KRW 1 won, USD/EUR etc. 0.01, JPY 1 yen) during booking-to-settlement reconciliation. To consolidate these into a single rule, the HALF_UP method is adopted.\n\n## 4. Approval and Review History\n\n* Sales team (Sophia, Aiden): Confirmed no external/channel impact (internal matter) and no need for retroactive application.\n* CEO & CTO: Approved the HALF_UP unification.\n* Accounting review (Pro): No accounting issues; no objection to the HALF_UP unification.\n* Dev team recommendation: Unify all systems on HALF_UP.\n\n## 5. Follow-up Work\n\nRework the rounding logic of all systems (B2C / B2B / Channel API) and the suspected mismatch points above (settlement, invoices, Profit-Share, dashboard, etc.) to the HALF_UP standard.\n\n---\n\n# \\[최종 정책\\] 금액 반올림 규칙 통일\n\n## 1. 결정 사항\n\nB2C · B2B · Channel API 전 시스템의 금액 반올림 규칙을 **반올림(HALF_UP)** 으로 통일한다.\n\n* 소수점 값이 5 이상이면 올림, 5 미만이면 내림\n* 통화별 표시 자릿수는 다르지만, 그 다음 자리에서 반올림한다는 규칙은 모든 통화에 동일하게 적용한다.\n\n| 구분 | 대상 통화 | 반올림 처리 | 예시 |\n| --- | --- | --- | --- |\n| 소수점 0자리 | KRW, JPY, VND, IDR, THB, CNY 등 | 소수점 첫째 자리에서 반올림해 정수로 확정 | KRW `5,692.4` → `5,692`, `5,692.5` → `5,693` |\n| 소수점 2자리 | USD, HKD, EUR, MMK, MYR, SGD, MOP, PHP | 소수점 셋째 자리에서 반올림해 둘째 자리까지 표시 | USD `2.513` → `2.51` |\n\n## 2. 적용 범위\n\n* 기존 예약 건은 변경하지 않는다(소급 적용 없음).\n* 배포 이후 생성되는 **신규 예약부터 적용**한다.\n\n## 3. 결정 배경\n\n기존에는 B2B / Channel API는 항상 올림(ROUND UP), B2C는 반올림(HALF_UP)을 사용해 규칙이 일치하지 않았고, 이로 인해 일부 예약 상세 내역에서 소액의 가격 불일치가 발생했다. 또한 어드민 정산 화면·정산 인보이스·Profit-Share·대시보드 등에서 통화/모듈별로 절삭·정수 처리 방식이 달라, 예약↔정산 대사 시 건당 해당 통화의 최소 단위 1단위(KRW 1원, USD·EUR 등 0.01, JPY 1엔)만큼 차이가 발생할 수 있었다. 이를 단일 규칙으로 통일하기 위해 반올림(HALF_UP) 방식을 채택한다.\n\n## 4. 승인 및 검토 이력\n\n* 세일즈팀(Sophia, Aiden): 외부·채널 측 영향 없음(내부 합의 사항), 소급 적용 불필요 확인\n* 대표님 · CTO: 반올림 통일안 승인 완료\n* 회계 검토(프로님): 회계상 문제없음, 반올림 통일안에 이견 없음\n* 개발팀 권고안: 전 시스템 HALF_UP 통일\n\n## 5. 후속 작업\n\n전 시스템(B2C / B2B / Channel API) 및 상기 불일치 의심 지점(정산·인보이스·Profit-Share·대시보드 등)의 반올림 로직을 HALF_UP 기준으로 정비한다."
+ },
+ {
+  "type": "task",
+  "key": "OMH-669",
+  "id": "16435",
+  "author": "Zia",
+  "created": "2026-06-22T14:09:53.978+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-669",
+  "text": "Event detail page - expired / non-existent handling\n**Background**\n\nEvent detail pages (`/event/{seq}`) are reachable via stale external links (e.g., influencer blog posts) pointing to expired or non-existent promotions. Today an invalid/non-existent SEQ shows a Notification alert _\"An unexpected error occurred. Please try again later.\"_ with a **\\[Confirm\\]** button, then redirects to the list on confirm.\n\n**GA4 impact**: This surfaced during our GA4 traffic-quality review. These stale/guessed links land users on instant-bounce error/detail pages (≈0 engagement), which inflate bounce on `/event/{seq}` landings and add low-quality noise to **Direct** and `(not set)` traffic — distorting landing-page and traffic-source reports. Replacing the error-alert dead-end with a clean redirect to the Promotion list consolidates these hits into one measurable destination and removes the misleading error pageviews from analytics.\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=ae876e67-571a-4dc6-8af2-e5f873f8758b&&collection=&height=1028&occurrenceKey=null&width=1686&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n---\n\n**Decision basis**\n\n* Compare **current datetime** with the promotion's **Event To (end datetime)**.\n* The `Use` flag and the Booking/Departure dates are **not** involved in this decision.\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=7b66382d-c7f1-48c2-b789-f4821690e539&&collection=&height=1030&occurrenceKey=null&width=1687&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n**Cases**\n\n| Case | Condition | Action |\n| --- | --- | --- |\n| Expired | `now > Event To` | Redirect to list (`/event`) |\n| Active / Upcoming | `now ≤ Event To` (includes future, where `now < Event From`) | Render normally — **even if** `Use = No` |\n| Non-existent SEQ | No record found | Redirect to list (`/event`) |\n\n**UX**\n\n* **No blocking alert / Confirm dialog.** Redirect immediately.\n* On the list page, show a **one-time toast** (auto-dismiss): _\"This promotion has ended.\"_ (localized — see strings).\n* This **replaces** the current _\"An unexpected error occurred. Please try again later.\"_ Notification alert + **\\[Confirm\\]** flow.\n\n**Notes**\n\n* **Datetime precision**: compare full datetime (Event To includes time, e.g., `2026-06-30 23:59`), not date only.\n* **Identical handling for expired and non-existent SEQ** — using the same response avoids revealing whether a given SEQ exists, mitigating the sequential-SEQ guessing concern (SEQ structure change handled separately).\n* User-facing copy uses **\"Promotion\"**; internal/system terms (`Event To`, `/event` route, admin \"Event Master Info\") are unchanged.\n\n---\n\n**Localized toast** (i18n key: `promotion.ended`)\n\n| Locale | String |\n| --- | --- |\n| ko | 종료된 기획전입니다. |\n| en | This promotion has ended. |\n| ja | このプロモーションは終了しました。 |\n| vi | Sự kiện đã kết thúc. |\n| zh | 该特别促销已结束 |"
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2145",
+  "id": "16434",
+  "author": "Tracy",
+  "created": "2026-06-22T13:58:44.273+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2145",
+  "text": "Verify payment method changes in production environment\nCheck and confirm that the payment method for all specified reservations has been successfully updated to Postpay/Cash in the production system, as requested by the hotel."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2144",
+  "id": "16433",
+  "author": "Tan",
+  "created": "2026-06-22T13:51:32.639+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2144",
+  "text": "Export hotel information fields from Ellis as per attachment\nExtract the specified fields (Hotelbeds hotel code, EMAIL, WEB (Homepage URL), ZIP CODE, Chain, Chain Brand) for the hotels listed in the provided attachment using Ellis system."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2143",
+  "id": "16431",
+  "author": "Harry",
+  "created": "2026-06-22T12:16:54.680+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2143",
+  "text": "Clone and adapt room list search API for Google Metasearch pricing\nCreate a clone of the existing room list search API, modifying it as needed to support Google Metasearch integration. Ensure the API can receive Google-specific parameters and return accurate room availability and pricing information for use in the landing page flow."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2142",
+  "id": "16430",
+  "author": "Holden",
+  "created": "2026-06-22T12:09:16.873+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2142",
+  "text": "Auto-save draft + reload restore (BR-044) not implemented; unsaved changes are lost on page reload\n**Environment:** DEV — hotel 1001908, Shared Rate 111974:1\n\n**Pre-condition:** Edit Override drawer open\n\n**Steps:**\n\n1. Edit a field (e.g. Rate Cap 25 → 30) — don't Apply Changes\n2. Wait \\~10–15s (auto-save interval)\n3. F5 reload\n4. Reopen Edit Override\n\n**Actual:** change is lost (Rate Cap back to 25); no \"restore draft?\" prompt; search/filter also not restored.\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=819e64e9-fb15-4540-b5d1-27a6c67770f5&&collection=&height=1032&occurrenceKey=null&width=1920&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n**Expected (BR-044):** unsaved changes auto-saved to localStorage every 10s; on reload a restore prompt appears / draft restored.\n\n**Notes:** Blocks TS-068 (draft restore → version re-fetch). In-memory staging within the same drawer session is fine; gap is the localStorage auto-save + restore-after-reload."
+ },
+ {
+  "type": "task",
+  "key": "ELS-2141",
+  "id": "16429",
+  "author": "Tracy",
+  "created": "2026-06-22T11:57:39.694+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2141",
+  "text": "Replace credential key for Huamao\nDear Team,  \n  \nAccording to GSM team, they created wrong type of Seller on ELLIS.  \n  \nPlease support to apply credential keys which have been created for Traders 300227 - Hainan huamao tourism consulting co. LTD into new Traders 200253 - Huamao (API)  \n  \nThank you"
+ },
+ {
+  "type": "subtask",
+  "key": "OMH-668",
+  "id": "16428",
+  "author": "Harry",
+  "created": "2026-06-22T11:41:22.746+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-668",
+  "text": "Update coupon validity period in system configuration\nModify the system configuration or database to extend the Hana Card Travel Bucket coupon validity period to 31 December 2026."
+ },
+ {
+  "type": "task",
+  "key": "OMH-667",
+  "id": "16427",
+  "author": "Joseph",
+  "created": "2026-06-22T11:40:17.665+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-667",
+  "text": "Hana Card Travel Bucket coupon extension period\nCould you please extend the validity period of the currently operating Hana Card Travel Bucket coupon to 31 December 2026?\n\nFor your reference, starting from 2027, a new discount coupon code will be used."
+ }
+]

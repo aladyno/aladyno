@@ -1,0 +1,245 @@
+[
+    {
+        "type":  "comment",
+        "key":  "OMH-680",
+        "id":  "18566",
+        "author":  "Lexi",
+        "created":  "2026-06-30T11:52:37.570+0900",
+        "url":  "https://ohmyjira.atlassian.net/browse/OMH-680",
+        "text":  "Dear@Mon , We\u0027re launching a new promotion tomorrow and will be sending out the KakaoTalk message for it, so I\u0027d really appreciate it if this issue could be prioritized and resolved as soon as possible. If any priority adjustments are needed, please let me know. Thank you…"
+    },
+    {
+        "type":  "comment",
+        "key":  "OMH-680",
+        "id":  "18568",
+        "author":  "Mon",
+        "created":  "2026-06-30T11:56:53.526+0900",
+        "url":  "https://ohmyjira.atlassian.net/browse/OMH-680",
+        "text":  "Hi @Lexi ,\n\nUnderstood, I will focus on this task first\n\nThank you for your information"
+    },
+    {
+        "type":  "comment",
+        "key":  "OMH-680",
+        "id":  "18597",
+        "author":  "Mon",
+        "created":  "2026-06-30T15:49:09.465+0900",
+        "url":  "https://ohmyjira.atlassian.net/browse/OMH-680",
+        "text":  "[Investigation \u0026 fix proposal]\n\nRoot cause\nOn iOS, KakaoTalk\u0027s in-app browser is a WKWebView, and iOS blocks Universal Links when triggered from inside another app\u0027s WKWebView. So links in Kakao messages stayed on the web page instead of opening the app. Android already works because it uses the Android intent:// scheme. (The iOS redirect path in our code was also left disabled.)\n\nChosen approach (frontend-only, no native/template change)\nInside the iOS Kakao in-app browser, hand the link off to the external browser (Safari) via KakaoTalk\u0027s openExternal scheme. Once in Safari, our existing Universal Link / AASA setup opens the installed app, and falls back to web/App Store when not installed. This avoids needing a new iOS custom URL scheme and avoids re-registering Kakao templates (the App Link \"AL\" button alternative).\n\nImplemented in apps/legacy-mobile/.../common/services/universal-link.service.ts (covers both message buttons and inline links; Android unchanged).\n\nRemaining dependency / risk\n\n* Behavior of kakaotalk://web/openExternal can vary by KakaoTalk version -\u003e must be verified on a real iOS device before closing.\n* Universal Link only fires on a domain in the app\u0027s Associated Domains — please confirm with the App team which domains (e.g. m.ohmyhotel.com, dev domain) are associated.\n* Promotional / Event (친구톡) messages are sent outside oh-api -\u003e need to confirm those links also route through a Universal-Link domain to be fully covered."
+    },
+    {
+        "type":  "comment",
+        "key":  "OMH-680",
+        "id":  "18601",
+        "author":  "Lexi",
+        "created":  "2026-06-30T16:28:12.745+0900",
+        "url":  "https://ohmyjira.atlassian.net/browse/OMH-680",
+        "text":  "@Mon Thanks for the detailed investigation. Let\u0027s go with your proposed approach (handing off to Safari via openExternal) for now — it avoids the Kakao template re-registration, which works better for our timeline. We can consider the AL button approach as a follow-up improvement later.\n\nOne question: how long do you expect the fix (including real-device verification) to take? We have a new promotion launching tomorrow and will be sending the KakaoTalk message for it, so timing matters. If you need any priority adjustments on your end, please let me know.\n\nAlso, please go ahead with the remaining checks you mentioned (Associated Domains confirmation with the App team, and whether the promotional/친구톡 message links route through a Universal-Link domain)."
+    },
+    {
+        "type":  "comment",
+        "key":  "OMH-680",
+        "id":  "18609",
+        "author":  "Mon",
+        "created":  "2026-06-30T17:11:08.442+0900",
+        "url":  "https://ohmyjira.atlassian.net/browse/OMH-680",
+        "text":  "Hi @Lexi ,\n\nI\u0027m finish test on Dev env, now I come to PR for Production\n\nPlease wait after my finally test on that environment\n\nThank you"
+    },
+    {
+        "type":  "comment",
+        "key":  "OMH-680",
+        "id":  "18611",
+        "author":  "Lexi",
+        "created":  "2026-06-30T17:17:46.991+0900",
+        "url":  "https://ohmyjira.atlassian.net/browse/OMH-680",
+        "text":  "@Mon Thanks for the update. Please let me know once it\u0027s deployed to Production (including your final testing). Thank you."
+    },
+    {
+        "type":  "comment",
+        "key":  "OMH-680",
+        "id":  "18621",
+        "author":  "Mon",
+        "created":  "2026-06-30T18:03:27.313+0900",
+        "url":  "https://ohmyjira.atlassian.net/browse/OMH-680",
+        "text":  "Hi @Lexi ,\n\nI wanted to kindly confirm with you whether this task is scheduled for Production deployment today (2026-06-30).\n\nOnce I have your go-ahead, I\u0027ll proceed with the next steps.\n\nThank you very much for your support!"
+    },
+    {
+        "type":  "comment",
+        "key":  "OMH-680",
+        "id":  "18629",
+        "author":  "Lexi",
+        "created":  "2026-07-01T10:17:30.430+0900",
+        "url":  "https://ohmyjira.atlassian.net/browse/OMH-680",
+        "text":  "Dear @Mon, This task has received CTO\u0027s approval to be deployed today (July 1). Please proceed with the next steps. Thank you!"
+    },
+    {
+        "type":  "comment",
+        "key":  "OMH-680",
+        "id":  "18632",
+        "author":  "Mon",
+        "created":  "2026-07-01T10:38:32.691+0900",
+        "url":  "https://ohmyjira.atlassian.net/browse/OMH-680",
+        "text":  "@Lexi Thank you"
+    },
+    {
+        "type":  "comment",
+        "key":  "OMH-703",
+        "id":  "18627",
+        "author":  "Dan",
+        "created":  "2026-06-30T19:27:52.142+0900",
+        "url":  "https://ohmyjira.atlassian.net/browse/OMH-703",
+        "text":  "@Tracy2 Please verify this on staging"
+    },
+    {
+        "type":  "comment",
+        "key":  "OMH-703",
+        "id":  "18631",
+        "author":  "Tracy2",
+        "created":  "2026-07-01T10:27:13.254+0900",
+        "url":  "https://ohmyjira.atlassian.net/browse/OMH-703",
+        "text":  "@Holden related to API, please support me to test this task. Thank you!"
+    },
+    {
+        "type":  "comment",
+        "key":  "ELS-1919",
+        "id":  "18628",
+        "author":  "Claire",
+        "created":  "2026-06-30T19:35:51.007+0900",
+        "url":  "https://ohmyjira.atlassian.net/browse/ELS-1919",
+        "text":  "Dear a @Joseph , a @Tom \n\nI sent the specification and HTML v1.0, I will update the section 10 \u0026 14 on tomorrow\n\ncc c @Tracy"
+    },
+    {
+        "type":  "comment",
+        "key":  "ELS-1976",
+        "id":  "18619",
+        "author":  "Dang Minh Duc (Ben)",
+        "created":  "2026-06-30T17:41:20.474+0900",
+        "url":  "https://ohmyjira.atlassian.net/browse/ELS-1976",
+        "text":  "Dear a@Dan\n\nTVLK only provide us the list of prebook error. Please check it."
+    },
+    {
+        "type":  "comment",
+        "key":  "ELS-2224",
+        "id":  "18617",
+        "author":  "Tracy2",
+        "created":  "2026-06-30T17:36:40.774+0900",
+        "url":  "https://ohmyjira.atlassian.net/browse/ELS-2224",
+        "text":  "@Tan tested done on STG"
+    },
+    {
+        "type":  "comment",
+        "key":  "ELS-2120",
+        "id":  "18624",
+        "author":  "Tracy2",
+        "created":  "2026-06-30T19:03:18.193+0900",
+        "url":  "https://ohmyjira.atlassian.net/browse/ELS-2120",
+        "text":  "P0 — Must test (B2C, user-visible prices). Table of screens 1-10 with checks (Homepage Hotel Recommendation, Event/Promotion banner, Hotel Search Result list, Hotel Detail page, Room List page, Pre-checkout, Checkout page, Booking Detail/Voucher, Cancel popup, Cancel Policy popup) with notes on which were tested on ELS-1308 or lack DEV data. Activity BK page: Amount 125,000 cancellation policy 23.45% =\u003e 29.312,5 =\u003e rounding to 29.313 passed; Amount 125,131 =\u003e 29.343,2195 =\u003e 29.343 passed. Activity Search list 125,129.12 =\u003e 125,129 PASSED. Activity Search Detail PASSED. Rent(car)/Flight search list: rates from third-party all whole numbers, cannot test rounding. Flight Promotion banner: system doesn\u0027t have this part. Event/Promotion detail page: rate input needs whole numbers. B2B partner channels (API only, not UI) - cannot test from QA side."
+    },
+    {
+        "type":  "comment",
+        "key":  "ELS-2025",
+        "id":  "18613",
+        "author":  "Daniel",
+        "created":  "2026-06-30T17:31:30.115+0900",
+        "url":  "https://ohmyjira.atlassian.net/browse/ELS-2025",
+        "text":  "Dear @Justin ,\nFollowing the Phase 0 survey of the ELLIS Admin read APIs, here are the findings and decisions for the six open items.\n\n1. Does an OpenAPI/Swagger spec exist? Effectively no — not for the APIs in our scope. A springdoc/Swagger setup exists, but it only covers a small number of public channel-facing APIs, not the internal admin read APIs the MCP server needs. So for the admin endpoints there is no usable auto-generated contract; they will need to be documented manually.\n\n2. API auth method (API Key / JWT / OAuth)? ELLIS does not use OAuth. The admin APIs authenticate via a session token passed in the userToken header (server-side session). Implication: the MCP server must provide its own auth at the boundary and call ELLIS using a dedicated read-only credential, rather than relying on a standard OAuth/JWT flow from ELLIS.\n\n3. Is there a staging/dev environment (no direct PROD)? Yes — dev, test, and local environments are available. Phase 0 validation will target these; no direct PROD access.\n\n4. Response format, pagination, rate limits? Response format: every response is wrapped in BaseDtoV2Rs (succeedYn flag + errorCode + result). The MCP layer must unwrap result and map succeedYn/errorCode to tool errors (business failures still return HTTP 200). Pagination: list endpoints paginate by limit/offset and return TOTAL_COUNT. Rate limit: QPS rate limiting exists only for the partner flow, not for the admin flow =\u003e MCP server must enforce its own rate limiting / output caps.\n\n5. Source endpoints for the 4 v1 tools. list_channels/get_channel: POST /admin/user/comp/seller; get_settlement: POST /admin/settlement/seller; get_mapping_status: POST /admin/hotel/code-mapping; margin (channel detail): POST /admin/hotel/markup/item. All POST with request body, not REST GET. Detailed request/response field mapping per tool still to be confirmed in tool stories (ELS-2032-2035).\n\n6. Does ELLIS support per-user / row-level authorization? No. ELLIS does not enforce per-user or row-level authorization for internal admin staff. =\u003e The entire RBAC layer must be built at the MCP level; it cannot be delegated to ELLIS. This makes ELS-2029 heavier in scope than a simple pass-through.\n\nSummary: Items 1-4 characterize API behavior, item 5 maps tools to source endpoints, item 6 defines the authorization gap. These close the Phase 0 pre-requisites and unblock the scaffold (ELS-2026), RBAC (ELS-2029), and the four tool stories (ELS-2032-2035).\n\nOne open point: what format and level of detail would you like for the API inventory (e.g. per endpoint: request/response fields, source service/table, sample payload)? Best regards, Daniel"
+    },
+    {
+        "type":  "comment",
+        "key":  "ELS-2025",
+        "id":  "18622",
+        "author":  "Justin",
+        "created":  "2026-06-30T18:25:39.788+0900",
+        "url":  "https://ohmyjira.atlassian.net/browse/ELS-2025",
+        "text":  "@Daniel, First, thank you for the thorough survey — having all six items answered closes the Phase 0 gates. You\u0027re the PIC on this, so treat everything below as a starting point rather than a fixed spec: if you see a better fit or better tool design, propose it and push back.\n\nPlease structure the inventory per MCP tool (the 4 v1 tools), not per endpoint, so each entry drops straight into a Spring AI @Tool definition. Three blocks per tool:\n\nA. MCP contract — follows the MCP standard (2025-11-25 Tool specification): name/title/description, inputSchema (JSON Schema), outputSchema (JSON Schema), annotations. Map ELLIS field names+types onto the drafted input/output sets (ELS-2032-2035). For annotations suggest readOnlyHint=true, idempotentHint=true, openWorldHint=false as defaults; annotations are hints not enforcement — real read-only/RBAC enforcement is server-side via read-only scoped credential + ELS-2029.\n\nB. ELLIS source binding (core): endpoint (method+path) and request body; response DTO -\u003e output fields after unwrapping BaseDtoV2Rs; source service/table; pagination (limit/offset/TOTAL_COUNT); error mapping (succeedYn=false/errorCode -\u003e tool error isError); one sample request + one redacted sample response.\n\nC. Governance (first-cut proposal as PIC, finalized in ELS-2029 RBAC / ELS-2030 audit-masking / ELS-2031 PII-rate-caps): which fields are PII/sensitive + suggested masking; draft RBAC scope per tool (e.g. get_settlement=finance-only, KR/VN separation) and where MCP-side filtering is needed; observed result sizes and suggested output/rate caps.\n\nField-level detail required for input/output. Two things to capture: (1) list_channels and get_channel share POST /admin/user/comp/seller — split list vs detail projection; (2) get_channel composes two endpoints (seller detail + /admin/hotel/markup/item for margin) — show how they combine. Format: no Confluence — write as Markdown (.md) attached to ELS-2025. Best regards, Justin"
+    },
+    {
+        "type":  "comment",
+        "key":  "ELS-2025",
+        "id":  "18625",
+        "author":  "Daniel",
+        "created":  "2026-06-30T19:15:23.514+0900",
+        "url":  "https://ohmyjira.atlassian.net/browse/ELS-2025",
+        "text":  "Dear @Justin , Thank you — this is very clear, and I\u0027ve got all of it. As PIC I\u0027ll follow the structure exactly as you laid out: Inventory per MCP tool (4 v1 tools), three blocks each — A. MCP contract (MCP 2025-11-25 spec: name/title/description, inputSchema, outputSchema, annotations readOnlyHint=true, idempotentHint=true, openWorldHint=false), B. ELLIS source binding (endpoint, request/response field mapping after unwrapping BaseDtoV2Rs, source service/table, pagination, error mapping, one sample request + redacted response), C. Governance (PII/masking, draft RBAC scope per tool, suggested output/rate caps). I\u0027ll split list_channels vs get_channel as distinct list/detail projections, and show how get_channel composes the two endpoints. Field-level JSON Schema for input/output, only exposed fields plus source mapping. Delivered as Markdown .md attached to ELS-2025 so ELS-2032-2035 can reference it. For block C I\u0027ll give a first-cut proposal, finalize together in ELS-2029/2030/2031. Best regards, Daniel"
+    },
+    {
+        "type":  "comment",
+        "key":  "OMH-698",
+        "id":  "18564",
+        "author":  "Justin",
+        "created":  "2026-06-30T11:52:13.091+0900",
+        "url":  "https://ohmyjira.atlassian.net/browse/OMH-698",
+        "text":  "@Harry — prioritization ahead of Phase 1 (OMH-456). Phase 0 foundation tasks (OMH-659/661/662/653/664) are now in review, so OMH-456 (static/CMS page flips) is the next epic to start. OMH-698 is the gating prerequisite for the first production page flip. Current state: none of the deliverables have landed yet — no infra/cloudfront/get-distribution-config.json, no v2-routes.json, no drift-check CI job, no route-flip.md runbook. Until the two v2 behaviors exist (/build/* immutable + SSR document no-cache with {hostname}_userToken forwarded), the first flip carries the cross-user-cache and silent-logout-loop failure modes. I\u0027ve bumped this from Medium to High since it\u0027s now on the Phase 1 critical path. Could we prioritize landing at least the v2 behavior split (v2-routes.json) + the current-state mirror before Phase 1 kicks off? OMH-697 (ECR + Fargate) is the paired prereq — the flip needs a live v2 origin to point at, so the two should land together. Happy to pair on the behavior manifest."
+    },
+    {
+        "type":  "comment",
+        "key":  "OMH-698",
+        "id":  "18576",
+        "author":  "Justin",
+        "created":  "2026-06-30T13:39:17.031+0900",
+        "url":  "https://ohmyjira.atlassian.net/browse/OMH-698",
+        "text":  "@Harry — heads-up + a starting branch for this ticket. 1) frontend-migration-plugin is now 0.7.0, which adds a per-app flipMechanism (nginx | cloudfront) to the plugin config. I\u0027ve updated .claude/frontend-migration-plugin.json accordingly: pc/mobile -\u003e cloudfront (manifest infra/cloudfront/v2-routes.json), hana -\u003e nginx, per the v2-migration-infra.md 11.4 per-host flip-point table. 2) Starting branch pushed: OMH-698-cloudfront-codification (off master). It scaffolds: infra/cloudfront/v2-routes.json — version-controlled v2 behavior manifest (host-keyed www/m): /build/* immutable + the SSR-document * no-cache + {hostname}_userToken cookie-forward behaviors; per-page flips appended by fm-route. infra/cloudfront/README.md — charter, behavior table, governance: fm-route/CI never push to AWS (detect/PR only); applying the manifest to the live distribution is the deployment owner\u0027s step (OMH-502). Please do the remaining OMH-698 work on this branch. Still open: capture the live get-distribution-config.json (needs AWS access); the read-only drift-check CI job; docs/migration/runbooks/route-flip.md; confirm whether www and m share one CloudFront distribution or two. No PR opened yet."
+    },
+    {
+        "type":  "comment",
+        "key":  "OMH-698",
+        "id":  "18623",
+        "author":  "Harry",
+        "created":  "2026-06-30T19:00:21.957+0900",
+        "url":  "https://ohmyjira.atlassian.net/browse/OMH-698",
+        "text":  "Hi @Justin, Thanks for the priority bump and the scaffold. The host-keyed manifest + fm-route detect/PR governance + pc/mobile=cloudfront, hana=nginx wiring is exactly the right shape. PR: github.com/ohmyhotelco/ohmyhotel-monorepo/pull/80. 4-item update: 1. get-distribution-config.json captured — distribution E2GG6OCG9J158 (Comment Ohmyhotel-web), single origin pointing at legacy ALB prd-ohmyhotel-alb-746667910.ap-northeast-2.elb.amazonaws.com. 2. drift-check CI job — will add next. 3. route-flip.md live-apply TODOs — will fill with captured ID + ETag re-fetch step. 4. www and m share E2GG6OCG9J158 — one distribution with both as aliases; manifest needs reshape (single-distribution-keyed or host-keyed-with-caveat). 3 surprises in live config: 1. /build/* behavior already exists — points at legacy ALB with CachePolicyId 658327ea (Managed-CachingOptimized); flipping = update existing behavior\u0027s TargetOriginId. 2. Session token storage and transport are two separate things — storage key window.location.hostname+\u0027_userToken\u0027 in localStorage; transport reads token and attaches lowercase header usertoken; CloudFront forwards userToken header and Cookies.Forward=none. Recommend option C dual-write for v2 SSR auth: legacy+v2 write to both localStorage AND cookie; SSR reads cookie for first-navigation auth-gated rendering, localStorage survives payment redirect cycles. Dual-write is permanent shape not transitional. Not needed yet for static/CMS pages — lock in before Phase 2 (OMH-457). Post-close finding on OMH-652 D1: merged Dockerfile ships build/client/ in the image; during rolling deploy old task renders HTML referencing entry.aaa.js while new task only has entry.bbb.js -\u003e 404 -\u003e UI breaks. S3 day-one closes the gap; revised architecture on branch as docs/migration/cloudfront-s3-ecs-architecture.md. Ping me on: (a) manifest shape, (b) /build/* origin (S3 vs Fargate), (c) confirm option C dual-write before Phase 2. Thanks."
+    },
+    {
+        "type":  "comment",
+        "key":  "ELS-1099",
+        "id":  "18604",
+        "author":  "Joo",
+        "created":  "2026-06-30T16:41:11.376+0900",
+        "url":  "https://ohmyjira.atlassian.net/browse/ELS-1099",
+        "text":  "@Zia Thank you for your suggestion — your assessment is absolutely correct. I will apply it and run tests again."
+    },
+    {
+        "type":  "comment",
+        "key":  "ELS-1099",
+        "id":  "18607",
+        "author":  "Joo",
+        "created":  "2026-06-30T17:11:05.749+0900",
+        "url":  "https://ohmyjira.atlassian.net/browse/ELS-1099",
+        "text":  "@Zia To run tests on Google Meta Search, we need to upload a list of hotels to Google. This process goes through two approval steps:\n\n1. File structure verification: takes around 1–2 hours.\n2. Publishing data to Hotel Center: takes a few working days, sometimes up to 7 days.\n\nSince the Google integration is nearing completion, to prepare for the testing phase, could you please help prepare a list of hotels in advance? This will allow me to upload early and avoid waiting time later.\n\nThanks!"
+    },
+    {
+        "type":  "comment",
+        "key":  "ELS-1099",
+        "id":  "18612",
+        "author":  "Zia",
+        "created":  "2026-06-30T17:23:49.722+0900",
+        "url":  "https://ohmyjira.atlassian.net/browse/ELS-1099",
+        "text":  "Dear@Joo  it sounds like you may be referring to something that\u0027s already underway. Just to confirm: are you talking about the hotel inventory list in [**ELS-1914**](https://ohmyjira.atlassian.net/browse/ELS-1914)?\n\nAs we agreed, this is for the **dev team to extract (build the list), and request my review if needed** - the list is created on the dev side.\n\nFrom what I can see, a CSV was already extracted on **June 12**, and I\u0027d assumed you\u0027d discussed it with Harry and moved ahead with the upload. Has it not progressed over the past few days? (The ticket is still sitting in **In Review**.)\n\nBefore anything else, let\u0027s confirm whether the hotel list I have in mind is the same one you mean — i.e. that we\u0027re talking about the same thing. If so, please proceed on the dev side, and I\u0027ll review if you needed. "
+    },
+    {
+        "type":  "comment",
+        "key":  "ELS-1099",
+        "id":  "18620",
+        "author":  "Joo",
+        "created":  "2026-06-30T18:02:40.725+0900",
+        "url":  "https://ohmyjira.atlassian.net/browse/ELS-1099",
+        "text":  "@Zia\n\nYes, we are referring to the same hotel list in ELS-1914. The CSV extracted on June 12 contains the full list of our direct-contract hotels.\n\nFor the upcoming testing phase, I suggest we start with a smaller subset of hotels first to make validation easier and catch issues early. Once everything has been thoroughly tested and confirmed, we can proceed with uploading the full list to Google.\n\nI will continue on the dev side and share for your review if needed. Please let me know if you’re okay with this approach or if you’d like to suggest which hotels we should prioritize for initial testing.\n\nThanks!"
+    },
+    {
+        "type":  "comment",
+        "key":  "ELS-1099",
+        "id":  "18630",
+        "author":  "Zia",
+        "created":  "2026-07-01T10:21:24.509+0900",
+        "url":  "https://ohmyjira.atlassian.net/browse/ELS-1099",
+        "text":  "Dear @Joo \n\nBefore we proceed, one thing on the schedule.\n\nWasn\u0027t testing already included through July 1? In your breakdown you had **\"Regression testing \u0026 validation \\~2–3 days\"** plus the landing-page validation, and you noted the July 1 timeline \"already accounts for regression testing and additional validation once the full flow is testable.\" So I want to make sure I\u0027m not missing something — could you re-confirm the schedule? If the E2E/landing validation is only starting now, 2–3 days of regression doesn\u0027t fit into July 1, so please lay out a **clear test schedule** with dates. I assume this isn\u0027t a single day of testing today?\n\ncc. @Julia Noh @Joseph @Harry \n\nOn the subset: **let\u0027s go with 20 hotels**, selected by these rules — please pick them and proceed:\n\n\u003e * KR / JP / VN spread (different currency \u0026 language)\n\u003e * Varied promotion types — especially **NTH_NIGHT_FREE (PPT04)**, per-date manual pricing, and standard % discounts\n\u003e * Cases with **stop-sell / cut-off**\n\u003e * Mixed hotel categories (Hotel / Resort, etc.)\n\u003e * A few matching edge cases (VN ASCII-fold, short addr1) to surface matching failures early\n\u003e \n\nOne more: please **don\u0027t hold the full hotel-list upload** behind testing. Per ELS-1914, the full list should go up now so Property Matching runs in parallel — otherwise it serializes and pushes out soft launch. Subset = functional testing; full list = matching, in parallel.Thanks!"
+    },
+    {
+        "type":  "comment",
+        "key":  "ELS-1099",
+        "id":  "18633",
+        "author":  "Joo",
+        "created":  "2026-07-01T10:54:35.144+0900",
+        "url":  "https://ohmyjira.atlassian.net/browse/ELS-1099",
+        "text":  " Dear @Zia\n\nWhat I meant was testing from the development side (please refer to this task: [ELS-2213](https://ohmyjira.atlassian.net/browse/ELS-2213?utm_source=chatgpt.com)).\n\nI would like to clarify which hotel list QA and Planning will use for their testing. From my understanding, QA should have a detailed testing plan and schedule for this. Could you please confirm?\n\nRegarding the hotel list upload, we are currently testing in the Dev environment, so the hotel list is not yet the final or fully accurate version.\n\nI will proceed to deploy part of the code to Production first in order to migrate the hotel list.\n\nThanks!"
+    }
+]

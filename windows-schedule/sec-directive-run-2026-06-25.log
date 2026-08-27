@@ -1,0 +1,3 @@
+no findings (after judgment), window 2026-06-24T09:10:01+07:00..2026-06-25T09:10:02+07:00
+DROP ELS-2205 · Credential pointed at attachment/screenshot — `--secret-string file://` la cu phap AWS CLI create-secret; moi credential field deu la <placeholder>, khong co secret that.
+DROP ELS-2049 · Credential pointed at attachment/screenshot — token `...PasswordService`/`UserNonMemberService`/`AdminFile...` la TEN CLASS Java; runbook documentation-only, hardcoded-key anomaly viet duoi dang placeholder <uuid-literal>, khong lo secret that.

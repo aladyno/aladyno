@@ -1,0 +1,155 @@
+[
+  {
+    "type": "comment",
+    "key": "OMH-557",
+    "id": "18228",
+    "author": "Harry",
+    "created": "2026-06-25T12:05:51.674+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-557?focusedCommentId=18228",
+    "text": "Hi @Lexi \n\nThanks for the follow-up. Responses to the 3 remaining items below.\n\n## 1. AUTH_STARTED_AT for OnePay ✅ — confirm DROP\n\nAfter re-checking, OnePay behaves similarly — the two stages (PG_CALLED and AUTH_STARTED) happen close together in our integration and are not meaningfully separable for analytics. Will proceed with dropping AUTH_STARTED_AT.\n\n## 3. TIMEOUT 30-min threshold ✅ — proceed with uniform 30-min\n\nFor NicePay, we are integrated via the NicePay SDK (not the new /v1/checkout REST API), so the expireDate parameter doesn't apply to our flow. \n\nThe uniform 30-min threshold is sufficient as a fallback for all PGs (OnePay / NicePay / np-alipay).\n\n## 5. View ownership + cross-DB ✅ — dev team owns both\n\nAcknowledged — dev team will own both pieces end-to-end:\n\n1.  we will create a new table in the same DB as PM_PAYMENT_ATTEMPT / PM_PAYMENT_INFO.\n2. V_PAYMENT_FUNNEL view — we will create and maintain the 3-table join (PM_PAYMENT_ATTEMPT + PM_PAYMENT_INFO + mirror table) per the spec definition in OMH-557.\n\nSorry for the earlier confusion — final ownership is clear now: dev team handles both.\n\n---\n\nAll items confirmed on my side. If there are no further concerns, when should we start the implementation?   \nThank you!"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-557",
+    "id": "18254",
+    "author": "Lexi",
+    "created": "2026-06-25T14:40:45.112+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-557?focusedCommentId=18254",
+    "text": "@Harry Hi Harry, thanks for the clean summary. One correction on item 1, and the rest are confirmed for you to proceed.\n\n#### 1. AUTH_STARTED_AT column — keeping it (CTO direction)\n\nAfter internal discussion (with CTO Justin), we'd like to keep the column.\n\n* It's true that PG_CALLED_AT and AUTH_STARTED_AT happen at close moments in both OnePay and NicePay today, so they don't separate meaningfully right now.\n* However, future PG integration changes or new PG integrations may introduce a separately-measurable authentication stage, and the migration cost of re-adding a dropped column would be high.\n* So please keep both columns defined and have them store the same (or similar) value via INSERT/UPDATE for now.\n\n#### 3. TIMEOUT 30-min uniform threshold ✅ Confirmed\n\n#### 5. View + cross-DB owned by dev team ✅ Confirmed\n\nBS_VENDOR_TRANSACTION_LOG mirror table creation + V_PAYMENT_FUNNEL 3-table view creation/maintenance both owned by dev team end-to-end.\n\n---\n\n[OMH-557 description](https://ohmyjira.atlassian.net/browse/OMH-557) have already been updated to reflect all of the above.\n\nOnce you confirm item 1, everything is finalized and you're cleared to start implementation. Could you share an expected timeline? Thank you."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-557",
+    "id": "18271",
+    "author": "Harry",
+    "created": "2026-06-25T15:54:15.871+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-557?focusedCommentId=18271",
+    "text": "Hi @Lexi ,\n\nThanks for the CTO-level alignment.\n\n## 1. AUTH_STARTED_AT — confirmed Keep\n\nUnderstood — keeping both PG_CALLED_AT and AUTH_STARTED_AT as separate columns. For the current PGs (OnePay / NicePay / np-alipay), backend will populate AUTH_STARTED_AT with the same (or very close) value as  \nPG_CALLED_AT since they happen at the same moment in our integration. Future PG integrations can populate distinct values when an observable auth-start event is available.\n\n## Timeline\n\nAll items finalized. Will create the subtask and start implementation following the timeline above. Thank you!"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-319",
+    "id": "18261",
+    "author": "Joo",
+    "created": "2026-06-25T15:27:55.339+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-319?focusedCommentId=18261",
+    "text": "@Lexi Apologies for the delayed response.\n\nBased on the scope of the channel storage changes (splitting CHANNEL_TYPE into EMAIL/SMS/KAKAO and removing AGREE_YN with related logic migration), the estimated completion time is around 1 working day, including development and testing.\n\nCould you please help create a new task to properly track this implementation? I will proceed with the changes once the task is created, and we can close the current one to avoid confusion."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-319",
+    "id": "18288",
+    "author": "Lexi",
+    "created": "2026-06-25T16:33:09.779+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-319?focusedCommentId=18288",
+    "text": "@Joo Thanks for the timeline. I've created the tracking task — OMH-692 (subtask of OMH-319, assigned to you). Please proceed there, and feel free to wrap up OMH-390 to avoid confusion. Once it's done, I'll do the final check via DB capture. Thank you."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2272",
+    "id": "18285",
+    "author": "Roy",
+    "created": "2026-06-25T16:27:30.574+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2272?focusedCommentId=18285",
+    "text": "@Calvin  Exactly. That’s what I wanted.🔥"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2049",
+    "id": "18234",
+    "author": "Joseph",
+    "created": "2026-06-25T12:36:17.956+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2049?focusedCommentId=18234",
+    "text": "# Runbook Update — Pilot Scope Amendment (v2)\n\nStatus: Scope decision · Owner: Joseph · Phase: C1 Foundation\n\nAmends: the runbook draft above (v1). The §1 inventory and all technical procedures below remain valid — this amendment only narrows what gets executed during the pilot.\n\n> Decision: In the pilot phase we execute §2 Move procedure ONLY (change the key SOURCE — read the same key bytes from Secrets Manager instead of the YAML literal). §3 Re-encryption (rotation) is explicitly OUT OF SCOPE for the pilot and is deferred to a later, dedicated document.\n\n---\n\n## 1. What the pilot WILL do — §2 Move only\n\n* For api.kmsKey (and the two vendor keys as a coordinated value-swap where applicable), move the key value verbatim into Secrets Manager at omh/<env>/<service>/<key-name>, encrypted with alias/omh-secrets-<env>.\n* The KMSKEY bind param value stays byte-for-byte identical → all existing ciphertext still decrypts → NO data migration, NO re-encryption.\n* Validate per §4 (canary decrypt + count parity) in Dev → Staging.\n* Rollback = config-only (revert to YAML literal), instant and safe — no data is ever touched.\n\n## 2. What the pilot will NOT do — §3 deferred\n\n* §3 (dual-key window + batch re-encrypt OLD→NEW) is NOT performed in the pilot.\n* Rationale: re-encrypting data that is already encrypted at rest (38 columns / 17 tables incl. PM_PAYMENT_INFO card data) is a high-risk, irreversible-in-place operation. The §3 batch step is flagged in v1 as \"the highest-risk step\" — re-running OLD→NEW on an already-NEW row silently corrupts it.\n* We will not take that risk until the entire secret-migration effort across all phases is complete and stable.\n\n## 3. When §3 (re-encryption / rotation) will be reconsidered\n\n* Only AFTER all phases of the secret migration are finished and the §2 Move is proven stable in production.\n* The go/no-go on §3 will be decided in a separate follow-up document (not this runbook), which must re-confirm: the open items below, a maintenance/freeze window, and an idempotent + resumable migration job with a migrated-PK ledger.\n* Until that document is approved, no key value is rotated — the pilot keeps the existing key value, just sourced from the vault.\n\n## 4. Prerequisite still carried into the pilot\n\n* Anomaly 1 (hardcoded api.kmsKey literal in PushHotelContentService.java:157 + SESTest.java) is a secret-leak issue independent of re-encryption and should still be tracked. Note: because the pilot keeps the same key value, this literal will not break decryption during the Move — but it remains a C-B3 secret-in-git-history leak and must be cleaned up before any future §3 rotation.\n\n---\n\n### Updated Definition of Done (pilot)\n\n* §2 Move procedure reviewed by Security + a backend owner.\n* §2 validated in Dev → Staging (canary decrypt passes, count parity holds).\n* §3 Re-encryption explicitly marked DEFERRED — to be evaluated in a separate document post-migration.\n* This amendment referenced from ELS-2051 (pilot) and ELS-2066 (move api.kmsKey). ELS-2073 (rotate) is gated behind the future §3 decision document."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2073",
+    "id": "18278",
+    "author": "Joseph",
+    "created": "2026-06-25T16:10:28.651+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2073?focusedCommentId=18278",
+    "text": "Gated by the §3 Re-encryption decision in the https://ohmyjira.atlassian.net/browse/ELS-2049#icft=ELS-2049 runbook (Pilot Scope Amendment v2): rotation/re-encryption is DEFERRED until all phases of the secret migration are complete and a separate §3 decision document is approved."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2073",
+    "id": "18279",
+    "author": "Joseph",
+    "created": "2026-06-25T16:10:39.769+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2073?focusedCommentId=18279",
+    "text": "# ⏸ DEFERRED — out of scope for the pilot\n\nPer ELS-2049 runbook → Pilot Scope Amendment (v2). This ticket executes §3 Re-encryption (rotation) of the runbook, which is explicitly OUT OF SCOPE for the pilot and must NOT be started yet.\n\n## Why this is blocked\n\n* ELS-2073 rotates the actual key values for all three keys (C-B3 api.kmsKey, C-B4 hana AES key/iv, C-B5 abacus pcc-enc) → requires re-encrypting data at rest.\n* For api.kmsKey that means re-encrypting 38 columns / 17 tables (incl. PM_PAYMENT_INFO card data) in a dual-key window — flagged in the runbook as \"the highest-risk step\" (re-running OLD→NEW on an already-NEW row silently corrupts it).\n* Re-encrypting already-encrypted production data is a high-risk, hard-to-reverse operation; we will not take that risk until the secret-migration effort is otherwise complete and stable.\n\n## Gate / preconditions before this can move\n\n1. All phases of the secret migration are finished and the §2 Move (ELS-2066) is proven stable in production.\n2. A separate §3 decision document is written and approved (NOT this runbook), re-confirming the runbook's open items:\n\n   - MySQL AES_ENCRYPT mode in use (default AES-128-ECB) and any column on a different cipher.\n\n   - Option A (batch re-encrypt) vs Option B (app-level dual-decrypt).\n\n   - Whether writes can be frozen/redirected during the batch migration.\n\n   - NEW key format/length constraints.\n\n1. Anomaly 1 cleanup done first: strip the hardcoded api.kmsKey literal (PushHotelContentService.java:157, SESTest.java) and move it to @Value(\"${api.kmsKey}\") — otherwise this path silently breaks (encrypt/decrypt with the dead key) after rotation. Blocker for cutover.\n2. Idempotent + resumable migration job with a migrated-PK ledger (guard against double-encrypt corruption).\n\n## Status\n\n* Linked is blocked by ELS-2049.\n* Keep in To Do / Deferred — do not pick up until the §3 decision document is approved.\n* Vendor note: hana / abacus are in-flight keys (value-swap, no stored ciphertext); abacus pcc-enc NEW value must be re-issued by Abacus/Sabre, not generated by us."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1106",
+    "id": "18223",
+    "author": "Tom",
+    "created": "2026-06-25T11:52:15.140+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1106?focusedCommentId=18223",
+    "text": "Dear @Tracy2 , i have deploy on PROD. Please help me check again, thank you"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1106",
+    "id": "18229",
+    "author": "Tracy2",
+    "created": "2026-06-25T12:06:17.985+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1106?focusedCommentId=18229",
+    "text": "@Tracy please support to contact Ms. My to test this case due to PROD data. Thank you!"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1106",
+    "id": "18270",
+    "author": "Tracy",
+    "created": "2026-06-25T15:47:08.163+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1106?focusedCommentId=18270",
+    "text": "@Tracy2 JP team confirmed OK on PROD."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-664",
+    "id": "18260",
+    "author": "Zia",
+    "created": "2026-06-25T15:27:40.050+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-664?focusedCommentId=18260",
+    "text": "* Production monitoring is still in progress, so the content may change. Once the monitoring period is complete, I will share the final version of the document.\n* GA4/GTM: As of June 25, the latest documentation is available in OMH-119.\n* Advertising pixels: The decision has been finalized to remove the tags."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1810",
+    "id": "18245",
+    "author": "Mon",
+    "created": "2026-06-25T13:32:55.206+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1810?focusedCommentId=18245",
+    "text": "Dear @Zia ,\n\nPlease help me review this new update view for the tags\n\n[image]\nAnd decide we can use that or anything change ?\n\nThank you"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1810",
+    "id": "18247",
+    "author": "Zia",
+    "created": "2026-06-25T13:40:26.071+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1810?focusedCommentId=18247",
+    "text": "Dear @Mon I discussed this with Julia, and it looks good from our side.\n\nOnce a designer joins the team, I'm sure we'll have the opportunity to refine the design further. For now, I think the current version is perfectly fine.\n\nAs long as there are no UI issues on mobile—such as awkward line breaks caused by the tag length—you don't need to share it with me for review. Please go ahead with the current implementation.\n\nThank you for your work!"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1810",
+    "id": "18259",
+    "author": "Mon",
+    "created": "2026-06-25T15:26:34.307+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1810?focusedCommentId=18259",
+    "text": "@Zia I got it\n\nThank you so much"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-119",
+    "id": "18242",
+    "author": "Zia",
+    "created": "2026-06-25T13:08:21.900+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-119?focusedCommentId=18242",
+    "text": "Updated the 260622 GA4_setup_master.md file to version 1.3.\n\n* Added domain exclusion settings between OMH ↔ OMT.\n* Added domain exclusion settings for the OMY payment gateway (PG) domain."
+  }
+]

@@ -1,0 +1,11 @@
+omh-sec-directive run — window 2026-06-23T09:10:04+07:00 .. 2026-06-24T09:10:01+07:00
+Projects: OMH, ELS | Items scanned: 138 (44 new issues/sub-tasks + 94 new comments)
+Scanner candidates: 5 across 4 issues. Judgment pass decisions (no silent drops):
+
+DROP ELS-1927 · Secret assignment (HIGH->info) — "ASIAYO:TOKEN:{email}" la Redis key-naming pattern trong bang cache-cleanup inventory; {email} la placeholder template, khong co gia tri credential. Khong ap dung §2.
+DROP ELS-1556 · .NET-style conn string w/ password (HIGH->info) — chuoi "pwd=..." nam trong link moi hop Zoom (alibaba.zoom.us/j/...?pwd=...) kem Passcode in plain theo dung format invite cua Zoom. Khong phai prod DB account / API key / cloud key / token theo §2/§5 -> ngoai pham vi directive.
+DROP ELS-1556 · Secret assignment (HIGH->info) — cung gia tri Zoom invite pwd o tren; trung candidate, ngoai pham vi.
+DROP ELS-2174 · Pasted prod config file (MEDIUM->info) — bug report chi NHAC tep .env va ten bien (DEV_xxx); text noi ro "Bearer token kept in .env ... not pasted here". Khong co gia tri secret nao bi dan.
+DROP OMH-477 · Credential pointed at attachment (MEDIUM->info) — comment la Phase 0 secret-posture audit cua CTO/security owner (Justin), ghi ro "value-free / No secret values", la theo doi remediation chu khong phai lo secret.
+
+FINAL: 0 finding thuc su -> KHONG gui email (Step 5: im lang khi sach).

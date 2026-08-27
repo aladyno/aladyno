@@ -1,0 +1,416 @@
+[
+ {
+  "type": "subtask",
+  "key": "ELS-2247",
+  "id": "16586",
+  "author": "Tan",
+  "created": "2026-06-25T10:54:17.869+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2247",
+  "text": "[QA] ELS-2155 — Guest Contact field for booking (BRQ07)\n**Branches** (all from `master`, commits ready, PR will be opened once QA signs off)\n\n* oh-api@`ELS-2155-guest-contact-brq07` (commit `ad089b8d77`)\n* oh-admin@`ELS-2155-guest-contact-brq07` (commit `3a8264a66`)\n* oh-partners@`ELS-2155-guest-contact-brq07` (commit `51c21bdd`)\n\n## Business context\n\nToday the guest's phone number / email is being typed into the _Special Request_ free-text field (BRQ99 \"Others\"). The reservation sheet that OMH sends to the hotel includes that text, so the hotel ends up seeing personal contact info that should stay inside OMH. The team (Dodo / Tracy / Nana) asked for a way to capture guest contact details without leaking them to the hotel.\n\nThe change introduces a new request type called **Guest Contact**:\n\n* **Available everywhere a special-request type is shown** (admin booking forms, vendor extranet, seller extranet, Excel import).\n* **Internal-only** — the reservation email/voucher that goes to the hotel does NOT contain Guest Contact.\n* **Visible to OMH ops and to seller / hotel staff who log into the extranet**, so they can still see the guest's phone or email when they need to contact the guest.\n\nThe other six existing request types (Non-smoking, Smoking, Late Check-in, High Floor, Honeymoon, Baby Cot, Others) keep their current behaviour. Only the new Guest Contact one is filtered from the hotel email.\n\n## Setup for QA\n\n* Have a hotel that you can search and book end-to-end on staging (any normal test hotel works).\n* Have an existing booking on staging where you can edit / view requests.\n* Get the latest _Import Booking_ Excel template that includes the new `GuestContact` column (ops will share). If not yet available, you can edit the existing template by adding a column with the header `GuestContact` after `Comment05` — values in that column are read as Guest Contact.\n* Have access to the inbox where the OMH \"reservation sheet\" email is delivered (or to the email log, if QA can read sent mail from staging).\n\n---\n\n## TC1 — Guest Contact appears as a selectable special-request type\n\n**Steps**\n\n1. Open the admin Create Booking flow and reach the _Special Request_ step.\n2. Look at the list of available special-request types.\n\n**Expected**\n\n* The familiar types (Non-smoking Room, Smoking Room, Late Check-in, High Floor, Honeymoon, Baby Cot, Others) all appear as before.\n* A new option **Guest Contact** is available.\n* Language switch: Guest Contact label is translated in EN / KO / JA / VI / ZH (check by switching the system language on admin if applicable).\n\n---\n\n## TC2 — Hotel email NEVER contains Guest Contact\n\n**Steps**\n\n1. Create a new booking. Fill these special requests:\n\n   - Tick **Non-smoking Room**\n\n   - Type into _Others / Special Request_: `Late check-in around 23:00`\n\n   - Type into _Guest Contact_: `Please call the guest at +82-10-1234-5678 / john@example.com`\n\n1. Confirm the booking and let the system send the reservation sheet to the hotel (or trigger Re-send to hotel from admin).\n2. Open the email actually delivered to the hotel.\n\n**Expected**\n\n* The hotel email shows the **Non-smoking Room** request and the _Others_ note `Late check-in around 23:00`.\n* The hotel email does NOT contain the phrase `+82-10-1234-5678`, the email `john@example.com`, or the words `Guest Contact`.\n* The email layout is otherwise unchanged from prod today.\n\n---\n\n## TC3 — Admin Booking Detail shows Guest Contact as its own row\n\n**Steps**\n\n1. Open the same booking from TC2 on admin → _Reservation_ → Booking Detail page.\n2. Scroll to the _Special Request_ row.\n\n**Expected**\n\n* Special Request row shows `Non-smoking Room` on the inline summary and `Late check-in around 23:00` inside the textarea (same as today).\n* Immediately below Special Request a new row appears with header **Guest Contact** and the value `Please call the guest at +82-10-1234-5678 / john@example.com`.\n* The new row only appears for bookings that actually have a Guest Contact (no empty row for old bookings).\n* \"Guest Contact\" should NOT also appear in the inline summary line on the Special Request row.\n\n---\n\n## TC4 — Vendor extranet (hotel-side) shows Guest Contact\n\n**Steps**\n\n1. Log into the partner extranet with a vendor (hotel-side) account that owns the test hotel.\n2. Find the booking from TC2 and open _Reservation Detail_.\n\n**Expected**\n\n* The _Special Request_ block shows the existing request types as checkboxes (Non-smoking Room, Others etc.). **Guest Contact is NOT shown as a checkbox** in that list.\n* Immediately below the Special Request textarea there is a full-width row labelled **Guest Contact:** followed by the value `Please call the guest at +82-10-1234-5678 / john@example.com`.\n* The layout is clean — the contact value sits on its own line and does not wrap awkwardly next to the checkboxes.\n* For a booking without Guest Contact, the row does not appear at all.\n\n---\n\n## TC5 — Seller extranet (Dotbiz) shows Guest Contact\n\n**Steps**\n\n1. Log into the partner extranet with a seller (Dotbiz) account that owns the booking.\n2. Find the booking from TC2 and open _Reservation Detail_.\n\n**Expected**\n\n* Behaviour identical to TC4 — Guest Contact is a single row under the textarea, full-width.\n\n---\n\n## TC6 — Import Booking Excel: `GuestContact` column lands as Guest Contact\n\n**Steps**\n\n1. Open the Import Booking Excel template (the new one with the `GuestContact` column).\n2. Create one row with all the usual mandatory fields (ChannelId, HotelId, dates, room/rate IDs, contact person, guest names). Add:\n\n   - `Comment01` = `Late check-in around 23:00`\n\n   - `GuestContact` = `Call the guest at +82-10-9999-0000`\n\n1. Upload the file on admin → _Create Booking_ → _Import Booking_.\n2. Wait for the import result email and verify success for the row.\n3. Open the imported booking on admin.\n\n**Expected**\n\n* The booking is created successfully.\n* On the Booking Detail page (TC3-style) the `Late check-in around 23:00` shows under _Special Request_ and the **Guest Contact** row shows `Call the guest at +82-10-9999-0000`.\n* The reservation sheet sent to the hotel (TC2-style check) does NOT contain the `+82-10-9999-0000` value.\n* If the `GuestContact` column is left empty on a row, the booking still imports normally (no error, no Guest Contact row on the detail).\n\n---\n\n## TC7 — Old bookings & default behaviour are not affected (regression)\n\n**Steps**\n\n1. Open a few existing bookings created **before** this change is deployed (no Guest Contact ever entered).\n2. Check the Booking Detail page on admin, the vendor extranet detail page, and the seller extranet detail page.\n3. Trigger a \"Resend reservation sheet\" on one of these old bookings.\n\n**Expected**\n\n* No Guest Contact row appears anywhere.\n* The Special Request inline summary and textarea behave exactly as before.\n* The hotel email is unchanged from what was sent in prod for this booking.\n\n---\n\n## Out of scope for this ticket\n\n* **Ctrip** sends guest contact embedded in its remarks field; no auto-parser is being added in this ticket. Confirmation with Tracy is still pending — to be tracked separately if approved.\n* **CMS pass-through** to Sanha / TL-Lincoln / Hotelstory is also out of scope and will be a separate ticket if business decides to wire Guest Contact through to those CMS contact fields.\n\n**If anything looks wrong**, attach a screenshot + the booking item code + which page / email you were looking at, and ping Tan on this sub-task."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2246",
+  "id": "16585",
+  "author": "Tan",
+  "created": "2026-06-25T10:50:51.765+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2246",
+  "text": "Update booking administration request-type selector to include Guest Contact\nModify the booking administration screens so the special request dropdown shows the new Guest Contact option sourced from the HO019 master data."
+ },
+ {
+  "type": "task",
+  "key": "ELS-2245",
+  "id": "16584",
+  "author": "Tracy",
+  "created": "2026-06-25T10:33:11.860+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2245",
+  "text": "Checking duplicated trader Bunker Hotel [No Use] - 605985 and Bunker Hotel - 603405\nCT team informed that they updated the information on trader “Bunker Hotel - 603405”. However, it auto created 1 more Trader “Bunker Hotel \\[No Use\\] - 605985” ( the team member informed that she did not create the new Trader).  \nCause the Biz member was updated on the Trader Bunker Hotel \\[No Use\\] - 605985 so that we are unable to update this information to the correct Trader.  \n  \nPlease kindly support us to check :   \n\\* if the new trader (Trader Bunker Hotel \\[No Use\\] - 605985) was created by system issue or by the user.  \n\\* Please delete the Biz member on Trader Bunker Hotel \\[No Use\\] - 605985 and also delete this Trader.   \nThank you for your supporting."
+ },
+ {
+  "type": "task",
+  "key": "OMH-680",
+  "id": "16583",
+  "author": "Lexi",
+  "created": "2026-06-25T09:52:05.321+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-680",
+  "text": "Enable deep linking from KakaoTalk message to installed app instead of in-app browser on iOS\nThe Vietnamese and Korean descriptions are at the bottom. Please refer to the comment for the reproduction video.\n\n### Summary\n\nWhen a user taps a link inside a KakaoTalk message, Android opens the installed app via deep link as expected. On iOS, however, the link only opens inside the KakaoTalk in-app browser and never hands off to the installed app. We need iOS to deep link into the installed app (same behavior as Android).\n\n### Steps to Reproduce\n\n1. App is installed on an iOS device.\n2. Receive a KakaoTalk message.\n3. Tap a link inside the message.\n\n### Actual Behavior\n\nThe link opens a web page inside the KakaoTalk in-app browser. It does not hand off to the installed app.\n\n### Expected Behavior\n\n* If the app is installed, the link should deep link directly into the app. If not installed, fall back to web/App Store.\n* This must apply to every link in a KakaoTalk message, not just specific ones — regardless of message type or button type (e.g., Event/promotion messages, shortcut buttons, etc.).\n\n### Environment\n\n* OS: iOS (Android works as expected)\n* Entry point: KakaoTalk message in-app browser\n* Precondition: app is installed\n\n### Notes\n\n* On iOS, the KakaoTalk in-app browser (WKWebView) can block or ignore Universal Links / custom URL schemes, so the link-handling flow (including the app-invocation logic on the landing page) needs to be reviewed.\n* Goal is iOS/Android behavior parity.\n\n---\n\n### Tóm tắt\n\nKhi người dùng nhấn vào liên kết trong tin nhắn KakaoTalk, trên Android ứng dụng đã cài đặt sẽ mở qua deep link như mong đợi. Tuy nhiên trên iOS, liên kết chỉ mở trong trình duyệt in-app của KakaoTalk và không chuyển sang ứng dụng đã cài. Cần iOS deep link trực tiếp vào ứng dụng (giống hành vi trên Android).\n\n### Các bước tái hiện\n\n1. Ứng dụng đã được cài đặt trên thiết bị iOS.\n2. Nhận tin nhắn KakaoTalk.\n3. Nhấn vào liên kết trong tin nhắn.\n\n### Hành vi hiện tại\n\nLiên kết mở trang web trong trình duyệt in-app của KakaoTalk, không chuyển sang ứng dụng đã cài.\n\n### Hành vi mong đợi\n\n* Nếu ứng dụng đã cài, liên kết phải deep link trực tiếp vào ứng dụng. Nếu chưa cài, chuyển sang web/App Store.\n* Áp dụng cho mọi liên kết trong tin nhắn KakaoTalk, không chỉ riêng một số — bất kể loại tin nhắn hay loại nút (ví dụ: tin khuyến mãi/Event, nút lối tắt, v.v.).\n\n### Môi trường\n\n* OS: iOS (Android hoạt động bình thường)\n* Điểm vào: trình duyệt in-app của tin nhắn KakaoTalk\n* Điều kiện: ứng dụng đã được cài đặt\n\n### Ghi chú\n\n* Trên iOS, trình duyệt in-app của KakaoTalk (WKWebView) có thể chặn hoặc bỏ qua Universal Link / custom URL scheme, nên cần rà soát luồng xử lý liên kết (bao gồm logic gọi ứng dụng trên trang landing).\n* Mục tiêu là đồng nhất hành vi giữa iOS và Android.\n\n### 개요\n\n카카오 메시지의 링크 클릭 시, Android는 앱이 설치되어 있으면 앱으로 정상 연결되나, iOS는 앱이 설치되어 있어도 카카오 인앱 브라우저로만 열리고 앱으로 연결되지 않음. iOS도 앱 설치 시 앱으로 바로 연결(딥링크)되도록 수정 요청.\n\n### 재현 절차\n\n1. iOS 기기에 앱이 설치된 상태\n2. 카카오 메시지 수신\n3. 메시지 내 링크 클릭\n\n### 현재 동작\n\n카카오 인앱 브라우저로 웹페이지가 열림. 앱으로 연결되지 않음.\n\n### 기대 동작\n\n* 앱이 설치되어 있으면 앱으로 바로 연결(딥링크 이동). 미설치 시에는 웹/스토어로 연결.\n* 특정 링크에 한정하지 않고, 카카오 메시지 내 모든 링크에 동일하게 적용(예: 기획전(Event) 메시지, 바로가기 버튼 등 메시지 유형/버튼 종류 무관).\n\n### 환경\n\n* OS: iOS (Android는 정상 동작)\n* 진입 경로: 카카오 메시지 인앱 브라우저\n* 전제: 앱 설치된 상태\n\n### 참고\n\n* iOS는 카카오 인앱 브라우저(WKWebView) 특성상 Universal Link / Custom URL Scheme이 차단되거나 무시되는 경우가 있어, 링크 처리 방식(랜딩페이지에서의 앱 호출 로직 포함) 점검 필요.\n* AOS/iOS 동작 일치가 목표."
+ },
+ {
+  "type": "task",
+  "key": "ELS-2244",
+  "id": "16581",
+  "author": "Joseph",
+  "created": "2026-06-24T19:07:29.570+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2244",
+  "text": "[Deployment] Make a release Notes – Deployment [1.0/06252026]\n# Deployment Report \\[6/24/2026\\]\n\n## Summary Tasks\n\n| Type | Count |\n| --- | --- |\n| Improvement | 4 |\n| **Total** | **4** |\n\n### Highlights\n\n#### Improvement\n\n* Eliminated blocking MyBatis/JDBC operations on Reactor event-loop threads in the Admin API, reducing thread starvation, latency and CPU contention (oh-api).\n* Added editor permission and login-gated access control for the ELLIS Playbook documentation site (oh-api).\n* Updated payment-info string truncation for the Master Card code when notifying OnePay payments (oh-api).\n* Renamed the Breakfast filter to Meals and added new meal-basis options in the product list (hotel-api, oh-api).\n\n---\n\n## Deployment Details\n\n| Dev Name | Deploy | Repos / PR | Issue |\n| --- | --- | --- | --- |\n| **Dan** | oh-api | oh-api / [PR-835](https://github.com/ohmyhotelco/oh-api/pull/835) | Subtask #ELS-1980: Eliminate Blocking MyBatis/JDBC Operations on Reactor Event-Loop Threads |\n| **itdongquoctien** | oh-api | oh-api / [PR-772](https://github.com/ohmyhotelco/oh-api/pull/772) | Task #ELS-1337: Improvement - Editor permission for ELLIS Playbook |\n| **longnk** | oh-api | oh-api / [PR-828](https://github.com/ohmyhotelco/oh-api/pull/828) | Task #OMH-672: Update Truncate String Payment Info Master Card Code When Notify Payment OnePay |\n| **Le Ngoc Quoc(Dante)** | hotel-api, oh-api | oh-api / [PR-833](https://github.com/ohmyhotelco/oh-api/pull/833) | Subtask #OMH-494: Rename Meals filter items and add new options in product list |\n\n> ⚠ Source scope: GitHub org-wide search was unavailable (token lacks `ohmyhotelco` org access), so PRs were collected from the **local** `oh-api` master branch (per request). Frontend repos (oh-admin, ohmytrip-pc/mobile, ohmyhotel-pc/mobile) were not scanned — confirm separately if they shipped today.\n\n> ⚠ Transitive dependency analysis skipped — service-dependencies graph not available; deploy targets reflect direct file-path mapping only.\n\n> ⚠ DB migration: PR-772 (ELS-1337) ships SQL under `web-api/src/main/resources/migration/ELS-1337-playbook-editor/` (`01-playbook-editor-whitelist.sql`, `02-insert-bs-api-service-code-role-check.sql`). Apply these to the master DB as part of the deploy.\n\n---\n\n## Deploy List\n\n| # | Service |\n| --- | --- |\n| BE | hotel-api, oh-api |\n\n---\n\n## Manual Deployment Instructions\n\n### A) EC2 Manual Deployments\n\n**EC2 Console:** [AWS EC2](https://ap-northeast-2.console.aws.amazon.com/ec2/home?region=ap-northeast-2)\n\n#### 1. HotelSearch API (`hotel-api`)\n\n**EC2 Instances:** `prd-hotelsearch-1`, `prd-hotelsearch-2`, `prd-hotelsearch-3`, `prd-hotelsearch-4`\n\n```bash\nsudo sh /root/deploy1.sh   # api-hotel\nsudo sh /root/deploy2.sh   # api-hotel2\n```\n\nRun on each instance.\n\n**⚠️ Post-Deploy (mandatory, run on** `prd-trigger-1` after every hotel-api deploy):\n\n```bash\nsudo sh /root/hotel-search/deploy1.sh   # hotel-search sync 1\nsudo sh /root/hotel-search/deploy2.sh   # hotel-search sync 2\n```\n\n#### 2. Grafana / Prometheus targets (triggered by `oh-api`, `hotel-api`)\n\n**EC2 Instance:** `prd-apm-server`\n\n```bash\nsu - admin\ncd prometheus-grafana\npython3 ip-target-group.py\n```\n\nVerify ping status: http://prd-proxy.ohmytrip.com:9090/targets\n\n### B) ECS Fargate Manual Deployments\n\n**ECS Console:** [AWS ECS](https://ap-northeast-2.console.aws.amazon.com/ecs/v2/clusters?region=ap-northeast-2)\n\n| Service | Description |\n| --- | --- |\n| `fargate-admin` | deploy oh-api (Admin API) |\n\n> **IMPORTANT:** Remember to tick **\"Force new deployment\"** when updating ECS services, otherwise the rollout silently re-uses the cached image.\n\n---\n\n## Contributors Summary\n\n| Contributor | PRs |\n| --- | --- |\n| Dan | 1 |\n| itdongquoctien | 1 |\n| longnk | 1 |\n| Le Ngoc Quoc(Dante) | 1 |"
+ },
+ {
+  "type": "task",
+  "key": "ELS-2243",
+  "id": "16579",
+  "author": "Tracy",
+  "created": "2026-06-24T18:29:56.466+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2243",
+  "text": "Request to Check Email Delivery Failure 1001937 - Mohang Haenaru Family Hotel\nDear team,\n\n1001937 - Mohang Haenaru Family Hotel\n\nThe hotel informed us that they are not receiving our emails sent to the addresses below (including the spam/junk folder).\n\n* [booking@haenaruhotel.co.kr](mailto:booking@haenaruhotel.co.kr)\n* [front@haenaruhotel.co.kr](mailto:front@haenaruhotel.co.kr)\n\nI made a test booking, and the system shows \"Send Success = Yes\", but the hotel still confirmed that they did not receive the email.\n\nCould you please check this issue?\n\nThank you."
+ },
+ {
+  "type": "task",
+  "key": "ELS-2242",
+  "id": "16578",
+  "author": "Tracy",
+  "created": "2026-06-24T18:27:32.982+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2242",
+  "text": "Date change request booking S26061910318H01 // Oyster Bay Hotel Vung Tau\nDear Team, please kindly support us to amend the stay date of this booking S26061910318H01 // 2067797297160388608 // Oyster Bay Hotel Vung Tau as below:\n\nCheck-in date: 2026-06-28 -> **2026-07-05**\n\nCheck-out date: 2026-06-29 -> **2026-07-06**\n\nRemove booking from invoice #769659  \n\nReason: The hotel has agreed to a new date change for this booking. AGT has confirmed the amendment accordingly.\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=4d5526b7-d804-446b-8161-e6ec7a80eabe&&collection=&height=717&occurrenceKey=null&width=1037&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)"
+ },
+ {
+  "type": "task",
+  "key": "ELS-2241",
+  "id": "16577",
+  "author": "Tracy",
+  "created": "2026-06-24T18:24:51.143+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2241",
+  "text": "Change Vendor Payment status  - V26042110016H01 & V26041310006H01\nDear Team, \n\nKindly help to change **Vendor payment status** from **Not Paid → Fully Paid** for following booking, as the rate has been completely changed and updated. \n\nThank you \n\n**V26041310006H01**  \nV Payment: change to Not Paid  \nVendor balance: change to 0\n\n<custom data-type=\"smartlink\" data-id=\"id-0\">https://ohmyjira.atlassian.net/browse/BTBS-621</custom>\n\n**V26042110016H01**  \nV Payment: change to Not Paid  \nVendor balance: change to 0\n\n<custom data-type=\"smartlink\" data-id=\"id-1\">https://ohmyjira.atlassian.net/browse/BTBS-622</custom> \n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=5f1959cc-2bad-47f3-8f85-f3ec1ee3c3db&&collection=&height=396&occurrenceKey=null&width=492&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)"
+ },
+ {
+  "type": "task",
+  "key": "ELS-2240",
+  "id": "16576",
+  "author": "Joseph",
+  "created": "2026-06-24T17:48:51.526+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2240",
+  "text": "Validate PROD ECS task-role identity for tl-api (and other Fargate services) before PROD rollout\n## Glossary / Context\n\n* PROD-only gate. The pilot proves secret/rotation behavior in Dev/Staging on Docker-on-EC2 (assume-role), but the PROD ECS Fargate **task-role** wiring (`taskRoleArn`) is not exercisable there. This task validates it before the PROD Critical rollout.\n\n## Technical Approach\n\n* Validate the ECS task-role path for tl-api and the other Fargate services (admin-api, channel-api, ohmytrip-api, out-ohmyhotel, out-cms, vendor-api, push-api, ws-api): confirm in-process `GetSecretValue` + scoped `kms:Decrypt` work on Fargate via `taskRoleArn`.\n* Confirm cross-service and cross-environment reads are denied (CloudTrail).\n* queue-api needs no gate — its assume-role mechanism already matches PROD.\n\n## Constraints / Non-goals\n\n* PROD task-role wiring only. No new secrets or rotation here; that is the rollout (ELS-2054).\n\n## Sequencing\n\n* Is blocked by ELS-2053 (pilot verify); blocks ELS-2054 (backend Critical rollout)."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2239",
+  "id": "16575",
+  "author": "Joseph",
+  "created": "2026-06-24T17:48:45.589+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2239",
+  "text": "Set up the minimal host instance profile + per-container assume-role on the Dev/Staging Docker hosts\n## Glossary / Context\n\n* EC2/Docker services use an assume-role model: a near-powerless host instance profile, and each container assumes its own scoped service role. This handles co-located hosts (one host runs multiple services) where a shared instance profile cannot be a per-service identity.\n\n## Technical Approach\n\n* Create a minimal host instance profile (`omh-<env>-docker-host`, `sts:AssumeRole` only) on the Dev/Staging Docker hosts (2 EC2 on Dev, 1 EC2 on Staging).\n* Create per-service `<service>-<env>` roles that **trust the host role**, each scoped to `omh/<env>/<service>/*` + that env's CMK (via `kms:ViaService=secretsmanager`).\n* Configure each container with `AWS_ROLE_ARN` + `credential_source=Ec2InstanceMetadata` so it assumes only its own role at startup.\n\n## Verification / DoD\n\n* A container can assume only its own `<service>-<env>` role; it cannot assume another service's role.\n* The host instance profile alone cannot read any secret (assume-role only), so IMDS leakage to a container does not expose secrets.\n\n## Constraints / Non-goals\n\n* Dev/Staging only. ECS Fargate services use a native task role instead (no host role) — out of scope here."
+ },
+ {
+  "type": "task",
+  "key": "OMH-679",
+  "id": "16573",
+  "author": "Harry",
+  "created": "2026-06-24T17:44:51.414+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-679",
+  "text": "Update Default Token Guest User B2C Search Hotel List"
+ },
+ {
+  "type": "task",
+  "key": "ELS-2237",
+  "id": "16572",
+  "author": "Calvin",
+  "created": "2026-06-24T17:23:45.916+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2237",
+  "text": "[Investigate] Next Redis Split Plan – High-Level Assessment for B2C/Admin/Partner Runtime Keys\nThe next split will focus on runtime keys used by the B2C/Admin/Partner flows.\n\n**Selection criteria:**\n\n* Keys with relatively short TTLs\n* Data that can be regenerated automatically\n* Low risk if a cache entry is missing, as it will be rebuilt on the next request\n* Keys mainly tied to B2C and Admin flows, so they can be isolated from B2B (Open API) workloads\n\nThe B2B-related datasets currently used by the Open API search logic account for the majority of Redis capacity and network traffic. In addition, these datasets are continuously updated, which makes them more risky and costly to migrate. Therefore, the current plan is to keep them in the existing cluster for now."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2236",
+  "id": "16569",
+  "author": "Tracy2",
+  "created": "2026-06-24T16:39:20.002+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2236",
+  "text": "Created new shared contract (HB: Rate Ellis - Allotment Ellis) not display on Contract Intelligence\nTest hotel: **Grand Ocean Bay Resort Phu Quoc**\n\nCreate new Shared contract & input Rate/ Allotment under HB room\n\nBUT data not show on Contract Intelligence tab\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=040bda54-6ce4-4668-887e-fbff80bdc1ac&&collection=&height=668&occurrenceKey=null&width=1255&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=b02d6129-2cc5-406e-a118-aeca052e4363&&collection=&height=814&occurrenceKey=null&width=1507&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=887d778f-9290-4f08-bcfe-3a8307839d8f&&collection=&height=415&occurrenceKey=null&width=1491&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)"
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2235",
+  "id": "16568",
+  "author": "Calvin",
+  "created": "2026-06-24T16:10:15.291+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2235",
+  "text": "[Cleaning] Remove dual-write and fallback authen-related logic after migration\nAfter completing ElastiCache access control deployment and validation, we will remove the remaining legacy logic related to the old cluster, including dual-write and fallback mechanisms. A final check will be performed to confirm these components are no longer needed before removal. The changes will be prepared and deployed in the next regular deployment cycle (30/6)."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2234",
+  "id": "16565",
+  "author": "Tracy2",
+  "created": "2026-06-24T16:05:58.091+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2234",
+  "text": "Rounding rule inconsistent between Daily Brief & Details Analysis tab\nOn Daily Brief: 34.15 - 29.9 = 4.25 => rounding up: 4.3%\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=377cacb5-ad03-4237-95dd-37baf7662162&&collection=&height=420&occurrenceKey=null&width=1494&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\nOn Details Analysis:  34.15 - 29.9 = 4.25 => rounding down: 4.2%\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=5f3cfb73-6a09-4590-9d25-8e26c00e9736&&collection=&height=295&occurrenceKey=null&width=1468&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\nExpected: Rounding up \n\nEx: 4.11 \\~ 4.14: rounding down 4.1%\n\n4.15 \\~ 4.19: rouding up 4.2%"
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2233",
+  "id": "16563",
+  "author": "Tracy2",
+  "created": "2026-06-24T16:02:10.099+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2233",
+  "text": "Section 5 need to show No data available if there is no current month is selected\nActual: when user unselected all current month, Past data on Section 5 still display\n\nExpected: Section 5 need to be show “No data available” as prototype\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=1bae2500-ade0-48d4-a5ed-552a0f7eae28&&collection=&height=740&occurrenceKey=null&width=1486&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=b427d94a-6500-49e2-819c-5b4a601d2603&&collection=&height=634&occurrenceKey=null&width=1637&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)"
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2232",
+  "id": "16560",
+  "author": "Tom",
+  "created": "2026-06-24T15:51:49.740+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2232",
+  "text": "[QA-fix] Metro Tan Cang area not shown in Hotel Content > Add Area\n_QA #18062 — Failed_\n\n_Bug:_ The \"Metro Tan Cang\" area (region type metro_station, parent = Ho Chi Minh City) was created in Region Code, but in Hotel Content > Add Area (City = Ho Chi Minh City, search \"metro\") it returns \"No areas found\".\n\n_Investigation (FE oh-admin + BE oh-api + DB):_ NOT a code bug.\n\n* DB (MySQL): region 931596 exists correctly — metro_station, parent 102529, COUNTRY_CODE VN, DELETE_YN N (created 2026-06-23 09:49).\n* FE area-picker calls the correct endpoint {{admin/basis/region/descendants}} with parentRegionCode and does not filter region type client-side.\n* BE: AREA_REGION_TYPES + areaTypeFilter both include metro_station; re-running the descendants query on MySQL DOES return \"Metro Tan Cang\".\n* The descendants endpoint reads from _OpenSearch_ (index bs_region_code_info_v36), NOT MySQL (moved 2026-06-01 for performance). The newly created region had not yet synced into the index at test time.\n\n_Root cause:_ OpenSearch sync delay/transient failure for a just-created region (realtime async push, does not block the save). BE code is correct and consistent (the whole system uses procType \"U\"/upsert).\n\n_Resolution:_ Reindexed bs_region_code_info_v36 for region 931596 (synced again — area now shows). Monitor push reliability; if it recurs, consider adding a MySQL fallback to the descendants endpoint (the code comment already notes this option).\n\n_Note:_ no oh-admin (FE) code change for this finding."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2231",
+  "id": "16559",
+  "author": "Tom",
+  "created": "2026-06-24T15:51:28.872+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2231",
+  "text": "[QA-fix] Parent region name cleared on tab switch\n_QA #18062 — Failed_\n\n_Bug:_ On the Region Code list, enter a Parent region name, switch to another tab and come back → the field is cleared. The selected value must be kept.\n\n_Fixed:_\n\n* Added {{parentRegionCode}} + {{parentRegionName}} to the {{IBsRegionSearch}} model and {{initListSearch()}}. Previously these fields were dropped by {{\\_setSearchFormData}} (which uses {{\\_.pick}} against the default model) on rehydrate → lost on tab switch.\n\n_Files:_ {{bs-region-data.service.ts}}, {{bs-region/models/index.ts}}\n\n_Commit:_ fb6da0244 (branch ELS-1723-improve-hotel-content-region)"
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2230",
+  "id": "16558",
+  "author": "Tom",
+  "created": "2026-06-24T15:51:25.023+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2230",
+  "text": "[QA-fix] Region type filter resets to \"All\" on Search\n_QA #18062 — Failed_\n\n_Bug:_ On the Region Code list, select a value in the Region type filter, click Search → the filter resets to \"All\". The selected value must be kept.\n\n_Fixed:_\n\n* Stopped deleting the singular {{regionType}} in the search component {{onSubmit}} → the form/store keep the value and the dropdown rehydrates correctly.\n* Moved the {{regionType}} → {{regionTypes}} mapping (API whitelist, and dropping the singular key to avoid the API returning 0 rows) down into {{BsRegionService.getList()}} — at the API boundary, leaving UI state intact.\n\n_Files:_ {{bs-region-search.component.ts}}, {{bs-region.service.ts}}\n\n_Commit:_ fb6da0244 (branch ELS-1723-improve-hotel-content-region)"
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2229",
+  "id": "16557",
+  "author": "Tom",
+  "created": "2026-06-24T15:51:19.735+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2229",
+  "text": "[QA-fix] Region Info Cancel: missing \"Discard changes?\" confirm\n_QA #18062 — Failed_\n\n_Bug:_ On the Region Code list, open the Region Info popup, change a field, click Cancel → no alert appears. Per the spec (Actions table), Cancel must show a \"Discard changes?\" confirm when there are unsaved changes.\n\n_Fixed:_\n\n* Region Info popup {{onClose()}}: when the form is dirty, call {{ConfirmationService.confirm({ message: \"Discard changes?\", accept: close, reject: noop })}}; when not dirty, close directly.\n* Injected {{ConfirmationService}} into the component.\n\n_Files:_ {{bs-region-form.component.ts}}\n\n_Commit:_ fb6da0244 (branch ELS-1723-improve-hotel-content-region)"
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2228",
+  "id": "16556",
+  "author": "Tom",
+  "created": "2026-06-24T15:51:05.360+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2228",
+  "text": "[QA-fix] City required: missing inline error \"Please select a City.\"\n_QA #18062 — Failed_\n\n_Bug:_ On Hotel Content > Basic, City is a required field. Saving with City empty does NOT show the inline error \"Please select a City.\" (only an unrelated note \"Province could not be derived for this Region.\" appears).\n\n_Fixed:_\n\n* Added i18n copy {{COPY.city.required}} = \"Please select a City.\" (EN/KO/JA/VI).\n* Added the inline error line to the City template: shown when {{checkIsInvalid('regionCode')}} (City empty on Save). Red highlight already worked.\n\n_Files:_ {{hotel-detail-master.component.html}}, {{region-cascade.copy.ts}}\n\n_Commit:_ fb6da0244 (branch ELS-1723-improve-hotel-content-region)"
+ },
+ {
+  "type": "task",
+  "key": "OMH-678",
+  "id": "16555",
+  "author": "Lexi",
+  "created": "2026-06-24T15:48:12.143+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-678",
+  "text": "Replace 'B. Product Amt' calculation logic to align with policy\n### Background\n\nReported via [BTCS-35](https://ohmyjira.atlassian.net/browse/BTCS-35) / [OMH-670](https://ohmyjira.atlassian.net/browse/OMH-670): on the room results screen, B. Product Amt changes together when the promotion changes (Basic → Special).\n\nDev confirmed ([OMH-670](https://ohmyjira.atlassian.net/browse/OMH-670)) this is the originally designed logic — B. Product Amt is currently derived from the selected promotion, so it varies per promotion. This was confirmed to be not aligned with the rate definition policy.\n\n### Policy basis (Definitions of Rate Items — see attached)\n\n```\nB. Product Amt = B. Net Amt + B. M/U Amt (channel markup)\nB. Sum Amt     = (no promotion) same as B. Product Amt\n               = (promotion)    B. Product Amt - B. Promotion Amt\n```\n\nPer policy, B. Product Amt is derived as B. Net Amt + B. M/U Amt and must remain the same regardless of the selected promotion. Only B. Promotion Amt and B. Sum Amt should change when the promotion changes.\n\n### Direction\n\nFix the B. Product Amt calculation logic to align with the policy definition. No detailed planning required (team lead confirmed) — align the display to the policy.\n\n### Fix outline\n\nB. Product Amt = B. Net Amt + B. M/U Amt (same regardless of promotion). The promotion is reflected only in B. Promotion Amt, which is used to derive B. Sum Amt. The fix is limited to changing which Net rate is used as the base for the B. Product Amt calculation (team lead direction); it is expected to be relatively straightforward.\n\n### Out of scope\n\nA full review of the overall rate structure logic is out of scope for now and will be handled separately in the near future. This ticket only amends the B. Product Amt calculation logic.\n\n### Reference\n\n[BTCS-35](https://ohmyjira.atlassian.net/browse/BTCS-35), [OMH-670](https://ohmyjira.atlassian.net/browse/OMH-670). Rate definition policy: Definitions of Rate Items (attached).\n\n### Bối cảnh\n\nĐược tiếp nhận qua [BTCS-35](https://ohmyjira.atlassian.net/browse/BTCS-35) / [OMH-670](https://ohmyjira.atlassian.net/browse/OMH-670): trên màn hình kết quả phòng, B. Product Amt thay đổi cùng lúc khi promotion thay đổi (Basic → Special).\n\nĐội phát triển đã xác nhận ([OMH-670](https://ohmyjira.atlassian.net/browse/OMH-670)) đây là logic được thiết kế ban đầu — hiện B. Product Amt được tính dựa trên promotion được chọn nên thay đổi theo từng promotion. Điều này được xác nhận là không khớp với chính sách định nghĩa giá.\n\n### Cơ sở chính sách (Definitions of Rate Items — xem tệp đính kèm)\n\n```\nB. Product Amt = B. Net Amt + B. M/U Amt (channel markup)\nB. Sum Amt     = (không promotion) bằng B. Product Amt\n               = (có promotion)    B. Product Amt - B. Promotion Amt\n```\n\nTheo chính sách, B. Product Amt được tính bằng B. Net Amt + B. M/U Amt và phải giữ nguyên bất kể promotion nào được chọn. Khi promotion thay đổi, chỉ B. Promotion Amt và B. Sum Amt mới thay đổi.\n\n### Hướng xử lý\n\nSửa logic tính B. Product Amt để khớp với định nghĩa trong chính sách. Không cần làm planning chi tiết (team lead đã xác nhận) — chỉ cần hiển thị đúng theo chính sách.\n\n### Tóm tắt cách sửa\n\nB. Product Amt = B. Net Amt + B. M/U Amt (giữ nguyên bất kể promotion). Promotion chỉ được phản ánh trong B. Promotion Amt, dùng để tính B. Sum Amt. Phạm vi sửa chỉ giới hạn ở việc thay đổi Net rate nào được dùng làm cơ sở tính B. Product Amt (theo team lead); dự kiến tương đối đơn giản.\n\n### Ngoài phạm vi\n\nViệc rà soát toàn bộ logic cấu trúc giá nằm ngoài phạm vi hiện tại và sẽ được xử lý riêng trong thời gian tới. Ticket này chỉ sửa logic tính B. Product Amt.\n\n### Tham khảo\n\n[BTCS-35](https://ohmyjira.atlassian.net/browse/BTCS-35), [OMH-670](https://ohmyjira.atlassian.net/browse/OMH-670). Chính sách định nghĩa giá: Definitions of Rate Items (đính kèm).\n\n### 배경\n\n[BTCS-35](https://ohmyjira.atlassian.net/browse/BTCS-35) / [OMH-670](https://ohmyjira.atlassian.net/browse/OMH-670)으로 접수됨: 객실 결과 화면에서 프로모션 변경(Basic → Special) 시 B. Product Amt가 함께 변경됨.\n\n개발팀([OMH-670](https://ohmyjira.atlassian.net/browse/OMH-670)) 확인 결과, 이는 원래 설계된 로직으로, 현재 B. Product Amt가 선택된 프로모션에 따라 산출되어 프로모션마다 달라지고 있음. 이는 요금 정의 정책과 불일치함이 확인됨.\n\n### 정책 기준 (Definitions of Rate Items — 첨부 참조)\n\n```\nB. Product Amt = B. Net Amt + B. M/U Amt (채널 마크업)\nB. Sum Amt     = (프로모션 미진행) B. Product Amt와 동일\n               = (프로모션 진행)   B. Product Amt - B. Promotion Amt\n```\n\n정책상 B. Product Amt는 B. Net Amt + B. M/U Amt로 산출되며, 선택된 프로모션과 무관하게 동일해야 함. 프로모션 변경 시 변동되어야 하는 값은 B. Promotion Amt와 B. Sum Amt뿐임.\n\n### 진행 방향\n\nB. Product Amt 산출 로직을 정책 정의에 맞게 수정. 상세 기획 불필요(팀장 확인 완료) — 정책 기준대로 표시되도록 정렬.\n\n### 수정 개요\n\nB. Product Amt = B. Net Amt + B. M/U Amt로 산출(프로모션과 무관하게 동일). 프로모션은 B. Promotion Amt에만 반영되어 B. Sum Amt 산출에 사용. 수정 범위는 B. Product Amt 산출의 기준 Net rate를 변경하는 것에 한정됨(팀장 방향); 난이도는 비교적 낮을 것으로 예상됨.\n\n### Out of scope\n\n전체 요금 구조(rate structure) 로직 점검은 현재 범위에서 제외하며, 추후 별건으로 진행함. 본 티켓은 B. Product Amt 산출 로직만 수정함.\n\n### 참고\n\n[BTCS-35](https://ohmyjira.atlassian.net/browse/BTCS-35), [OMH-670](https://ohmyjira.atlassian.net/browse/OMH-670). 요금 정의 정책: Definitions of Rate Items (첨부)."
+ },
+ {
+  "type": "task",
+  "key": "ELS-2238",
+  "id": "16554",
+  "author": "Tracy",
+  "created": "2026-06-24T15:37:21.708+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2238",
+  "text": "[URGENT] Request to amend the buying rate - S26060310676H01\nDear team,\n\nS26060310676H01 // Kumho Seorak Resort  \nPlease support to change data as below:  \nV payment: change to Not Paid  \nVendor Add Amt: change to 40,000  \nVendor Sum Amt: change to 108,000  \nVendor Balance: change to 108,000  \nVendor Revenue Amt: change to 3,010  \nBilling Revenue: change to 318\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=a1355c1d-aa66-4e41-9b30-3184fad53c86&&collection=&height=721&occurrenceKey=null&width=1797&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\nKR team request:  \nPlease add KRW 40,000 to the buying rate.\n\nVendor Sum Amount: updated from 68,000 to 108,000.\n\nThe hotel has completed the cancellation of the VCC payment for this booking.\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=22b97c72-b13d-44dd-90e6-ffa455e4991b&&collection=&height=461&occurrenceKey=null&width=301&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\nThank you."
+ },
+ {
+  "type": "task",
+  "key": "ELS-2227",
+  "id": "16553",
+  "author": "Tracy",
+  "created": "2026-06-24T15:32:18.490+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2227",
+  "text": "[URGENT] Request to change the room view 419874 - Lavalse Hotel\nDear team, \n\n419874 - Lavalse Hotel\n\n  \nPlease change the room view of the following 5 room types from Ocean View to Partial Sea View.\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=1508ab61-6107-4cf5-aecd-97766dd6df10&&collection=&height=215&occurrenceKey=null&width=492&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=c9adb08f-4193-49bf-b769-3f4853d6a96c&&collection=&height=47&occurrenceKey=null&width=403&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n‌\n\nThank you."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2226",
+  "id": "16548",
+  "author": "Tan",
+  "created": "2026-06-24T13:46:08.803+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2226",
+  "text": "[QA] BTBS-734 — 3rd-party rate gate by seller config for B2B search\n**Branch**: oh-api@`ELS-2224-seller-3rd-party-gate` (commit `5bf0aa9099`)\n\n## Business context\n\nVietnamese partner companies using the Dotbiz Platform are restricted by VAT regulations — they can only issue VAT invoices for **direct-contract bookings** (rates OMH negotiated directly with the hotel). They cannot resell **3rd-party rates** (rates supplied through wholesale bedbanks such as Hotelbeds, Agoda, EAN, Dida, Dotw, Fitruums, Rakuten).\n\nThis change adds a per-seller switch so OMH ops can configure, on the admin Seller page, whether a given seller is allowed to receive 3rd-party rates:\n\n* Seller flag **OFF** (do not provide 3rd-party): when this seller searches via the B2B channel, the hotel/room results only contain direct-contract rates. 3rd-party rates are hidden.\n* Seller flag **ON** (provide 3rd-party): the seller sees the full mix of direct + 3rd-party rates, exactly as today.\n\nThe gate applies in two places:\n\n1. **Partner Dotbiz Platform** (oh-partners site) — every search the partner runs.\n2. **Admin Create Booking** on oh-admin when ops picks the _B2B channel_ on behalf of a seller — the same gate applies because the underlying request is B2B.\n\nB2C searches (regular customer-facing site, B2C tab on admin) are **not affected** — they continue to behave exactly as before.\n\n## Setup\n\nQA prepares two test sellers on dev:\n\n* **Seller A** — flag **OFF** (\"do not provide 3rd-party rates\"). Simulates the VN Dotbiz partner.\n* **Seller B** — flag **ON** (\"provide 3rd-party rates\"). Regression baseline — should behave like today.\n\nPick test hotels that have BOTH a direct contract AND at least one 3rd-party vendor rate, so the difference between the two configurations is visible.\n\n> After flipping the flag on the admin Seller page and saving, give the system a moment to sync, then re-run the search.\n\n---\n\n## TC1 — Partner Dotbiz, seller does NOT provide 3rd-party → only direct rates shown\n\n**Steps**\n\n1. Login to the Dotbiz Platform as **Seller A** (flag OFF).\n2. Search hotels for a destination where you know there are both direct and 3rd-party rates.\n3. Open one of the hotels and view the room/rate list.\n\n**Expected**\n\n* Hotel list shows only hotels where OMH has a direct contract. Hotels that only have 3rd-party rates do not appear.\n* Room/rate list shows only rates from the direct contract source. No rates labelled Hotelbeds, Agoda, EAN, Dida, Dotw, Fitruums or Rakuten.\n\n---\n\n## TC2 — Partner Dotbiz, seller DOES provide 3rd-party → full mix shown (regression)\n\n**Steps**\n\n1. Login to the Dotbiz Platform as **Seller B** (flag ON).\n2. Repeat the same search as TC1.\n\n**Expected**\n\n* Result is identical to what Seller B saw **before this change**. Both direct contract rates and 3rd-party rates appear. This is the main regression check — existing sellers must see no difference.\n\n---\n\n## TC3 — Admin Create Booking on B2B channel, seller does NOT provide 3rd-party → only direct rates\n\n**Steps**\n\n1. On oh-admin, open _Create Booking_.\n2. Pick the **B2B channel** and select **Seller A** as the booking seller.\n3. Run the hotel search, open a hotel, view rooms/rates.\n\n**Expected**\n\n* Behaviour matches TC1 — only direct-contract rates are shown. The seller's restriction is respected even when ops is the one operating the search.\n\n---\n\n## TC4 — Admin Create Booking on B2B channel, seller DOES provide 3rd-party → full mix (regression)\n\n**Steps**\n\n1. On oh-admin, open _Create Booking_, B2B channel, select **Seller B**.\n2. Run the same hotel/room search.\n\n**Expected**\n\n* Same mix of rates as before this change. No regression on existing B2B sellers in admin Create Booking.\n\n---\n\n## TC5 — B2C flow is untouched\n\n**Steps**\n\n1. Run a regular **B2C** search (customer-facing site, or B2C tab on admin Create Booking).\n2. Use the same hotel as TC1/TC3 — i.e., a hotel where you previously saw only direct rates because of Seller A.\n\n**Expected**\n\n* Both direct and 3rd-party rates show normally — the seller flag has no effect on B2C searches.\n\n---\n\n## TC6 — Flipping the seller flag takes effect immediately on the next search\n\n**Steps**\n\n1. Start with **Seller B** (flag ON). Run a B2B search → you see direct + 3rd-party rates (baseline from TC2).\n2. On the admin Seller page, change Seller B's flag to **OFF** and save.\n3. Run the same B2B search again.\n4. Switch the flag back to **ON** and save.\n5. Run the search one more time.\n\n**Expected**\n\n* After step 3, the search no longer shows 3rd-party rates — only direct contract.\n* After step 5, the search again shows the full mix. Toggling the flag should be reflected on the very next search the seller makes (no need to wait a long time, no need to clear any cache manually).\n\n---\n\n**If a result looks unexpected**, attach to this sub-task: a screenshot of the search result, the seller code being used, whether the test was done on the Dotbiz Platform or admin Create Booking, and the channel/tab (B2B vs B2C). Then ping Tan."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2225",
+  "id": "16547",
+  "author": "Tan",
+  "created": "2026-06-24T13:37:32.734+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2225",
+  "text": "Implement backend evaluation logic for 3rd-party rate provision\nAdd service-layer logic to determine whether 3rd-party rate provision is enabled or disabled for a given account and booking type at runtime."
+ },
+ {
+  "type": "task",
+  "key": "ELS-2224",
+  "id": "16546",
+  "author": "Tan",
+  "created": "2026-06-24T13:29:15.629+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2224",
+  "text": "Implement backend feature flag for 3rd-party rate control\nAdd a configurable switch in the backend to enable or disable 3rd-party rate provision for Dotbiz/Vietnam accounts, with support for account-level or booking-type-level control if required."
+ },
+ {
+  "type": "task",
+  "key": "ELS-2223",
+  "id": "16544",
+  "author": "Tracy",
+  "created": "2026-06-24T12:39:36.556+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2223",
+  "text": "Check API Issue  – Elong unable to pull hotel data - VN003162 830297 Minasi Grand Hotel\nDear Team,\n\nHotel : VN003162 830297 Minasi Grand Hotel\n\nRoom:\n\n| Room Code | Legacy Room Code | Room Name | Room View | Bed Type | Bed Size | Max | Room Size |\n| --- | --- | --- | --- | --- | --- | --- | --- |\n| 117438 | RTAB7438 | Junior Suite King | City View | 1Queen | 180 | 2 | 35 |\n| 117439 | RTAB7439 | Studio King |  | 1Queen | 180 | 2 | 28 |\n| 117440 | RTAB7440 | Executive Twin | City View | 2Single | 120 | 2 | 25 |\n| 117441 | RTAB7441 | Deluxe Double |  | 1Queen | 180 | 2 | 22 |\n| 1711626 | RAA17572 | Deluxe Twin King |  | 2Single or 1 Queen | 120 | 3 | 22 |\n| 1711627 | RAA17573 | Executive Twin King | City View | 2Single or 1 Queen | 120 | 3 | 25 |\n| 1711628 | RAA17574 | Studio Twin |  | 2Single | 120 | 3 | 30 |\n| 1711629 | RAA17575 | Studio Twin King |  | 2Single or 1 Queen | 120 | 3 | 28 |\n| 1711630 | RAA17576 | Junior Suite Twin King | City View | 2Single or 1 Queen | 120 | 3 | 35 |\n| 102458502 | RAA24599 | Superior Deluxe Double |  | 1Queen | 180 | 3 | 20 |\n\nThe room name has been changed, but Elong hasn't received the information yet.\n\nElong said that they were unable to retrieve hotel data from our API during their last two scheduled pulls, which resulted in the room type names not being updated.\n\nThey also tried to retrieve the data manually but encountered an error.\n\n**Standard酒店信息，请求报文：{\"hotelIdList\":\\[\"VN003162\"\\],\"language\":\"zh-cn\",\"pageIndex\":1,\"pageSize\":1,\"requestId\":\"12312341241\",\"sign\":\"5cfa897358bd27ffadc50ccb952927a7\"}，响应报文：{\"hotelList\":\\[\\],\"error\":{\"code\":0,\"message\":\"Success\"}}，耗时：116 毫秒**\n\nPlease help me check and re-push the room information for this hotel.\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=1b9df6a2-4e78-425f-aadc-7f5c9a3684b8&&collection=&height=305&occurrenceKey=null&width=714&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)"
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2221",
+  "id": "16542",
+  "author": "Daniel",
+  "created": "2026-06-24T12:27:25.378+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2221",
+  "text": "[DEV] Common - helpers, XSD, routing/exclusion, dedup push test\nShared logic across all entities + push infrastructure.\n\n### Helpers (TODO - no tests)\n\n* DateNormalizer.toGoogleDate / toGoogleDateTime: null/blank, \"yyyy-MM-dd\", space->strip, T separator, compact 8/14 digit, invalid passthrough\n* IdResolver.resolve: seq -> String.valueOf; seq null -> code; both null/blank -> null; legacy prefix kept\n* GoogleContext: timestamp ISO-8601 +09:00; echoToken (8-char uuid); txId (full uuid + prefix)\n\n### XSD validation (TODO)\n\n* Each entity payload validated via GoogleAriXmlValidator (schemas in PR); invalid XML -> GoogleAriXmlInvalidException\n* GoogleAriResponseInspector classifies Google response as success/error\n\n### Channel-dispatch routing & exclusion (TODO)\n\n* Fan-out: envelope without compCode -> push to all sellers; with compCode -> only that seller\n* Endpoint resolve null -> SKIP; channel not subscribed to endpoint -> SKIP\n* EXC02 (hotel exclusion) -> ROUTE=SKIP; EXC03 (rate-plan exclusion) -> filter payload, per-seller deep copy\n* Bounded concurrency; fail-open: one seller failure does not block others; poison message -> ACK drop\n\n### Dedup & idempotency (TODO)\n\n* US_SELLER_PUSH_DEDUP_ENTITY: static (ROOM/RATE_PLAN/PROMOTION) deduped; RATE/INVENTORY/AVAILABILITY NOT deduped\n* Atomic INSERT..ON DUP KEY claim; revert-on-send-fail -> re-push next time\n* SellerPushProfile defaults (ariCloseOut=true, overlayOnRemoval=true) for Google"
+ },
+ {
+  "type": "task",
+  "key": "ELS-2222",
+  "id": "16541",
+  "author": "Tracy",
+  "created": "2026-06-24T12:27:25.074+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2222",
+  "text": "URGENT - Checked LOG booking status - S26060110483H01 //2061288376157470720\nDear team, \n\n S26060110483H01 //2061288376157470720\n\nDida did not pay for us as they stated it was failed booking on their side and it were returned to Dida as failed (LOG attached), however, this booking is well confirmed on our side and hotel system. \n\n‌\n\nAccording to the log, the initial ConfirmBookingAsync request returned HTTP 429:\n\nLogTime: 2026-06-01 11:28:02.984329\n\nError Message:  \n\"Please wait for 30 seconds before trying again. This limit helps us protect against overload of our systems.\"\n\nSince Dida is refusing payment based on the failed response they received, Please help check a root cause  and provide us booking LOG for this booking.\n\nThank you \n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=1b757ca1-f444-4662-9872-59bb409a037e&&collection=&height=619&occurrenceKey=null&width=566&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)"
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2220",
+  "id": "16540",
+  "author": "Daniel",
+  "created": "2026-06-24T12:27:15.710+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2220",
+  "text": "[DEV] Availability - AvailabilityTransformService + Cut-off Stop-Sell push test\nTransform: AvailabilityTransformService. Batch: CutOffStopSellPushService. Output: OTA_HotelAvailNotifRQ.\n\n### Transform - already covered (DONE)\n\n* Date range start/end; Master + minLos/maxLos; restriction-only (no status) -> only CTA/CTD\n* CTA close Arrival; DOW filter (mon=true -> Mon=\"true\"); STOP_SELL forces Master=Close; stopSell=true overrides OPEN\n\n### Transform - to add (TODO)\n\n* Single date (when no startDate/endDate); status \"OPEN\" (no stopSell) -> Open; \"CLOSED\" -> Close\n* Both CTA+CTD -> two messages Arrival+Departure; CTD only\n* DOW all-false / all-true -> omit block; minLos/maxLos null -> omit LengthsOfStay\n* ratePlan resolved/not -> include/omit RatePlanCode\n* Fields ignored: occupancy/lastModify\n\n### Cut-off Stop-Sell batch - CutOffStopSellPushServiceTest exists (PARTIAL)\n\n* Midnight detection by hotel timezone; window \\[today, today+(cDt-1)\\]; idempotency via BS_PUSH_TRANSACTION_LOG\n* Derived plan oSeq>0 -> use oSeq as rate-plan key; mix plain+derived\n* cDt<=0 -> drop; cDt=365 -> 365 days; adult=0 (master close)\n* Redis miss / malformed snapshot / invalid timezone -> skip hotel, do not abort batch; DST-safe\n* Run twice same day -> second run skipped"
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2219",
+  "id": "16539",
+  "author": "Daniel",
+  "created": "2026-06-24T12:27:08.358+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2219",
+  "text": "[DEV] Allotment - InventoryTransformService push test\nService: InventoryTransformService (currently 0 tests). Output: OTA_HotelInvCountNotifRQ.\n\n### To add (TODO - no tests)\n\n* CountType must be \"2\" (BookingLimit); no NotifType / ratePlan / DOW\n* ID: prefer roomTypeCode (keep prefix \"D\\_...\"), fallback roomTypeSeq\n* count null -> 0; STOP_SELL or closed=true -> force count=0\n* date null -> skip row; all skipped -> error\n* DateNormalizer (space separator / compact format)\n* negative count -> still emitted (Google validates downstream)\n* Fields parsed but ignored: minNight/cta/ctd/hotelContractSeq/cmsCompCode/sellerCompCode/localAllotment\n* 1 input row = 1 <Inventory> (no date-range merging)"
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2218",
+  "id": "16538",
+  "author": "Daniel",
+  "created": "2026-06-24T12:27:03.424+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2218",
+  "text": "[DEV] Rate - RateTransformService + markup push test\nTransform: RateTransformService (currently 0 tests). Markup: RateMarkupApplier (channel-dispatch).\n\n### Transform (TODO - no tests)\n\n* Group by (roomId, ratePlanId, date); skip rows with null date / unresolved id; all skipped -> error\n* ALL -> NotifType=\"Overlay\", otherwise \"Delta\"\n* occupancy null -> default 2\n* Amount selection: prefer grossAmount -> fallback baseAmount -> both null then omit AmountAfterTax\n* Extra guest: adult ageQualifyingCode=10, child=8 + maxAge (null->12); <=0 -> drop\n* DateNormalizer: \"yyyy-MM-dd HH:mm:ss\" / \"yyyyMMdd\" / \"yyyyMMddHHmmss\" -> \"yyyy-MM-dd\"\n* Fields ignored: restrictions/lastModify/contractAmount/netAmount/mspAmount\n\n### Markup (PARTIAL - RateMarkupApplierTest exists, needs expansion)\n\n* Formula: ceil(net\\*(1+markup%), currency) + tax; tax folded into baseAmount\n* Region match priority: hotelCode > region > country > continent; wildcard \"\\*\" matches only when hotel has a region\n* Fallback to universal item within BOTH booking-window AND check-in window\n* Tie-break: lowest markUpValue wins; on tie 'D' (markdown) beats 'U'\n* Type R (%) vs A (fixed); negative markup (discount) still applied\n* Ceil by currency: KRW rounds to whole units, other currencies 2 decimals\n* RATE_MODIFICATION -> skip markup\n* Fail-open: Redis miss / timeout / hotel missing region -> push net price, never blocks"
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2217",
+  "id": "16537",
+  "author": "Daniel",
+  "created": "2026-06-24T12:26:54.421+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2217",
+  "text": "[DEV] Promotion Manual - manual promo push test\nManual promo (MANUAL_INSERT_YN='Y') is pushed as RATE_PLAN + RATE + AVAILABILITY (LOS/CTA) + RATE_MODIFICATION (booking-window), NOT as <Promotion>.  \nService: StaticPushCommonService (trigger-api) + RateModificationsTransformService.\n\n### Partially covered (PARTIAL)\n\n* Detect manual promo + emit Availability/RateModification (basic StaticPushCommonServiceTest)\n* Source query: MANUAL_INSERT_YN='Y' AND SALES_STOP_YN='N'; ALL->full, CHANGED->90s delta\n\n### To add (TODO)\n\n* Stay-date from VVPP_DATE_RANGE (RANGE_TYPE='STAY_DATE'): multiple disjoint ranges -> one Availability per range (do not gate the gaps)\n* Fallback to CHECK_IN_FROM/TO when no range; null -> \\[today, today+365\\]\n* Master OPEN + LOS emitted only when MIN/MAX_NIGHTS set; <=0 -> drop\n* CTA close by DOW = inverse of CHECK_IN\\_\\*\\_YN; all 'Y' -> no CTA\n* RateModification early-bird: bookingWindow.max = X-1, availabilityUnavailable=true\n* RateModification last-minute: bookingWindow.min = Y+1\n* Both early-bird + last-minute -> seller receives union; EB=1 & LM=1 -> empty window\n* Ordering: RATE_MODIFICATION goes via dynamic queue + \\~10s delay after base RATE; restart within delay -> dropped, re-sent next time\n* Markup still applied to RATE_PLAN/RATE; RATE_MODIFICATION does NOT apply markup\n* Limit 200 modifications/property -> >200 errors\n* RateModifications: userCountries vs excludeCountries (mutually exclusive); date guard; empty list -> omit block"
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2216",
+  "id": "16536",
+  "author": "Daniel",
+  "created": "2026-06-24T12:26:45.867+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2216",
+  "text": "[DEV] Promotion - PromotionTransformService push test\nService: PromotionTransformService. Output: <Promotions>.\n\n### Already covered (DONE)\n\n* Resolve promotion ID; RATE -> percentage; ALL -> overlay, CHANGED -> no action\n* BookingDates + daysOfWeek encoding (\"M\"); CheckinDates multiple windows; LengthOfStay min/max\n* DELETE + empty -> overlay-empty\n\n### To add (TODO)\n\n* All 4 discount types: PERCENTAGE / RATE / AMOUNT / FIXED + unknown value -> fallback percentage\n* discount.value null -> omit the entire <Discount> block\n* FreeNights mapping: nthNightFree=3 -> stayNights=3, discountNights=1, discountPercentage=100.0, nightSelection=cheapest, repeats=false\n* DateTime convert space->T for BookingDates; CheckinDates empty -> omit block\n* daysOfWeek all-false / all-true (7 days) -> omit attribute; encoding M/T/W/H/F/S/U\n* conditions -> lengthOfStay (min/maxNights) + bookingWindow (earlyBird/lastMinute)\n* DELETE: promotionSeqs null -> fallback promotionCodes; drop null/blank entries\n* Fields ignored: promotionType/status/meals/cancellationPolicy"
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2215",
+  "id": "16535",
+  "author": "Daniel",
+  "created": "2026-06-24T12:26:39.667+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2215",
+  "text": "[DEV] Rate Plan - RatePlanTransformService push test\nService: RatePlanTransformService. Output: PackageData.\n\n### Already covered (DONE)\n\n* Bind rateplans, seq -> PackageID\n* isNonRefundable true/false -> refundable false/true\n* freeBreakfastName present -> Meals(breakfast=true, dinner=false)\n* All-blank name -> skip; DELETE+empty -> overlay-empty; CHANGED->delta, ALL->overlay\n\n### To add (TODO)\n\n* cancellationPolicy null -> default refundable=\"false\" (business risk, confirm expected behavior)\n* roomTypeSeq/Code null -> omit <AllowableRoomIDs>\n* freeBreakfastName null vs blank -> both omit Meals\n* Fields parsed but ignored: rateType/status/mealBasisCode/cutOffDate/occupancy/currency\n* Legacy code with prefix (\"PL\\_...\") kept as-is, not stripped"
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2214",
+  "id": "16534",
+  "author": "Daniel",
+  "created": "2026-06-24T12:26:34.589+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2214",
+  "text": "[DEV] Room - RoomTransformService push test\nService: RoomTransformService (google-meta-search-api). Output: PropertyData/RoomData.\n\n### Already covered (DONE)\n\n* Map roomTypeSeq -> RoomID (prefer seq, fallback code); skip when both null\n* Capacity fallback: maxSumCount -> (maxAdult+maxChild)\n* Bed width rounding (180.6 -> 181; 0.4 -> dropped)\n* Expand bedTypeCount=2 into two <Bed>\n* Skip room when name is all-blank; keep valid rooms\n* DELETE/ALL + empty list -> overlay-empty; CHANGED -> delta\n\n### To add (TODO)\n\n* Map bedTypeCode: BDT01->single, BDT02->semi_double, BDT03->double, BDT04->queen, BDT05->king; SKIP futon BDT07\n* Multi-locale for Name / Description / Photo caption\n* Occupancy boundaries: 0, 99, 100 (values outside \\[1,99\\] must be dropped from XML)\n* Mixed photos: valid URL + blank (skip blank, keep the rest); photo with null caption\n* Fields parsed but ignored: facilities, childPolicy, roomSize\\* -> confirm silent ignore\n* bedGroups/beds null -> no error, omit RoomFeatures; empty beds -> skip group"
+ },
+ {
+  "type": "task",
+  "key": "ELS-2213",
+  "id": "16533",
+  "author": "Daniel",
+  "created": "2026-06-24T12:26:19.170+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2213",
+  "text": "[DEV] Integration test - Push Data Mechanism & Google Meta Search ARI\n## Goal\n\nIntegration testing of the PUSH DATA mechanism (web-api / trigger-api -> channel-dispatch-api -> google-meta-search-api) and the ARI push flow to Google Hotel Meta Search.\n\nSource: PR oh-api#759 (branch ELS-1099-google-hotel-meta-search-integration).\n\n## Scope\n\nGrouped by 7 ARI entity types + 1 common group. Each group is one sub-task:\n\n1. Room (RoomTransformService)\n2. Rate Plan (RatePlanTransformService)\n3. Promotion (PromotionTransformService - <Promotions>)\n4. Promotion Manual (MANUAL_INSERT_YN='Y' -> RatePlan+Rate+Availability+RateModification)\n5. Rate (RateTransformService + markup in channel-dispatch RateMarkupApplier)\n6. Allotment (InventoryTransformService - OTA_HotelInvCountNotifRQ)\n7. Availability (AvailabilityTransformService + CutOffStopSellPushService)\n8. Common (DateNormalizer, IdResolver, GoogleContext, XSD validation, routing/exclusion EXC02/EXC03, dedup US_SELLER_PUSH_DEDUP_ENTITY)\n\n## Current coverage status\n\n* Basic tests exist: Room, Rate Plan, Promotion, Availability transform.\n* NO unit tests yet (high-risk gaps): Rate, Allotment/Inventory, RateModification, ExtraGuestCharges, common helpers.\n\n## Definition of Done (DoD)\n\n* Every business rule + edge case of each sub-task is covered by tests (unit/integration) or a recorded manual test result.\n* Each entity payload passes XSD (GoogleAriXmlValidator).\n* End-to-end: data change -> message pushed with correct entity/operation, markup & dedup behave as expected."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2212",
+  "id": "16531",
+  "author": "Daniel",
+  "created": "2026-06-24T12:24:44.986+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2212",
+  "text": "Roll out new bedGroup mapping to all Ctrip hotels (Phase 4)\n## Glossary / Context\n\n* Ctrip = vendor channel (Ctrip Korea) that ELLIS pushes bed group mapping to.\n* bedGroup = room bed group configuration ELLIS maps and pushes to Ctrip.\n* CTRIP_HOTEL_NEW_MAP_BED_GROUP = Redis key holding the list of Ctrip hotels for which the new bedGroup mapping rule is enabled.\n* Phase 4 (final) of the staged rollout, after Phase 2 (20 hotels, ELS-2210) and Phase 3 (500 hotels).\n\n## Technical Approach\n\n* Enable the new bedGroup mapping rule for ALL Ctrip hotels via the Redis key CTRIP_HOTEL_NEW_MAP_BED_GROUP (add all remaining hotels / switch to all).\n* Reuse the existing sync flow driven by this Redis key (see ELS-1883).\n* After enabling, Content team re-checks the bedGroup mapping to confirm correctness across all hotels.\n\n## Constraints / Non-goals\n\n* NO DB schema changes.\n* NO change to Ctrip-side / Push API contract.\n* Proceed only after Phase 3 (500 hotels) has been validated."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2211",
+  "id": "16530",
+  "author": "Daniel",
+  "created": "2026-06-24T12:24:39.250+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2211",
+  "text": "Roll out new bedGroup mapping to 500 Ctrip hotels (Phase 3)\n## Glossary / Context\n\n* Ctrip = vendor channel (Ctrip Korea) that ELLIS pushes bed group mapping to.\n* bedGroup = room bed group configuration ELLIS maps and pushes to Ctrip.\n* CTRIP_HOTEL_NEW_MAP_BED_GROUP = Redis key holding the list of Ctrip hotels for which the new bedGroup mapping rule is enabled.\n* Phase 3 of the staged rollout (Phase 2 = 20 hotels, see ELS-2210; Phase 4 = all hotels).\n\n## Technical Approach\n\n* Add 500 Ctrip mapping hotels to the Redis key CTRIP_HOTEL_NEW_MAP_BED_GROUP to enable the new bedGroup mapping rule for them.\n* Reuse the existing sync flow driven by this Redis key (see ELS-1883 \"Process sync hotel new mapping based on hotel list configured in Redis\").\n* After enabling, Content team re-checks the bedGroup mapping for the 500 hotels to confirm correctness.\n\n## Constraints / Non-goals\n\n* NO DB schema changes.\n* NO change to Ctrip-side / Push API contract.\n* Scope limited to the 500 hotels added in this phase; hotels not in the Redis key behave unchanged.\n* Do NOT open all hotels in this phase (that is Phase 4)."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2210",
+  "id": "16529",
+  "author": "Daniel",
+  "created": "2026-06-24T12:24:25.725+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2210",
+  "text": "Apply new bedGroup mapping logic to newly created rooms after the 2026-06-19 deploy (Phase 2)\n## Glossary / Context\n\n* Ctrip = vendor channel (Ctrip Korea) that ELLIS pushes hotel/room inventory and bed group mapping to.\n* bedGroup = room bed group configuration ELLIS maps and pushes to Ctrip.\n* VD_VENDOR_ROOM_TYPE = vendor room type table; FIRST_INSERT_DATETIME = timestamp when the vendor room type record was first created.\n* Deploy date = 2026-06-19, when the new bedGroup mapping logic went live.\n* Parent ELS-1711 fixed the bed group mapping mismatch between ELLIS and Ctrip (Lavita Hotel). This sub-task ensures rooms newly created in Ctrip AFTER the deploy also get the new bedGroup logic applied.\n\n## Technical Approach\n\n* For Ctrip rooms, check VD_VENDOR_ROOM_TYPE.FIRST_INSERT_DATETIME: if it is after the 2026-06-19 deploy timestamp, apply the new bedGroup mapping logic to that room.\n* Apply this check inside ctripPushHotelInvNotifService.pushHotelInvNotif so newly created rooms (FIRST_INSERT_DATETIME > deploy) are pushed with the new bedGroup logic.\n* Rooms created before the deploy keep their existing behavior (no retroactive change unless handled by the parent task / existing sync).\n\n## Additional scope (Phase 2 validation)\n\n* Content team adds 20 normal hotels (NOT affected by the mapping issue) so Daniel can open the new rule for them.\n* After the rule is opened, Content team re-checks the bedGroup mapping for these 20 hotels to confirm the new logic produces correct results before wider rollout.\n\n## Constraints / Non-goals\n\n* NO DB schema changes to VD_VENDOR_ROOM_TYPE.\n* NO change to Ctrip-side / Push API contract.\n* Do NOT retroactively re-apply logic to rooms created before 2026-06-19 in this sub-task.\n* Behavior for rooms outside this scope (non-Ctrip, or created before deploy) unchanged."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2209",
+  "id": "16528",
+  "author": "Calvin",
+  "created": "2026-06-24T11:48:41.295+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2209",
+  "text": "[Summary] Compare the metrics after migrating to Redis Access Control.\n**The migration of authentication-related cache data from the cluster cache-omh-cluster to the dedicated cluster prod-access-control completed successfully at 06:00 on 24 June 2026.**   \nThe cutover is cleanly visible and tightly correlated across both clusters:  \n\\- The authentication workload dropped off the source cluster and rose on the **prod-access-control** cluster at the same instant. \n\n\\- The **prod-access-control** cluster is healthy and running with substantial headroom (CPU \\~13-15%, memory <1%), serving production traffic at an excellent cache hit ratio (\\~99%). No evictions, throttling, or network-allowance breaches were observed.  \n\n| **Signal** | **cache-omh-cluster (source)** | **prod-access-control (destination)** | **Meaning** |\n| --- | --- | --- | --- |\n| CPU Utilization | node-003 falls \\~25% to \\~3.3% | node-001 rises to \\~13% | Compute moved |\n| Engine CPU Utilization | node-003 falls \\~10% to \\~1.15% | rises to \\~15% | Redis command load moved |\n\n  \n  \n**Metrics prod-access-control (destination) — after 06:00 cutover:**\n\n‌\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=a247840e-d768-42f1-b53d-c032bcdf2cda&&collection=&height=702&occurrenceKey=null&width=1990&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n  \n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=d4fd6feb-6416-4867-9446-8666c05ff17f&&collection=&height=712&occurrenceKey=null&width=2001&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=e070bc46-68db-4374-bc28-918996ce11a6&&collection=&height=337&occurrenceKey=null&width=1740&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n‌\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=b2839bdd-3bdb-4118-a148-14b5714a5e20&&collection=&height=639&occurrenceKey=null&width=1731&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=35110c63-a7d0-4d75-a9f3-f00398c89373&&collection=&height=333&occurrenceKey=null&width=1811&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=05fa5927-541c-42b6-9772-c1517b79c50f&&collection=&height=334&occurrenceKey=null&width=911&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n##   \n**cache-omh-cluster:**\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=05e9e667-03c4-454a-9a43-4a6d7c0e3f6d&&collection=&height=687&occurrenceKey=null&width=1786&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=96a9c41a-5eed-4ab2-b8dd-3b440c9e2b0f&&collection=&height=638&occurrenceKey=null&width=1763&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=9e082de1-3e49-413e-a419-699c8018bb1c&&collection=&height=326&occurrenceKey=null&width=888&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=08546504-c53c-4d76-a9ef-70db85cf7a64&&collection=&height=640&occurrenceKey=null&width=1741&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=c24448b0-113a-41c7-96db-54c1e2d5e870&&collection=&height=651&occurrenceKey=null&width=1789&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=7aeefcab-67c6-4645-9dce-e21a34bbb686&&collection=&height=661&occurrenceKey=null&width=1779&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=2bb336d7-8267-4013-9b56-001066d5f6e6&&collection=&height=647&occurrenceKey=null&width=834&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)"
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2208",
+  "id": "16527",
+  "author": "Tracy2",
+  "created": "2026-06-24T11:48:02.087+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2208",
+  "text": "[QA] Verify bulk margin audit log immutability and status coverage\nTest that every bulk update creates an audit log entry for SUCCESS, PARTIAL_SUCCESS, FAILED, CANCELLED, and INTERRUPTED outcomes, and confirm audit records cannot be modified or deleted."
+ },
+ {
+  "type": "subtask",
+  "key": "OMH-677",
+  "id": "16526",
+  "author": "Holden",
+  "created": "2026-06-24T11:46:44.213+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-677",
+  "text": "QA validation for Reservation details localization fixes\nVerify the Reservation details page title and Reservation representative edit button across EN/KO/ZH on PC and MOweb in DEV/STG/PROD, confirming the corrected labels display and the edit dialog still opens normally."
+ },
+ {
+  "type": "task",
+  "key": "OMH-676",
+  "id": "16523",
+  "author": "Holden",
+  "created": "2026-06-24T11:18:08.855+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-676",
+  "text": "Reservation details — typo \"Resveration details\" + untranslated i18n key tl.bh-detail.edit\nEnvironment: DEV/STG/PROD\n\nPage: My Page > Reservation history > Reservation details (/my-page/booking-history/{bookingNo})\n\nBoth items verified live on DEV 2026-06-24 (account tracytestomh, booking K26061910002H01).\n\n**--- Item 1 — Typo \"Resveration details\" (page title) ---**\n\nSteps to reproduce:\n\n1. Language: EN/KO/ZH\n2. Device: PC\n3. Go to My Page > Reservation history > open a booking (\"Reservation details\").\n4. Look at the page title / heading (h3) of the details page.\n\nExpected: \n\n* EN: The page title reads \"Reservation details\".\n* KO: Show title “예약상세”\n* ZH: Show title “预订详情”\n\nActual: \n\n* PC - EN: The page title is misspelled as \"Resveration details\" (the er / ve letters are transposed).\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=cf798628-ff7e-4fbf-94ab-e77e38b15294&&collection=&height=684&occurrenceKey=null&width=1015&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n* PC - KO: Show title “예약 상세내역”\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=95d83d23-f1ff-491e-a3e1-0de434527fbd&&collection=&height=662&occurrenceKey=null&width=1086&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n* PC - ZH: Show title “预订详细”\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=713b25a8-7811-4384-9986-8fc4d2620f22&&collection=&height=705&occurrenceKey=null&width=1049&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n**--- Item 2 — \"Reservation representative\" edit button shows raw i18n key ---**\n\nSteps to reproduce:\n\n1. Language: All\n2. Device: PC/MOweb\n3. Open a booking > \"Reservation details\".\n4. Look at the \"Reservation representative\" section header / edit control.\n\nExpected: The edit button shows a translated label (e.g. \"Edit\").\n\nActual: The button displays the raw i18n key tl.bh-detail.edit (missing EN translation). Function still works — clicking opens the \"Change Reservation representative\" dialog normally.\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=26f9ae96-9536-4c40-b350-ffdb9d13335f&&collection=&height=702&occurrenceKey=null&width=1478&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=62503b46-5fb4-4258-8e53-84c52a0a905c&&collection=&height=651&occurrenceKey=null&width=1206&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)"
+ },
+ {
+  "type": "subtask",
+  "key": "OMH-675",
+  "id": "16522",
+  "author": "Holden",
+  "created": "2026-06-24T11:11:09.129+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-675",
+  "text": "QA validation for Change Password password policy text and validation consistency\nVerify the Change Password page displays the correct helper text, validation behavior, and inline error message consistently across DEV/STG/PROD, EN/VI, and PC/MOweb."
+ }
+]

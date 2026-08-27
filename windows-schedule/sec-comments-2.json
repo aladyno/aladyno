@@ -1,0 +1,281 @@
+[
+  {
+    "type": "comment",
+    "key": "ELS-1227",
+    "id": "17876",
+    "author": "Tom",
+    "created": "2026-06-22T12:05:00.700+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1227",
+    "text": "PR opened (target `master`): https://github.com/ohmyhotelco/oh-api/pull/814\n\n* **Title**: refactor(payment): update VN accounting email in invoice templates\n* **Risk**: Low (2-line email constant change)\n* **Build**: `:web-api:compileJava` → BUILD SUCCESSFUL\n* Branch rebased onto latest master (behind = 0)"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1227",
+    "id": "17877",
+    "author": "Tom",
+    "created": "2026-06-22T12:10:29.079+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1227",
+    "text": "Added DB migration to PR #814: `db-schema/scripts/ELS-1227_update_accounting_email.sql`\n\nUpdates `BS_UMS_WORDING_SETUP.EMAIL_DETAIL` (accounting.vn@ohmyhotel.com → acc@ohmyhotel.com), idempotent `REPLACE` with `LIKE` guard.\n\nNote: on the currently-connected DB the table already has 0 rows with the old email (3 rows already use the new one) — the migration is mainly for environments still holding the old address (e.g. prod)."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1940",
+    "id": "17952",
+    "author": "Daniel",
+    "created": "2026-06-22T19:14:11.607+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1940",
+    "text": "Hotel of tl-lincoln with contract active."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1940",
+    "id": "17964",
+    "author": "Daniel",
+    "created": "2026-06-23T10:08:28.771+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1940",
+    "text": "Check production work well"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-631",
+    "id": "17933",
+    "author": "Harry",
+    "created": "2026-06-22T17:55:29.302+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-631",
+    "text": "Hi @Dante\n\nThe `error.status === 0 → result = true` branch isn't an accidental fail-open — it's our graceful-degradation path on purpose. It covers cases where the BE is unavailable for reasons **outside the user's control**:\n\n* **Deployment windows on our side** — we use rolling updates, so brief random failures can hit a small set of in-flight requests during pod rotation; this branch is our buffer for those.\n* Transient infra blips / connection drain.\n* Unexpected upstream errors.\n\nThe sole intent of this branch is to protect user experience when our own service has a temporary issue — it isn't meant to relax auth in general**.** In all of these, we'd rather let a real Hana user reach the site than block them with what looks like an arbitrary auth error.\nWe've been running this in production and haven't seen any abuse — the exploit window is also narrow (Hana-only URL, attacker must force their own transport failure on a partner-issued link, payoff is only a single fabricated session).\n\n**Given this, my proposal is to leave this code path as-is and not include it in the security fix.**\ncc @Justin"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-631",
+    "id": "17942",
+    "author": "Dante",
+    "created": "2026-06-22T18:13:04.353+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-631",
+    "text": "Dear @Justin\nBased on Mr. Harry's explanation, I plan to keep the current logic as is and update the API contract documentation to clarify this behavior.\nWould that be acceptable, or do you have any other suggestions?\nThanks."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-631",
+    "id": "17943",
+    "author": "Justin",
+    "created": "2026-06-22T18:20:07.254+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-631",
+    "text": "@Dante\nThe fact that we uncovered this previously hidden background history (tacit knowledge) is a positive sign.\n\nTo ensure this context is shared across the entire B2C team, please update the description of the current task by documenting the historical background (without modifying the original scope or intent of the task itself).\n\nCreate a commits under this task explaining the background history and the rationale behind it. This will help preserve the context and make it visible to future stakeholders.\n\nOnce this PR is merged and the task description has been updated accordingly, this task can be closed."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-631",
+    "id": "17950",
+    "author": "Dante",
+    "created": "2026-06-22T19:10:46.523+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-631",
+    "text": "Dear@Justin @Harry — done per the decision in 17943. The `status === 0` branch stays as-is (intentional graceful-degradation).\n\n* **In-code rationale commit:** documented the branch directly above it (why it exists: rolling-deploy / transient-infra buffer; the genuine invalid-token answer still denies). PR (docs-only, **no behavior change**): [**https://github.com/ohmyhotelco/ohmyhotel-monorepo/pull/46**](https://github.com/ohmyhotelco/ohmyhotel-monorepo/pull/46)\n* **Description updated:** added a “Resolution” banner capturing Harry's background + the keep-as-is decision; the original analysis is preserved below it.\n* Superseded PR #34 (the earlier fail-closed change) is closed.\n\nOnce PR #46 is merged, this is ready to close."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-631",
+    "id": "17961",
+    "author": "Justin",
+    "created": "2026-06-22T20:31:32.220+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-631",
+    "text": "Followed up on PR #46 to make sure this decision survives the v2 port, not just the legacy code.\n\n@Dante 's PR #46 records the rationale **in-code** in the legacy consumer (`auth-hana.service.ts`), which is exactly right for \"don't change this in legacy again.\" But that comment does **not** travel to the v2 RR v7 port — and our source-of-truth migration plan (`docs/migration/v2-migration-plan.md`) still instructed the **opposite** (default fail-closed). A future Hana Phase H1 porter following the plan would have silently dropped this now-blessed graceful-degradation branch.\n\nSo I pushed one more commit onto the **same** PR #46 branch (`611bf57a`, docs-only, no behavior change) aligning the plan with this decision in three places:\n\n* **§7 loader sketch** — wrapped `POST_HANA_VERIFY_TIME` in `try/catch` so a transport failure (no HTTP response) reproduces the legacy `status === 0` pass-through; a real HTTP error response still denies.\n* **§7 security question #1** — flipped the recommended default from \"fail-closed\" to **RESOLVED keep-as-is**, citing Harry's rationale (17933) + my sign-off (17943), and noting the v2 loader must reproduce the pass-through.\n* **§13** — OMH-631 marked resolved (keep-as-is, no behavior change), cross-referencing PR #46.\n\nNet: legacy in-code comment + the source-of-truth plan now carry the same keep-as-is decision, so the v2 port can't quietly revert it to fail-closed.\n\nClose criteria unchanged: once PR #46 merges (now carrying both the legacy comment and the plan alignment) and the description is updated (done), this can be closed. cc @Harry"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2156",
+    "id": "17937",
+    "author": "Tracy",
+    "created": "2026-06-22T18:00:45.455+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2156",
+    "text": "Dear @Ruka ,\nPlease advise us if there are any bookings occurred under these promotions."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2156",
+    "id": "17938",
+    "author": "Ruka",
+    "created": "2026-06-22T18:00:45.514+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2156",
+    "text": "@Tracy No bookings were made using these promotions. Thank you!"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2156",
+    "id": "17959",
+    "author": "Tracy",
+    "created": "2026-06-22T19:44:56.484+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2156",
+    "text": "@Ruka data updated, please check again"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-667",
+    "id": "17873",
+    "author": "Dante",
+    "created": "2026-06-22T11:54:26.814+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-667",
+    "text": "```sql\nUPDATE BS_COUPON_BUDGET\nSET USE_TO_DATE = '2026-12-31'\nWHERE COUPON_BUDGET_SEQ = 17;\n```\n\nplease review this script @Harry"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1316",
+    "id": "17948",
+    "author": "Tom",
+    "created": "2026-06-22T18:57:37.142+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1316",
+    "text": "(screenshots only — no text body)"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1316",
+    "id": "17951",
+    "author": "Tom",
+    "created": "2026-06-22T19:11:32.398+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1316",
+    "text": "PR opened: https://github.com/ohmyhotelco/oh-api/pull/826"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2090",
+    "id": "17947",
+    "author": "Tracy",
+    "created": "2026-06-22T18:55:16.621+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2090",
+    "text": "@Hannah please check again https://ohmyjira.atlassian.net/browse/ELS-2093?focusedCommentId=17816"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2129",
+    "id": "17891",
+    "author": "Tan",
+    "created": "2026-06-22T13:50:59.472+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2129",
+    "text": "@Karl anh gửi file, trong file này data 2 cột EMAIL và WEB (Homepage URL) có vài dòng đang bị ngược nhau, em review và sửa lại cho đúng giúp anh nhé.\ncc chị @Tracy"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2129",
+    "id": "17946",
+    "author": "Tracy",
+    "created": "2026-06-22T18:52:38.203+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2129",
+    "text": "replied by Dev team https://ohmyjira.atlassian.net/browse/ELS-2129"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2097",
+    "id": "17913",
+    "author": "Tan",
+    "created": "2026-06-22T16:01:33.585+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2097",
+    "text": "@Holden please test again"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2097",
+    "id": "17944",
+    "author": "Holden",
+    "created": "2026-06-22T18:31:13.697+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2097",
+    "text": "@Tan tested on DEV env \n\n**Case A — generic save failure (all 3 tabs)**\n\n* Booking-Based tab => Passed\n* Stay-Based tab => Passed\n* Combined tab => Passed\n\n**Case B — silent 25% default (Combined tab only) => Passed**\n\n**New issue:**\n\n* Actual: V.Comm Rate Override can be saved successfully even if some fields are left empty\n* Expected: Saving failed when any field is empty (ref Rate Cap field)"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2097",
+    "id": "17945",
+    "author": "Tan",
+    "created": "2026-06-22T18:51:23.591+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2097",
+    "text": "@Holden case new issue anh có ý kiến, Apply Change thì save những cái đã được Apply, còn em Apply lỗi thì nó không save là đúng rồi, lúc nhấn Apply đã có báo lỗi rồi mà. Chứ nhấn Apply Change mà bắt validate cả những field chưa được nhấn Apply là không hợp lý."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2024",
+    "id": "17941",
+    "author": "Daniel",
+    "created": "2026-06-22T18:11:48.436+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2024",
+    "text": "Dear @Justin ,\nJust a quick heads-up so you're in the loop: I'm currently tied up with the google-meta-search task,\nso I'll be picking this one up a little later — possibly toward the end of this week.\nBest,\nDaniel"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1991",
+    "id": "17929",
+    "author": "Tan",
+    "created": "2026-06-22T17:38:08.808+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1991",
+    "text": "@Joseph @Dang Minh Duc (Ben) em cần hỗ trợ thêm \n\n1. `Credentials test (ChannelCode, ChannelUserName, AES Key) từ SDS`\n2. `Comp code mới (type Vendor(API))`"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1991",
+    "id": "17940",
+    "author": "Dang Minh Duc (Ben)",
+    "created": "2026-06-22T18:10:45.516+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1991",
+    "text": "Dear@Joseph @Tan   please check with SCM & Ms. Sophia, they will handle this company. Thank you a"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-669",
+    "id": "17897",
+    "author": "Zia",
+    "created": "2026-06-22T14:11:27.910+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-669",
+    "text": "Dear @Joseph \n\nI would like to request that we prioritize the work related to expired and invalid links.\n\nThis is one of the issues identified in the report and requires action under the current circumstances.\n\nPlease review it and assign an owner when possible.\n\nThank you."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2117",
+    "id": "17905",
+    "author": "Tom",
+    "created": "2026-06-22T15:44:52.421+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2117",
+    "text": "PR opened: https://github.com/ohmyhotelco/oh-admin/pull/242\n\nFix for the parent ELS-2040 photo reorder bug. Root cause: the upload new-slot inside `#dropList` was counted by Sortable.js when computing drag indexes (off-by-one), so reordering after upload injected an `undefined` item (blank tile) and saved the wrong order.\n\nVerified on running app: upload A,B,C → drag C to front → Save persists [C, A, B], no blank tile, no `undefined` in payload. Applies to both `app-hotel-detail-photo` and `app-room-detail-photo`."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-557",
+    "id": "17925",
+    "author": "Harry",
+    "created": "2026-06-22T17:22:13.305+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-557",
+    "text": "@Lexi \n\nSorry for reply late.\n\nConsolidated response to your 6 points\n\n## 1. View design ✅\n\nNoted — We will define the table to support `V_PAYMENT_FUNNEL` and update the view yourselves later. No action needed from my side on this.\n\n## 2. Drop `FRONTEND_ERROR_CODE` ✅\n\nFinal DDL keeps only `FRONTEND_ERROR_MESSAGE TEXT NULL`. FE error codes aren't stable enough for structured analytics; the message field carries the actual analytical value.\n\n## 3. CCS classification + Pending duration ✅\n\n### TIMEOUT detection\n\nWhen a payment attempt has **no terminal event arriving**, for example:\n\n* PG never sends a callback back to our backend (PG-side issue or network failure between PG and our server)\n* User loses internet mid-payment\n* User force-closes the browser, tab, or app entirely\n* User abandons the PG page silently (no cancel signal observable)\n\nwe receive no `APPROVED`, `FAILED`, or `CANCELLED` signal at all. Without a fallback, the row would stay in `PG_CALLED` forever. We need a job to detect these \"abandoned\" cases so the attempt is closed out and removed from the \"pending\" funnel.\n\n**How it works**:\n\n* `@Scheduled` job runs every **5 min**\n* For any attempt still in a non-terminal state (`INITIATED` / `PG_CALLED` / `AUTH_STARTED`) more than **30 min** after `PG_CALLED_DATETIME` → mark `STATUS_CODE='TIMEOUT'` + set `TIMEOUT_DATETIME = NOW()`\n* The 30-min threshold is aligned with OnePay's session lifetime — after that, the PG can no longer complete the transaction anyway, so it is safe to declare TIMEOUT.\n\n**Pending-duration precision**:\n\n* `TIMEOUT` → `TIMEOUT_DATETIME` is set when the scheduler detects the row (somewhere between the 30-min threshold and 35 min). Pending duration is ±5 min — the imprecision is inherent because the user is gone and we cannot know the exact moment they gave up.\n\n### Column changes vs the original spec\n\n| Spec column | Proposed change | Reason |\n| --- | --- | --- |\n| `pg_called_at`  | Keep (rename to `PG_CALLED_DATETIME`, oh-api convention)  | \"Pending starts\" anchor  |\n| `auth_started_at`  | **DROP**  | same `pg_called_at`  |\n\n### Other naming-only changes (no semantic change)\n\n* `attempt_id` → `ATTEMPT_SEQ` (PK suffix)\n* `status` → `STATUS_CODE` (avoid SQL reserved word)\n* `created_at` → `FIRST_INSERT_DATETIME` + add `FIRST_INSERT_UNO`\n* `updated_at` → `LAST_UPDATE_DATETIME` + add `LAST_UPDATE_UNO`\n* All other columns: UPPER_SNAKE_CASE; `DATETIME(3)` → `DATETIME` (oh-api uses second precision)\n\nThese rename changes don't affect logic — same fields, just renamed to fit existing system conventions. No data is lost.\n\n## 4. CANCEL_TYPE — verified by source review\n\nAfter tracing our ohmyhotel pc, mobile proposed enum (only values we can actually capture):\n\n| Value | Source | Status |\n| --- | --- | --- |\n| `POPUP_CLOSE`  | PC NicePay SDK popup close | ✅ Already wired in PC |\n| `BACK_NAVIGATION`  | Mobile: user pressed back on PG page → returns to /payment (Android hardware back, iOS swipe, mobile browser back). FE checks for unresolved attempt on page reload and marks cancelled.  | ✅ FE-only work, no native bridge needed  |\n\n`TAB_CLOSE` NOT feasible on mobile redirect — and not needed. Once the user is on the PG's page (full-page redirect, not a popup), ohmyhotel-mobile is unloaded from the tab — closing the tab can't fire any listener because our code isn't there. Physical limitation, not a coding gap.\n\n**Recommendation**: for mobile, use `BACK_NAVIGATION` only. When the user presses back from the PG page, the tab returns to /payment, our FE runs again, detects the unresolved attempt, and marks it cancelled. This captures the typical \"user gave up\" intent on mobile without TAB_CLOSE. Are you OK dropping `TAB_CLOSE` from the mobile enum entirely?\n\n## 5. Error vs Timeout distinguishable ✅\n\nSchema separates `STATUS_CODE` from `CCS_CODE`:\n\n* All timeouts: `WHERE STATUS_CODE = 'TIMEOUT'`\n* Pure system errors: `WHERE STATUS_CODE = 'FAILED' AND CCS_CODE = 'CCS99'`\n\n## 6. NicePay code lists  ✅\n\n---\n\nCould you confirm the points above? If there are no further concerns, when would you like us to start the implementation? Thank you!"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2147",
+    "id": "17906",
+    "author": "Roy",
+    "created": "2026-06-22T15:45:32.212+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2147",
+    "text": "@Calvin  i have added the prod cluster.\nPlease check the connection status and proceed with the work."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2147",
+    "id": "17907",
+    "author": "Roy",
+    "created": "2026-06-22T15:49:23.552+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2147",
+    "text": "@Calvin\nCurrently, encryption in transit is enabled for our ElastiCache, but TLS is not set as “required.”\n\nThe reason we did not make TLS required for access-control this time is that changing it from the current default would also require code changes, and it could affect both existing production clusters, cache-omh-cluster-v1 and cache-omh-cluster-v2.\n\nSo we are keeping it off for now, but we should update all of them later."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2147",
+    "id": "17908",
+    "author": "Calvin",
+    "created": "2026-06-22T15:51:11.541+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2147",
+    "text": "@Roy I have successfully connected, thanks"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2147",
+    "id": "17909",
+    "author": "Calvin",
+    "created": "2026-06-22T15:51:30.409+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2147",
+    "text": "@Roy Well noted"
+  }
+]

@@ -1,0 +1,5 @@
+RUN omh-sec-directive | window 2026-06-25T09:10:02+07:00 -> 2026-06-26T09:10:02+07:00 | scanned=140 (48 task/subtask + 92 comments) | scanner_candidates=3 | confirmed=0
+DROP ELS-2061 (comment) - Secret assignment(§2/§5) HIGH - masked 'omh/...' is a Secrets Manager secret NAME/PATH (omh/<env>/shared/*) inside an IAM policy-ARN amendment discussion; placeholder <env>; NO secret value present. Documentation/IaC -> not a real secret.
+DROP ELS-2274 (subtask) - Credential->attachment(§2/§11) MEDIUM - matched 'aws secretsmanager create-secret --secret-string file://<tmp>' runbook command template with placeholders; value explicitly NOT pasted (stored via file://<tmp>). This is the directive-approved Secrets Manager flow (§9) -> not a real secret.
+DROP OMH-652 (comment) - Pasted prod config(§2/§8) MEDIUM - code-review of Dockerfile/CI/vite config; incidental '.env'/OMH_ENV mention, no pasted config values/credentials -> not a real secret.
+RESULT 0 confirmed findings -> NO email sent (Step 5: silent when clean).

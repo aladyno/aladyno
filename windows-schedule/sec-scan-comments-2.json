@@ -1,0 +1,164 @@
+[
+  {
+    "type": "comment",
+    "key": "ELS-2318",
+    "id": "18897",
+    "author": "Tom",
+    "created": "2026-07-03T17:23:37.171+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2318",
+    "text": "<custom data-type=\"mention\" data-id=\"id-0\">@Tracy2</custom>  anh đã add quyền cho em và <custom data-type=\"mention\" data-id=\"id-1\">@Holden</custom> , check lại vào được page Profit Share dưới DEV chưa nhé, Thank you"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2318",
+    "id": "18908",
+    "author": "Tracy2",
+    "created": "2026-07-03T18:12:00.987+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2318",
+    "text": "<custom data-type=\"mention\" data-id=\"id-0\">@Tom</custom> tested on DEV - Vendor name & Roomtype name already added\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=f9f3f73a6baa&id=f7d12fbf-c2b9-4548-ae82-9756ba7afe3d&&collection=&height=750&occurrenceKey=null&width=1582&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=21871d4f-3449-40b6-87a5-5aded3e26b25&&collection=&height=null&occurrenceKey=null&width=null&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)‌"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-711",
+    "id": "18853",
+    "author": "Justin",
+    "created": "2026-07-03T12:55:11.627+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-711",
+    "text": "<custom data-type=\"mention\" data-id=\"id-0\">@Harry</custom> <custom data-type=\"mention\" data-id=\"id-1\">@Mon</custom> — planning OMH-711; tracing the legacy code shows \"app-download\" is actually two different things. I need the history + current state to settle the v2 migration scope and whether the `/common/ums/send` blocker even applies.\n\n**Current behavior (code-verified)**\n\n1. **Routed page** `/app-download` (`pages/app-download`): no content — on init it sniffs the user-agent and redirects (Android → Play Store, iOS → App Store), then calls `window.close()`. Empty markup.\n2. **SMS send-link form + QR** (`shared/bottom-contents/app-download`, selector `app-app-download`): posts `/common/ums/send`. But it is commented out in `bottom-contents.component.html:15` — disabled since 2025-08-07 (`becab4599`, \"add new UI\"). Not rendered on any live route.\n\n**Access paths**\n\n* No in-app link or navigation to the PC `/app-download` route (the footer block that embedded it is commented out; no header/menu link) — direct URL only.\n* The SMS body links to `https://m.ohmyhotel.com/app-download` (mobile domain, not PC); the QR encodes `${diffPlatformDomain}/app-download` (mobile, from PC's side). Both target mobile — and both live inside the disabled block.\n\n**Questions**\n\n1. **History —** what was the original goal of the \"enter phone number → SMS the app-download link\" design? And was commenting it out on 2025-08-07 an intentional deprecation, or a temporary step during a redesign (\"add new UI\")?\n2. **Current state —** is the PC `/app-download` store-redirector still a valid entry point? Is app-download inducement effectively mobile-only now?\n3. **countryPhoneCode / BE schema —** since the form is already disabled, is there any reason to resurrect it and finalize the `/common/ums/send` schema in v2? (If dropped, the flag-ON BE-schema blocker dissolves.)\n4. **Migration direction —** (a) migrate only the store-redirector route and drop the dead form; (b) resurrect the form (needs the BE schema); (c) don't keep a PC app-download content page at all — which do you prefer?\n\n**If you confirm deprecation:** I'll drop the SMS form from OMH-711's scope and remove the flag-ON BE-schema blocker, and post a correction on OMH-605 B3 — its TRACK verdict rested on a now-stale \"LIVE in PC\" premise (the `sendLink` caller has been commented out since 2025-08-07), so `/common/ums/send` becomes EXCLUDE like B1/B2."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-711",
+    "id": "18904",
+    "author": "Mon",
+    "created": "2026-07-03T18:04:12.975+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-711",
+    "text": "Hi <custom data-type=\"mention\" data-id=\"id-0\">@Justin</custom> ,Thanks for the detailed trace. Here is my answers:\n\n**1. History / comment-out:** The comment-out was intentional, and the SMS send-link form is now fully unused. That code is dead — it can be cleaned up.\n\n**2. Current state:** Yes, the PC `/app-download` store-redirector is still a valid entry point.\n\n**3. countryPhoneCode / BE schema:** I'd suggest keeping the `/common/ums/send` API itself. B2C no longer uses it, but the Partner site currently uses it for Voucher and Invoice booking (send flows). So please don't mark it EXCLUDE on the BE side — it just falls out of OMH-711's scope.\n\n**4. Migration direction:** I think option **(a)** — migrate only the store-redirector route and drop the dead form — is the optimal choice at this point.\n\nSo from my side: drop the SMS form from OMH-711's scope and remove the flag-ON BE-schema blocker. Just note on OMH-605 B3 that the endpoint stays alive for the Partner site rather than becoming EXCLUDE.\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=7cc4e164c154&id=a179c87c-cba9-4aa1-9510-95d1d8e109da&&collection=&height=157&occurrenceKey=null&width=372&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\nThank you"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-477",
+    "id": "18899",
+    "author": "Justin",
+    "created": "2026-07-03T17:36:50.166+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-477",
+    "text": "**Scope addition — web-pc (v2) enters scope (2026-07-03, from OMH-748).**\n\nThe current \"Out\" section scopes this Epic to legacy-pc (mobile/hana/native/backend are separately tracked); web-pc (the v2 React app) was implicitly out because it had no secrets. **That changes with the OMH-748 build-approach decision**: v2 login ships in the **same client-side form as legacy first** (replicating legacy's client-side OAuth handling, since legacy already ships those secrets in its bundle — v2 matching it is no worse than today's posture). That makes **web-pc a new holder of the same client-bundle OAuth/PG secret debt**.\n\n**Implication for this Epic's Stage B/C**: when PG hash generation and the Kakao OAuth `client_secret` exchange are relocated server-side, the fix must migrate **legacy-pc AND web-pc together** — do not remediate legacy while leaving the v2 copies exposed. Acceptance criteria 1–3 (no secrets in any prod client bundle; PG hashing server-side; OAuth secret never browser-delivered) should be read as applying to **both** apps once web-pc's login lands.\n\nRecorded in: OMH-748 (BUILD APPROACH + dependency note), OMH-457 Epic body, `docs/migration/v2-migration-plan.md` §7. No action needed until OMH-748 ships v2 login; flagged now so the Stage B child tickets don't miss web-pc."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2384",
+    "id": "18845",
+    "author": "planning",
+    "created": "2026-07-03T12:05:59.736+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2384",
+    "text": "Tracy created this task."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-460",
+    "id": "18877",
+    "author": "Justin",
+    "created": "2026-07-03T16:00:43.129+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-460",
+    "text": "**This ticket is now a SEQUENCING GATE for the route-flip roadmap** (recorded 2026-07-03 during the OMH-709/710 shell review; also in `docs/migration/v2-migration-plan.md` §7).\n\n**Why**: during the Strangler period the login UI (`LoginModalComponent`) exists only inside legacy-booted pages — an Angular component can never mount over a v2 document. v2 pages hand off to the guarded `/my-page/booking-history` (legacy `auth-guard.service.ts:103` auto-opens the real login modal and stores `returnUrl`; changed from the home-page handoff so the flow is one step: click → page turn → modal). The domain cookie crossover (`{hostname}_userToken`) carries the session back to v2 — already e2e-verified.\n\n**The constraint**: this handoff works only while legacy owns login-capable surfaces. → **OMH-460 must complete before home or any booking-flow page flips.** Phase 1 static pages are unaffected (notice/faq verified as the two _unguarded_ `/my-page` routes).\n\n**Scope notes for when this ticket starts** (from the live legacy modal, captured 2026-07-03):\n\n* 로그인/회원가입 modal: email + 계속 (step flow), 비회원 예약확인/문의 entry, social login ×4 (Kakao / Naver / Google / Apple), terms-consent footer notice.\n* The consent documents the flows reference are split in legacy: sign-up step uses **100057/100060** (enum) while the social-signup terms step hard-codes **100003/100051** — a recorded data-consistency issue (see OMH-709 comment + `docs/migration/mobile-hana-notes.md`); resolve the canonical set with the decision owner before wiring v2 consent.\n* The shell's visual gate (criterion F pattern, OMH-710 plan) intentionally EXCLUDES the login modal until this ticket ships its v2 counterpart — excluded by recorded decision `LOGIN-MODAL-DEFER-OMH460`, at which point it must join the modal-open-state captures.\n\n"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-460",
+    "id": "18884",
+    "author": "Justin",
+    "created": "2026-07-03T16:39:19.851+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-460",
+    "text": "**Scope reduction — auth foundation extracted to Phase 2 (2026-07-03).**\n\nThe **auth foundation** — authed header (avatar + name dropdown + logout, user-info API), session-expiry handling, login modal, and session issuance — has been pulled OUT of this ticket into [**OMH-748**](https://ohmyjira.atlassian.net/browse/OMH-748) (Phase 2 / OMH-457).\n\n**Why**: Phase 2 migrates all auth-gated My Page routes, which cannot render coherently with the anonymous header, and today's login-port handoff targets a guarded legacy route (`/my-page/booking-history`) that becomes v2 in Phase 2 — breaking the handoff loop. So the auth foundation is a Phase-2 prerequisite, not Phase-5 work. (Surfaced during the OMH-709/710 shell review; recorded in the OMH-457 Epic body + `docs/migration/v2-migration-plan.md` §7.)\n\n**What stays here (OMH-460 / Phase 5)**: the **home page** migration and the **Angular decommission**.\n\n**Build approach carried into OMH-748 (Justin 2026-07-03)**: ship v2 login in the same client-side form as legacy first (legacy already ships OAuth secrets client-side, so v2 matching is no worse) — email + all 4 social, no handoff, no half-state. The server-side secret relocation is **OMH-477** (client-bundle secrets / PG payload / OAuth — corrected 2026-07-03, was mistakenly written as OMH-650 which is the Node-18 build baseline), a **follow-up hardening for both apps, NOT a blocker**; OMH-477 scope must include web-pc."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2395",
+    "id": "18896",
+    "author": "planning",
+    "created": "2026-07-03T17:23:02.713+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2395",
+    "text": "Tracy created this task."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-742",
+    "id": "18883",
+    "author": "Joseph",
+    "created": "2026-07-03T16:18:51.635+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-742",
+    "text": "<custom data-type=\"mention\" data-id=\"id-0\">@Harry</custom> please check this requirement. And Estimate the time"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-742",
+    "id": "18893",
+    "author": "Harry",
+    "created": "2026-07-03T17:04:37.471+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-742",
+    "text": "Hi <custom data-type=\"mention\" data-id=\"id-0\">@Zia</custom>   \n\nThanks for the detailed proposal.\n\nWe will go with Option B (using the query parameter `?preview=true`**)** for this task. Since this page only displays previously public promotion content and doesn't involve any sensitive data manipulation, adding a URL parameter is the safest, lowest-risk, and fastest way to unblock your operators and QA team.\n\nWe will implement it exactly as requested—rendering the normal detail page as-is without any new UI components for now. Will update you once it's ready for verification!"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-342",
+    "id": "18865",
+    "author": "Lexi",
+    "created": "2026-07-03T14:30:03.094+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-342",
+    "text": "**Spec document is updated: v1.2**\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=347052a1f783&id=45beb2a1-ba7e-4a39-b15b-fefe9f667a9f&&collection=&height=null&occurrenceKey=null&width=null&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)**Title banner**\n\n* Version: `v1.1` → `v1.2`\n\n**Terms UI redesign (sidebar, above Pay Now button)**\n\nRestructured from the previous single-line \"checkbox with 'I agree to ...' wording\" into a 3-part composition based on the reference image:\n\n* Added section title + subtitle (consent framing is now delivered via the subtitle)\n* Checkbox label now displays the **admin-registered terms name as-is** (\"I agree to ...\" wording removed)\n* \\[View terms\\] button positioned to the right of the checkbox\n\n**Terms modal & spec**\n\n* Mapped SEQ **100061** specified\n* Supported languages: **KO / EN / VI / JA / ZH** (5 languages) specified\n* Spec updated to describe the rendering flow: the version of SEQ 100061 registered per language in admin is served based on the user's active language\n\n**new file: NICEPAY_Terms_Multilingual.docx**\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=9f635c7f-db72-404c-b7ed-0aa545af327c&&collection=&height=null&occurrenceKey=null&width=null&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)‌"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-342",
+    "id": "18894",
+    "author": "Lexi",
+    "created": "2026-07-03T17:21:09.717+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-342",
+    "text": "<custom data-type=\"mention\" data-id=\"id-0\">@Harry</custom> <custom data-type=\"mention\" data-id=\"id-1\">@Dante</custom> Hello, I believe the dev team has recently been briefed by Justin on the 'all new B2C' project. Related to that, I'd like to share the direction for the payment window inline transition work.\n\nThis work will be carried out together with the **'6. Booking & Payment Page' task (OMH-720)** within the **'all new B2C' project (OMH-714)**. In other words, OMH-720 and the inline payment transition are to be bundled as a single unit of work and handled at the same time.\n\nThis decision is intended to prevent unnecessary duplicate work on the payment page ahead of the all new B2C project. Please refrain from starting this as a separate, preceding task, and prepare so that it can be addressed together at the time OMH-720 is worked on.\n\nIf you have any questions regarding this, please feel free to reach out anytime. Once you've reviewed this comment, please leave an emoji reaction or a reply to acknowledge. Thank you.\n\n//cc. <custom data-type=\"mention\" data-id=\"id-2\">@Joseph</custom> "
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2377",
+    "id": "18890",
+    "author": "Harry",
+    "created": "2026-07-03T16:55:52.566+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2377",
+    "text": "Hi <custom data-type=\"mention\" data-id=\"id-0\">@Zia</custom>   \n**To clarify, the 2-day timeline isn't just for moving code; it covers code merge reviews, Staging infrastructure setup, resource provisioning, and an internal pre-check to guarantee everything is 100% stable before handing it over to your team.**\n\n**About Tuesday—that represents the 'Staging Ready' overall completion.**  \n  \n**Day 1 (Setup):** This goes beyond just code deployment. We need to perform code merge reviews, set up the Staging environment infrastructure, and provision the necessary cross-cloud/network resources to ensure alignment with Production.\n\n**Day 2 (Verification):** We perform an intensive pre-check and sanity testing on our side. We must verify that data integrity, connectivity, and configuration are 100% stable before officially notifying you that the Staging environment is ready for your QA testing.\n\ncc <custom data-type=\"mention\" data-id=\"id-1\">@Joo</custom> "
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2377",
+    "id": "18892",
+    "author": "Zia",
+    "created": "2026-07-03T17:00:41.609+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2377",
+    "text": "Dear<custom data-type=\"mention\" data-id=\"id-0\">@Harry</custom>   \nThanks for the detailed breakdown — that makes sense. Understood: the 2 days cover merge review, staging infra + cross-cloud/network provisioning, and your stability pre-check, and **Tuesday = \"Staging Ready\" (ready for our QA), not overall project completion**. That's clear now.\n\nThe actual QA-completion / launch-readiness date we'll settle in the Joseph–Tracy–me alignment I mentioned. Please go ahead with the staging setup as planned."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2373",
+    "id": "18844",
+    "author": "Claire",
+    "created": "2026-07-03T12:04:13.581+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2373",
+    "text": "Dear a <custom data-type=\"mention\" data-id=\"id-0\">@Daniel</custom>, \n\nI’m sending to you the excel file\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=d75a1aea-cf9b-4f3d-a6aa-e7967413b60f&&collection=&height=null&occurrenceKey=null&width=null&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)Thank you "
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2367",
+    "id": "18882",
+    "author": "Tan",
+    "created": "2026-07-03T16:14:19.505+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2367",
+    "text": "<custom data-type=\"mention\" data-id=\"id-0\">@Claire</custom> We're currently using the wrong CMS/PMS Hotel Code. It should be **KR000933**."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1120",
+    "id": "18903",
+    "author": "Zia",
+    "created": "2026-07-03T17:46:15.371+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1120",
+    "text": "**(7/3) Note for Sharing: Summary of Teams Discussion between Zia and Tracy2**\n\n* Based on the STG QA status update, most of the remaining issues were confirmed to be minor, mainly related to rounding and display.\n* However, two critical issues were identified in the process of reflecting newly created contracts in the Contract Intelligence Dashboard:\n\n    * **New Exclusive contracts:** Reflected in the DB immediately, but Current Left Allotment is not displayed on the Dashboard.\n    * **New Shared contracts:** The contract data itself is not displayed on the Dashboard.\n    \n* Separate tickets have been created for both issues, and Tom is currently investigating the root causes.\n* Since the root causes have not yet been identified, the full scope of impact cannot currently be determined. Therefore, it was decided that the current state is not appropriate for Planning QA.\n* **Planning QA is on hold until these issues are resolved.**\n* The development team was asked to share an update once the root causes have been identified and a clear fix timeline has been established.\n\n"
+  }
+]

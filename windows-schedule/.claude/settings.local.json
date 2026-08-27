@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(git *)",
+      "PowerShell(Out-Null *)",
+      "PowerShell(& 'C:\\\\Users\\\\dzung\\\\Workspace\\\\Github\\\\aladyno\\\\windows-schedule\\\\run-daily-report-stock.ps1')"
+    ]
+  }
+}

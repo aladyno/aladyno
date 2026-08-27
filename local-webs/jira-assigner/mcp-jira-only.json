@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "MCP_DOCKER": {
+      "command": "docker",
+      "args": ["mcp", "gateway", "run", "--profile", "omh_mcp"],
+      "env": {
+        "LOCALAPPDATA": "C:\\Users\\Daniel-Do\\AppData\\Local",
+        "ProgramData": "C:\\ProgramData",
+        "ProgramFiles": "C:\\Program Files"
+      }
+    }
+  }
+}

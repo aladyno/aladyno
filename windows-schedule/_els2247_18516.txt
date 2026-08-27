@@ -1,0 +1,127 @@
+<custom data-type="mention" data-id="id-0">@Tan</custom>
+
+![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=ed0d0bdd-296c-44ae-b7fe-d6747b7379aa&&collection=&height=539&occurrenceKey=null&width=1085&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)
+‌
+
+![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=9586c413-c2de-4ba8-bce5-e88a5b2db4b4&&collection=&height=703&occurrenceKey=null&width=1135&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)
+## PASSED: TC1 — Create a booking with Guest Contact via Excel Import (the only entry path in this release)
+
+**Steps**
+
+1. Open the Import Booking Excel template (the one that has the `GuestContact` column).
+2. Fill in one row with all the mandatory fields (ChannelId, HotelId, dates, room/rate IDs, contact person, guest names, total amount, etc. — same fields ops uses today).
+3. Also fill:
+
+* `Comment01` = `Late check-in around 23:00`
+
+* `GuestContact` = `Please call the guest at +82-10-1234-5678 / john@example.com`
+
+1. Save and upload the file on admin → _Create Booking_ → _Import Booking_.
+2. Wait for the import-result email and confirm the row imported successfully.
+3. Note down the resulting booking item code for the next TCs.
+
+**Expected**
+
+* Import succeeds — the row shows green / success in the result email.
+* The booking is searchable on admin under that channel.
+* (If the `GuestContact` column is left empty for a different row, that row also imports successfully — Guest Contact is optional.)
+
+With Guest contact: K26062910002H01
+
+Without Guest contact: K26062910003H01
+
+---
+
+## PASSED: TC2 — Hotel email does NOT contain Guest Contact
+
+**Steps**
+
+1. For the booking from TC1, trigger the reservation sheet email to the hotel (or wait for the automatic send right after the import succeeds).
+2. Open the actual email that arrives at the hotel inbox.
+
+**Expected**
+
+* The email shows the _Special Request_ section with `Late check-in around 23:00` (the BRQ99 Others value from `Comment01`).
+* The email does NOT contain the phone `+82-10-1234-5678`, the address `john@example.com`, or the label `Guest Contact`.
+* The overall email layout is unchanged from production today.
+
+![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=1b4529bd-81b1-4dcd-9031-9652ba72e380&&collection=&height=58&occurrenceKey=null&width=1323&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)
+![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=2f40e5e5-0df6-4539-9958-97ac07a09429&&collection=&height=698&occurrenceKey=null&width=1193&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)
+![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=73b2df8f-fa01-4434-9763-51399a954a07&&collection=&height=684&occurrenceKey=null&width=1046&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)
+‌
+
+---
+
+## PASSED: TC3 — Admin Booking Detail shows Guest Contact as its own row
+
+**Steps**
+
+1. On oh-admin open the imported booking from TC1 → _Reservation_ → Booking Detail.
+2. Scroll to the _Special Request_ row.
+
+**Expected**
+
+* _Special Request_ row shows `Late check-in around 23:00` inside the textarea (the BRQ99 value), same as today.
+* Immediately below, a new row appears with header **Guest Contact** and the value `Please call the guest at +82-10-1234-5678 / john@example.com`.
+* The Guest Contact row only appears when the booking actually has a Guest Contact (see TC6 for the no-value case).
+* "Guest Contact" should NOT also appear in the inline summary line on the Special Request row.
+
+![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=7b3ad160-5064-4634-b454-7f7ffa9ac1a2&&collection=&height=872&occurrenceKey=null&width=797&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)
+![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=dbc67bba-b650-4b26-bd6e-4ef9510cfb67&&collection=&height=855&occurrenceKey=null&width=833&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)
+‌
+
+---
+
+## PASSED: TC4 — Vendor extranet (hotel-side) shows Guest Contact
+
+**Steps**
+
+1. Log into the partner extranet with a vendor (hotel-side) account that owns the test hotel.
+2. Find the booking from TC1 and open _Reservation Detail_.
+
+**Expected**
+
+* The _Special Request_ block shows the existing request types as checkboxes (e.g. Others). **Guest Contact is NOT shown as a checkbox** in that list.
+* Immediately below the Special Request textarea there is a full-width row labelled **Guest Contact:** followed by the value `Please call the guest at +82-10-1234-5678 / john@example.com`.
+* The layout is clean — the contact value sits on its own line, not wrapping awkwardly next to checkboxes.
+
+![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=e1a7a652-01bb-4573-9138-1f5ab78ecad1&&collection=&height=819&occurrenceKey=null&width=1676&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)
+![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=230621c9-8493-4d91-87f0-3c56c4c496f4&&collection=&height=732&occurrenceKey=null&width=1194&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)
+‌
+
+---
+
+## PASSED; TC5 — Seller extranet (Dotbiz) shows Guest Contact
+
+**Steps**
+
+1. Log into the partner extranet with a seller (Dotbiz) account that owns the booking.
+2. Find the booking from TC1 and open _Reservation Detail_.
+
+**Expected**
+
+* Behaviour identical to TC4 — Guest Contact is a single full-width row directly under the Special Request textarea.
+
+![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=eb8e3fde-a17d-4664-9b22-9f9a9294afec&&collection=&height=806&occurrenceKey=null&width=1339&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)
+
+
+![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=edbac59a-772a-4b6d-b8f2-f01e8440af3e&&collection=&height=860&occurrenceKey=null&width=1580&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)
+---
+
+## PASSED: TC6 — Old bookings & default behaviour are not affected (regression)
+
+**Steps**
+
+1. Open a few existing bookings created **before** this change is deployed (no Guest Contact ever entered).
+2. Check the Booking Detail page on admin, the vendor extranet detail page, and the seller extranet detail page for those bookings.
+3. Trigger a "Resend reservation sheet" on one of these old bookings.
+4. Also import one row through TC1's flow but **leave the \`GuestContact\` column empty** to simulate an ops user who doesn't use the new column.
+
+**Expected**
+
+* For all old bookings: no Guest Contact row appears anywhere; the Special Request inline summary and textarea behave exactly as before; the hotel email layout is unchanged.
+* For the new-but-empty import: the booking imports normally and no Guest Contact row is rendered — Guest Contact is fully optional.
+
+![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=7dcacc6b-96db-41c0-a7e1-de016934a1fe&&collection=&height=815&occurrenceKey=null&width=1455&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)
+![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=22570c5d-c40b-4cdd-925b-6dc7d5ce0d0e&&collection=&height=735&occurrenceKey=null&width=1322&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)
+![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=7b445397-f414-4492-8cb9-bd83db10ca3c&&collection=&height=837&occurrenceKey=null&width=1610&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)

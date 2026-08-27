@@ -1,0 +1,83 @@
+[
+  {
+    "type": "comment",
+    "key": "ELS-2142",
+    "id": "18580",
+    "author": "Tan",
+    "created": "2026-06-30T15:19:28.431+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2142",
+    "text": "Closed as discussed from ELS-1313"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2132",
+    "id": "18579",
+    "author": "Tan",
+    "created": "2026-06-30T15:18:34.455+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2132",
+    "text": "Closed as discussed from ELS-1313"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1313",
+    "id": "18575",
+    "author": "Tracy",
+    "created": "2026-06-30T13:35:36.991+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1313",
+    "text": "@Tan Ok, noted for removing.  \n@Holden , @Tracy2"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2200",
+    "id": "18574",
+    "author": "Anna Pham",
+    "created": "2026-06-30T12:40:37.830+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2200",
+    "text": "@Daniel Thanks anh"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2006",
+    "id": "18569",
+    "author": "Daniel",
+    "created": "2026-06-30T12:03:41.371+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2006",
+    "text": "Dear @Tracy ,  \nWe have identified a bug that occurs when resending bookings that include children.  \nI have manually notify these bookings to Temairazu and scheduled a fix for the issue.\n\n\nPlease verify the booking information with the hotel again."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-456",
+    "id": "18565",
+    "author": "Justin",
+    "created": "2026-06-30T11:52:24.668+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-456",
+    "text": "Reconciliation note (2026-06-30, corrected) — the v2 flip for these pages is a CloudFront behavior, not an nginx flag. This is already settled, not an open decision.\n\nMy first version of this note framed it as \"two competing mechanisms, please confirm which is canonical.\" That was over-cautious — the plan already resolves it. `docs/migration/v2-migration-infra.md` §11.4 (the per-host flip-point table) specifies the `www`/`m` flip point as a **CloudFront path-pattern behavior / origin change**, with the app-layer host nginx removed on the v2 path (v2 ECS services attach directly to the ALB target group). web-pc serves `www.ohmyhotel.com`, so its flip is a CloudFront behavior (codified under OMH-698) — the app-layer nginx can't be the flip point because v2 isn't behind it. The nginx flip only applies to `hana` (its `prd-proxy` entry nginx, kept for partner IP-whitelisting).\n\nI've added a \"Plan reconciliation (2026-06-30)\" section to the description that supersedes the \"nginx feature flag\" language in Scope / Success / Risk and the last bullet of the 2026-06-18 note. The plan itself needs no change — it was already correct at §11.4.\n\nOne real follow-up (a tooling gap, not a decision): `fm-route` (frontend-migration-plugin 0.5.0) still emits an `infra/nginx` routing block + flag for every app, including `pc`. For `www`/`m` pages it should prepare/flip the CloudFront behavior instead. This needs a plugin-source fix before Phase 1 runs `fm-route` for a real flip — @Harry, flagging since it sits next to the OMH-698 CloudFront codification."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-678",
+    "id": "18562",
+    "author": "Lexi",
+    "created": "2026-06-30T11:42:27.024+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-678",
+    "text": "@Harry Re: #3 — two follow-ups:\n\n* **3-a.** How much effort / time would it take to also correct the **already-made bookings** (the `B. Product Amt` stored for booking detail / voucher)?\n* **3-b.** If we fix **B2C room search results only** — for bookings made **after this task (changing the B2C room search results calculation logic) is completed**, will room search results, booking detail, and voucher all show the **same** `B. Product Amt`, or will there still be a difference between them?"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1723",
+    "id": "18561",
+    "author": "Tracy2",
+    "created": "2026-06-30T11:33:01.155+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1723",
+    "text": "@Tom @Claire new pop up alert : tested on STG => passed"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2249",
+    "id": "18560",
+    "author": "Tracy2",
+    "created": "2026-06-30T11:30:03.518+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2249",
+    "text": "Improvement for issue on task https://ohmyjira.atlassian.net/browse/ELS-2232,"
+  }
+]

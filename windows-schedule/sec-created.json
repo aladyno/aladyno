@@ -1,0 +1,299 @@
+[
+ {
+  "type": "subtask",
+  "key": "ELS-2114",
+  "id": "16337",
+  "author": "Calvin",
+  "created": "2026-06-19T10:30:36.955+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2114",
+  "text": "Stress Test New Access Control Cluster\n## Objective\n\nConduct a stress test on the new access control cluster to evaluate its load-handling capability and verify its stability under different traffic levels.\n\n## Test Scope\n\n* Tool: k6\n* Target API: Open API - Search Availability (`/channel/ota/v2.0/hotels/availability`)\n* Purpose: Validate the performance and scalability of the new access control cluster under increasing request loads.\n\n## Test Scenarios\n\nRun stress tests with the following request rates:\n\n* 500 requests/second\n* 2,000 requests/second\n* 5,000 requests/second\n* 7,000 requests/second\n* 10,000 requests/second\n\n## Verification Items\n\n* Response time\n* Error rate\n* Timeout occurrences\n* Access control cluster performance and stability\n* Resource utilization (CPU, memory, network)\n* Any bottlenecks observed during the tests"
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2113",
+  "id": "16336",
+  "author": "Tom",
+  "created": "2026-06-19T10:24:21.085+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2113",
+  "text": "Restore CMS/PMS Hotel Code in both dynamic contracts for Hôtel Fantaisie\nUpdate both dynamic contracts of Hôtel Fantaisie to include the missing CMS/PMS Hotel Code field, ensuring the contracts are correctly formatted for integration."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2112",
+  "id": "16335",
+  "author": "Tracy",
+  "created": "2026-06-18T20:57:28.621+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2112",
+  "text": "Verify check-out date for booking K26032910679H01 in system\nAmend the check-out date for booking K26032910679H01 at Hotel Palm Royal Naha Kokusai Street from 2026-07-19 to 2026-07-18 as per the hotel's request and AGT's confirmation."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2111",
+  "id": "16334",
+  "author": "Tracy",
+  "created": "2026-06-18T20:55:32.975+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2111",
+  "text": "Verify booking S26060910318H01 after date and allotment change\nConfirm that the booking S26060910318H01 at Seaesta Hotel Nha Trang reflects the updated dates (2026-07-10 to 2026-07-11) and the amended allotment (Deluxe Twin City View from 0/5 to 1/5 on July 9) as per the request. Ensure all changes are correctly applied in the system and communicate confirmation to relevant stakeholders."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2110",
+  "id": "16333",
+  "author": "Tracy",
+  "created": "2026-06-18T20:52:58.133+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2110",
+  "text": "Verify room type code after changing for 1001328 at Sakurakyo Hotel & Spa\nAfter updating the room type codes for Sakurakyo Hotel & Spa (hotel code 1001328), verify that the changes from 'Twin' to 'Multiple Bed' for Room Type SEQ 1276474 and 1276473 are correctly reflected in the system and all related interfaces."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2109",
+  "id": "16332",
+  "author": "Tracy",
+  "created": "2026-06-18T20:50:49.043+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2109",
+  "text": "Verify room type code after changing for 848249 at 22Land Lake View Hotel\nConfirm that the room type code for room type SEQ 2352674 at 22Land Lake View Hotel (code 848249) has been updated from 'Multiple Bed' to 'Double' in the system. Ensure the change is reflected correctly in all relevant systems and documentation."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2108",
+  "id": "16331",
+  "author": "Tracy",
+  "created": "2026-06-18T20:48:13.265+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2108",
+  "text": "Verify room view change for room type 83680463 at Pegasy Apartments & Travel (956330) in system\nCheck and confirm that the room view for room type SEQ 83680463 at Pegasy Apartments & Travel (hotel code 956330) has been successfully updated from 'Lake view' to 'City View' in the system."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2107",
+  "id": "16330",
+  "author": "Tracy",
+  "created": "2026-06-18T20:46:06.203+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2107",
+  "text": "Verify room type code after changing for 133730 at The Praha Hotel Phu Quoc\nConfirm that the room type codes for SEQ 102273 and 102272 at The Praha Hotel Phu Quoc have been updated from 'Double' to 'Multiple Bed' as requested. Ensure the changes are reflected correctly in the system."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2106",
+  "id": "16329",
+  "author": "Tracy",
+  "created": "2026-06-18T20:43:14.536+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2106",
+  "text": "Verify room type code after changing for 206247 at A25 Hotel - 28 Tran Quy Cap\nConfirm that the room type codes for hotel code 206247 at A25 Hotel - 28 Tran Quy Cap have been updated from 'Twin' to 'Double' for both Room Type SEQ 93936962 and 93936961. Ensure the changes are reflected correctly in the system."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2105",
+  "id": "16328",
+  "author": "Tracy",
+  "created": "2026-06-18T20:40:15.582+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2105",
+  "text": "Verify room type code after changing for 223444 at Ale Nhatrang Hotel\nConfirm that the room type code has been updated from 'Twin' to 'Multiple Bed' for hotel code 223444 (Ale Nhatrang Hotel) in the system. Ensure the change is reflected correctly in all relevant databases and user interfaces."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2104",
+  "id": "16327",
+  "author": "Tracy",
+  "created": "2026-06-18T20:26:42.609+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2104",
+  "text": "Verify promotion name changes for Annova Nha Trang Hotel\nAfter updating the promotion names, verify that the changes for SEQ 646712 and 646713 have been correctly applied in the system for Annova Nha Trang Hotel (code 897734)."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2103",
+  "id": "16326",
+  "author": "Tracy",
+  "created": "2026-06-18T20:21:12.113+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2103",
+  "text": "Verify room type code after modification for 373032 at Citadines Central Binh Duong\nAfter updating the room type code, verify that the change from 'Double' to 'Multiple Bed' has been correctly applied for hotel code 373032 (Citadines Central Binh Duong)."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2102",
+  "id": "16325",
+  "author": "Tracy",
+  "created": "2026-06-18T20:18:50.147+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2102",
+  "text": "Verify room type code after changing for 485674 at Novela Muine Resort & Spa\nVerify the room type for booking code 485674 at Novela Muine Resort & Spa from 'Double' to 'Multiple Bed' as per the provided request details. Ensure the change is reflected in the system."
+ },
+ {
+  "type": "task",
+  "key": "ELS-2101",
+  "id": "16324",
+  "author": "Joseph",
+  "created": "2026-06-18T19:41:40.927+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2101",
+  "text": "Define SOP - SQL Script Validation Before Production Execution for development team\n**Title**  \nDefine SOP – SQL Script Validation and Approval Process Before Production Execution\n\n---\n\n## Description\n\nCreate a standardized **SOP (Standard Operating Procedure)** for validating, reviewing, testing, approving, and executing SQL scripts before they are run against Production databases.\n\nThe SOP should minimize the risk of service disruption, performance degradation, data corruption, and operational incidents caused by manual SQL execution.\n\n---\n\n## Objective\n\n* Establish a mandatory SQL validation process before Production execution\n* Reduce risk of database incidents and unexpected system impact\n* Improve traceability, accountability, and auditability\n* Standardize approval and deployment procedures across the development team\n\n---\n\n## Scope\n\n### In Scope\n\n* SQL scripts executed against Production databases\n* Data correction scripts\n* Data migration scripts\n* Maintenance scripts\n* Batch update/delete operations\n* Schema changes requiring manual execution\n\n### Out of Scope\n\n* Application-generated SQL\n* Automated deployment migrations already covered by CI/CD controls\n* Non-production environments\n\n---\n\n## SOP Requirements\n\n### 1. Change Management Requirements\n\nBefore execution, every SQL script must have:\n\n* Jira ticket\n* Business justification\n* Risk assessment\n* Rollback plan\n* Impact analysis\n\n---\n\n### 2. Source Control Requirements\n\nAll SQL scripts must:\n\n* Be stored in Git repository\n* Be committed and reviewed through Pull Request\n* Be merged into the approved branch before execution\n\n---\n\n### 3. SQL Review Requirements\n\nMandatory review includes:\n\n* SQL logic validation\n* Performance impact review\n* Index utilization review\n* Locking impact assessment\n* Data volume analysis\n\nRecommended:\n\n* AI-assisted SQL review (Claude / approved tool)\n* DBA review for high-risk changes\n\nEvidence required:\n\n* SQL review result attached to PR\n\n---\n\n### 4. Testing Requirements\n\nBefore Production execution:\n\n* Execute on Staging environment\n* Validate expected results\n* Validate execution duration\n* Validate rollback procedure\n\nEvidence required:\n\n* Staging execution screenshot/log\n* Query result validation\n* Monitoring screenshot (if applicable)\n\n---\n\n## Deliverables\n\n* SQL Execution SOP document\n* Approval workflow\n* SQL Review Checklist\n* Execution Templates\n\n---\n\n## Acceptance Criteria\n\n**AC1**  \nSOP document completed and published\n\n**AC3**  \nRequired evidence checklist established\n\n**AC4**  \nRisk classification and escalation rules documented\n\n**AC5**  \nDevelopment team trained and informed of the new process\n\n---\n\n## Definition of Done\n\n* SOP documented\n* Review checklist created\n* Approval workflow follow Git Strategy\n* Team review completed\n* SOP published and communicated"
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2100",
+  "id": "16323",
+  "author": "Holden",
+  "created": "2026-06-18T19:05:13.274+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2100",
+  "text": "Design API integration tests for Traveloka bulk room API\nCreate comprehensive integration tests to validate the Traveloka bulk room API client, covering various request scenarios, response validation, and error handling."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2099",
+  "id": "16322",
+  "author": "Tom",
+  "created": "2026-06-18T17:52:54.962+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2099",
+  "text": "[FE] Implement 'Bulk Margin' tab in History popup UI\nDevelop the frontend UI for the new 'Bulk Margin' tab within the existing History popup, displaying audit log summaries with default and advanced filters, pagination, and empty state handling."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2098",
+  "id": "16321",
+  "author": "Tom",
+  "created": "2026-06-18T17:52:04.753+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2098",
+  "text": "[BE] Integrate audit log creation into bulk margin update process\nUpdate the bulk margin update backend logic to create audit log entries for every operation, capturing all required fields and handling all statuses (SUCCESS, PARTIAL_SUCCESS, FAILED, CANCELLED, INTERRUPTED)."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2097",
+  "id": "16320",
+  "author": "Holden",
+  "created": "2026-06-18T17:28:26.159+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2097",
+  "text": "Empty V.Comm Rate (%) is mishandled: generic \"Failed to save\" on all 3 tabs; Combined silently auto-fills 25%\n### Pre-condition\n\n* Environment: **DEV**\n* Hotel **1001908**, Contract **Shared Rate 111974:1**, Base Rate **20%**, plan 890921\n* User is on the **Period-Based V.Comm Rate Override** modal (Configure Override)\n\n### Steps to reproduce\n\n**Case A — generic save failure (all 3 tabs):**\n\n1. Open Configure Override on any tab: **Booking-Based**, **Stay-Based**, or **Combined** (any logic).\n2. Add a Booking Tier / Stay Season but leave **V.Comm Rate (%)** empty.\n3. Click **Apply Changes**.\n\n**Case B — silent 25% default (Combined tab only):**\n\n1. Open Configure Override → **Combined** tab.\n2. Add a Booking Tier / Stay Season, leave **V.Comm Rate (%)** empty → **Save**.\n3. Reopen Configure Override.\n\n### Actual\n\n* **Case A:** Alert **\"Failed to save V.Comm Rate Override. Please try again.\"**. No inline validation / red border on the empty field; on Combined the Cross-Reference Matrix shows **Final Rate = 0%** and the Annual Calendar shows `null%` for every month.\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=a0fe1aac-784a-4a41-b427-c0761b2d5dc0&&collection=&height=791&occurrenceKey=null&width=1856&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n* **Case B:** the empty V.Comm Rate (%) is **silently auto-filled with 25%** on reopen (tied to the Combined rate-cap default). Booking-Based / Stay-Based standalone tabs do NOT do this (no rate cap there).\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=c00f22cc-aab8-4a63-8f01-7ffb05d03f93&&collection=&height=1032&occurrenceKey=null&width=1920&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=90e20978-1ef9-413f-8e79-82aa0dac3f4a&&collection=&height=1032&occurrenceKey=null&width=1920&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n### Expected\n\n* Empty comm_rate (all tabs/modes) → inline E-VCR-001 “Commission rate must be between 0% and 50%” + no API call (TS-024 pattern).\n* NO generic alert (A), NO auto-fill to 25% (B), NO null%/Final 0%."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2096",
+  "id": "16319",
+  "author": "Tom",
+  "created": "2026-06-18T17:26:31.999+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2096",
+  "text": "Update billing status for billing no. 769578\nChange the status of billing no. 769578 from 'Request' to 'Approval' and then to 'Non-Payment' as per the request."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2095",
+  "id": "16318",
+  "author": "Tom",
+  "created": "2026-06-18T17:12:01.957+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2095",
+  "text": "Update payment method to Postpay/Cash for all reservations listed in the attached file\nChange the payment method from VCC to Postpay/Cash for each reservation specified in the attached file, as per the hotel's request."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2094",
+  "id": "16317",
+  "author": "Dan",
+  "created": "2026-06-18T16:58:18.887+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2094",
+  "text": "Cannot Register a Room Type to Another CMS Contract\nCurrently, it is not possible to register an existing room type to a different CMS contract.\n\n  \n1001867 - Far East Village Hotel Osaka Honmachi\n\nI have a question regarding room types in the CMS (Temairazu).\n\nAs I recall, in the previous Ellis system, when a room type was created by mistake or when only the Contract Type needed to be corrected, it was possible to select and modify the Contract Type by clicking the highlighted area shown in the screenshot below.\n\nHowever, currently, selecting this field does not seem to have any effect. As a result, if we need to correct only the Contract Type while keeping the same room type, we have to create a new room type, which may lead to duplicate entries."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2093",
+  "id": "16316",
+  "author": "Tom",
+  "created": "2026-06-18T16:38:23.258+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2093",
+  "text": "Update payment method to Prepay/Cash for all Pandanus Resort bookings as per attached file\nChange the payment method from Prepay/VCC to Prepay/Cash for all bookings at Pandanus Resort listed in the attached file, ensuring all records are updated accordingly."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2092",
+  "id": "16315",
+  "author": "Mon",
+  "created": "2026-06-18T16:03:53.390+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2092",
+  "text": "Implement landing page route and endpoint for Google Metasearch traffic\nDefine and implement a dedicated route/endpoint to receive traffic redirected from Google Metasearch. Ensure the endpoint is discoverable and SEO-friendly where applicable.\n\n‌\n\n- [ ] Clear document of Google Metasearch\n- [ ] Implement Routing & map matching Google field and our current field\n- [ ] Apply env & self test\n- [ ] (Happy path / integration) test with main flow\n- [ ] Resolve feedback\n- [ ] Final test on PROD"
+ },
+ {
+  "type": "task",
+  "key": "ELS-2091",
+  "id": "16314",
+  "author": "Joseph",
+  "created": "2026-06-18T15:45:32.841+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2091",
+  "text": "Recheck logic of Event page\n**Request**:  \nRecheck logic of Event page  \nFocus all logic for   \nEvent From-To  \nBooking From - To  \nDeparture From - To  \n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=41185d3a-3d6b-4bfa-9352-b1e32f24f86e&&collection=&height=201&occurrenceKey=null&width=1226&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\nAnd Product List : Search From - To Date  \n  \nDo we need to input Search From - To date?\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=6f647f22-7f0f-4b35-8e7f-cdf1255467fa&&collection=&height=417&occurrenceKey=null&width=1418&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\nThese are the history"
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2089",
+  "id": "16312",
+  "author": "Tom",
+  "created": "2026-06-18T13:37:01.359+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2089",
+  "text": "Investigate missing CMS/PMS Hotel Code in dynamic contracts for Hôtel Fantaisie\nAnalyze both dynamic contracts of Hôtel Fantaisie to identify the cause of the missing CMS/PMS Hotel Code field."
+ },
+ {
+  "type": "task",
+  "key": "ELS-2090",
+  "id": "16311",
+  "author": "Tracy",
+  "created": "2026-06-18T13:36:33.397+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2090",
+  "text": "Change Payment Method and issue billing - 179835//Pandanus Resort\nDear Team,\n\nPlease help **change the payment method** for all bookings from Prepay/VCC **to Prepay/Cash** for the Pandanus Resort, as detailed in the attached file.\n\nPlease note that these bookings have already been deducted against the prepaid amount under the signed hardblock contract.\n\nAdditionally, **please assist us in issuing a billing** for these bookings.\n\nThank you for your support!"
+ },
+ {
+  "type": "task",
+  "key": "ELS-2088",
+  "id": "16310",
+  "author": "Tracy",
+  "created": "2026-06-18T13:34:33.227+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2088",
+  "text": "Change Room type: 485674 - Novela Muine Resort & Spa\nChange rom type with following info:\n\n| **Hotel**   \n**Code** | **HotelName** | **Room Type SEQ** | **RoomType** | **RQ Date** |\n| --- | --- | --- | --- | --- |\n| **Existing** | **Modify** |\n| 485674 | Novela Muine Resort & Spa | 115176 | Double | Multiple Bed | 18-Jun |"
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2087",
+  "id": "16308",
+  "author": "Tracy2",
+  "created": "2026-06-18T12:49:18.821+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2087",
+  "text": "Verify Import button wording in other related modules\nCheck the 'Import' button wording in related modules such as Import Booking, Import Billing, and Upload Image to ensure consistency and that similar issues are not present."
+ },
+ {
+  "type": "task",
+  "key": "ELS-2086",
+  "id": "16305",
+  "author": "Tracy",
+  "created": "2026-06-18T12:28:58.580+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2086",
+  "text": "Request for Credential Key\nPlease create key credential for below account:\n\nDev -300227 Hainan huamao tourism consulting co. LTD\n\nProd - 300227 Hainan huamao tourism consulting co. LTD\n\nThank you."
+ },
+ {
+  "type": "task",
+  "key": "ELS-2085",
+  "id": "16304",
+  "author": "Tracy",
+  "created": "2026-06-18T12:27:19.521+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2085",
+  "text": "Change room type code: 373032 \t  Citadines Central Binh Duong\nPlease support to change room type code as following:\n\n| **tel**    \n**Code**      | **HotelName**      | **Room Type SEQ**      | **Room Type Code**     |   |\n| --- | --- | --- | --- | --- |\n|   |   |   | **Existing**   | **Modify**   |\n| 373032 |  Citadines Central Binh Duong | 118424 | Double | Multiple Bed |"
+ },
+ {
+  "type": "task",
+  "key": "ELS-2084",
+  "id": "16303",
+  "author": "Tracy",
+  "created": "2026-06-18T12:25:03.460+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2084",
+  "text": "CMS error: 1001882 - Hôtel Fantaisie\nCả 2  Dynamic contract của khách sạn này đều bị mất dòng **CMS/PMS Hotel Code.** Nên giá từ Hote Link không pull qua OMH được. \n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=6c6f08aa-cbd1-431d-9cdb-c1a56b76d0b2&&collection=&height=672&occurrenceKey=null&width=1328&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=1cc176b0-18cb-4f1d-bf13-2675afaf5637&&collection=&height=653&occurrenceKey=null&width=1328&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)"
+ },
+ {
+  "type": "task",
+  "key": "ELS-2083",
+  "id": "16302",
+  "author": "Tracy",
+  "created": "2026-06-18T12:23:15.760+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2083",
+  "text": "Change promotion name: 897734 \t Annova Nha Trang Hote\nPlease support to change promotion name as following:\n\n| **otel**    \n**Code**      | **HotelName**      | **Promotion SEQ**      | **Promotion Name**    |   |\n| --- | --- | --- | --- | --- |\n|   |   |   | **Existing**   | **Modify**   |\n| 897734 | Annova Nha Trang Hotel | 646712 | Last Minute | Last Minute 7D |\n| 897734 | Annova Nha Trang Hotel | 646713 | Last Minute | Last Minute 7D |"
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2082",
+  "id": "16301",
+  "author": "Tom",
+  "created": "2026-06-18T12:00:37.088+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2082",
+  "text": "Investigate missing wording on Import button in Rate Update\nAnalyze the Rate Update section in the Rate and Allotment function to determine why the 'Import' button is missing its wording. Identify whether the issue is due to frontend code, localization, or configuration."
+ }
+]

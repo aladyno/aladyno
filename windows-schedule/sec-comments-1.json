@@ -1,0 +1,407 @@
+[
+  {
+    "type": "comment",
+    "key": "ELS-1721",
+    "id": "17931",
+    "author": "Holden",
+    "created": "2026-06-22T17:49:58.990+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1721",
+    "text": "@Tan **QA — Bulk Room List API test report** (`POST /v1/dynamic/bulk-room-list`, DEV) Ref: ELS-1721 / ELS-1607 · Grounded in Traveloka Atlas spec. **34 cases: 15 Pass · 8 Fail · 11 Review.** Full detail (Excel + Postman):\n\n* Excel: https://ohmylab.sharepoint.com/:x:/s/pd.vn/IQCzmjyP8CZSS651NkmHyAQeAT94lGibn2ngp6Q-IV4jAtE?e=2PDhia\n* Postman:  \n\n**Pass (15):** happy path + room/inventory schema, rateTypes=PAY_NOW, occupancy, no-availability → `[]`, cache, multi-night, single hotel, sourceMarket=KR, cheapestOnly, large bulk (~80–130ms), missing requestId (optional OK), wrong Content-Type → 400, Additional Fees correctly absent (ELS-1607 #2).\n\n**Fail (8) — needs fix:**\n\n1. **TBR-12** rateTypes=PAY_AT_PROPERTY filter not enforced → still returns PAY_NOW rooms.\n2. **TBR-19** checkOut ≤ checkIn not validated → 200 (expected 400 INVALID_BOOKING_WINDOW).\n3. **TBR-21** numChildren=1 + childrenAges=[] not validated.\n4. **TBR-26** Missing checkInDate (required) → 200.\n5. **TBR-28** No auth (missing Authorization) → 200 + data. Expected 401. _(security)_\n6. **TBR-29** Invalid token → 200 + leaks internal Java stack in `warnings` + \"flight affiliate\" wording. Expected 401.\n7. **TBR-32** Meal Plan Object missing — only `breakfastIncluded` present (ELS-1607 #3).\n8. **TBR-34** Error object ≠ spec (`{status,errorCode,warnings}` vs `{requestId,error:{errorId,errorMessage}}`, ELS-1607 #4).\n\n**Review (11) — please confirm intended behavior with Dev/Traveloka** (all currently return 200, spec ambiguous): \n\n1. **TBR-13** (currency KRW→USD)\n2. **TBR-15** (empty providerHotelIds)\n3. **TBR-16** (id \"000000\" → \"0\")\n4. **TBR-17** (invalid rateTypes enum)\n5. **TBR-18** (invalid hotelRatePlanType enum)\n6. **TBR-20** (past checkInDate)\n7. **TBR-22** (childrenAges count mismatch)\n8. **TBR-23** (numRooms=0)\n9. **TBR-24** (numAdults=0)\n10. **TBR-25** (invalid currency \"ZZZ\")\n11. **TBR-27** (missing cheapestOnly required)."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1721",
+    "id": "17958",
+    "author": "Tan",
+    "created": "2026-06-22T19:43:29.960+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1721",
+    "text": "@Holden anh @Dan , bug 1-6 đã có sẵn từ trước, thì chắc tách task khác để fix ạ, task này focus vào logic api mới."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1721",
+    "id": "17979",
+    "author": "Tan",
+    "created": "2026-06-23T10:45:40.765+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1721",
+    "text": "@Holden bug em tạo task khác assign anh Dan nha, test logic giúp anh api này."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1721",
+    "id": "17985",
+    "author": "Holden",
+    "created": "2026-06-23T11:01:37.175+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1721",
+    "text": "@Tan For bugs 7–8, since they are out of the task scope, should I still log them and assign them to Dan?\n\nAlso, could you please help check the 11 test cases with Review status? Thanks!"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-424",
+    "id": "17984",
+    "author": "Zia",
+    "created": "2026-06-23T11:00:49.177+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-424",
+    "text": "Dear @Joseph @Harry I have a question. Thanks in advance.\n\nA quick question connected to the `navigator.language → currency → nationality` chain we discussed here — but for a different purpose (SEO, not nationality storage).\n\n**Short background:** While auditing the site for SEO, we found that the \"current display language\" is signaled in several places that **don't agree with each other**:\n\n| Signal | Value |\n| --- | --- |\n| localStorage `lang` | `ko` |\n| localStorage `locale.language` | `EN` |\n| `<html lang>` | `en` (hardcoded — follows neither) |\n| Currency | www = KRW / m = USD |\n\nFor SEO, `<html lang>` (and page `title` / `meta`) must reflect the language the content is **actually rendered in** (e.g., Korean content → `lang=\"ko\"`). Right now they don't, and the fact that these signals conflict suggests there may be **no single value that everything reads from**.\n\n**Question:** Is there a single source-of-truth value (or function) in the current code that represents **\"which language we are currently showing this user\"**?\n\n* **If yes** → could you tell us which variable/store it is, so `<html lang>` / `title` / `meta` can all reference it?\n* **If no** (each screen/signal decides on its own) → we'll define one single display-language value and have those reference it.\n\nThis is **separate from the nationality-storage work** in this ticket — we just need to know whether that single display-language value already exists. Thanks!"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1700",
+    "id": "17919",
+    "author": "Tracy2",
+    "created": "2026-06-22T16:23:34.653+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1700",
+    "text": "@Dan Could you please help check this issue?\n\nI have not added any rate plan or promotion plan for Avanti Boutique Hotel to the blacklist, but the rate & promotion of **Deluxe Twin, Superior Twin, Superior Double** are not being displayed on the B2C site. In addition, the rate shown on B2C appears to be incorrect.\n\nCould you please investigate and advise?"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1700",
+    "id": "17983",
+    "author": "Dan",
+    "created": "2026-06-23T10:50:27.444+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1700",
+    "text": "@Tracy2 Có vẻ em đã click nhầm hotel thay vì **Avanti Boutique Hotel** em lại click vào **Avanti Hotel** "
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2119",
+    "id": "17914",
+    "author": "Tan",
+    "created": "2026-06-22T16:02:53.521+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2119",
+    "text": "@Holden please test again"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2119",
+    "id": "17955",
+    "author": "Holden",
+    "created": "2026-06-22T19:19:10.212+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2119",
+    "text": "@Tan tested on DEV env\n\nTC1 - Overlap warning => **Passed**\n\nTC2 — Multiple overlaps → multiple warnings (BR-032) => **Passed**\n\nTC3A - ONLY overlapping priority levels (no conflicting dates) => **Passed**\n\nTC3B - BOTH (same date + priority for duplicates) - Stay-Based and Combined tabs => **Failed**\n\nTC4 — Consistency at Combined tab => **Passed**"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2119",
+    "id": "17956",
+    "author": "Tan",
+    "created": "2026-06-22T19:26:03.607+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2119",
+    "text": "@Holden TC3B lúc trước mình thống nhất như vậy mà"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2119",
+    "id": "17972",
+    "author": "Holden",
+    "created": "2026-06-23T10:26:40.857+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2119",
+    "text": "@Tan TC3B - Expected: Show BOTH (same date + priority for duplicates)"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2119",
+    "id": "17975",
+    "author": "Tan",
+    "created": "2026-06-23T10:31:10.819+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2119",
+    "text": "@Holden lúc anh chụp cái hình này, thì same date + overlap priority thì chỉ cái khung trên.  \n2 cái warning bên dưới, là của overlap same date mà khác priority."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2119",
+    "id": "17977",
+    "author": "Holden",
+    "created": "2026-06-23T10:34:54.259+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2119",
+    "text": "@Tan Dạ thì issue đó là same date + overlap priority thì phải show ra cả 2 lỗi chữ ạ"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2119",
+    "id": "17981",
+    "author": "Tan",
+    "created": "2026-06-23T10:46:52.709+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2119",
+    "text": "@Holden vì bản thân warning prioty đã cho biết overlap hay không rồi, hiển thị nhiều rất rồi. nếu em muốn thì anh thêm vào."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2119",
+    "id": "17982",
+    "author": "Holden",
+    "created": "2026-06-23T10:49:33.050+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2119",
+    "text": "@Tan Dạ vì cái này em cũng đang làm theo spec/prototype thôi ạ, khi nào anh them vào thì nhắn e test lại nha, thanks a."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1941",
+    "id": "17978",
+    "author": "Daniel",
+    "created": "2026-06-23T10:40:29.834+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1941",
+    "text": "‌"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2092",
+    "id": "17884",
+    "author": "Joseph",
+    "created": "2026-06-22T13:18:02.679+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2092",
+    "text": "@Mon @Harry   \n#1 — Currency limitation directly conflicts with Google's price-accuracy requirement\n\nThe plan accepts as a \"known limitation\" (rated Medium) that the app **can't honor** `USER-CURRENCY` **independently of** `USER-LANGUAGE` — currency is forced from the language prefix (en→USD, ko→KRW, ja→JPY, vi→VND, zh→USD).\n\nBut Google's gTech answer was explicit: they convert to the user's display currency with their own FX, and _\"to prevent variances from causing Price Accuracy mismatches, we highly recommend passing_ `USER-CURRENCY` _and_ `USER-LANGUAGE` _in your landing-page deep links so checkout renders in the same currency the user saw.\"_ The plan receives `&currency=(USER-CURRENCY)` and then drops it. That's the exact failure mode Google warned about.\n\nWhy it's higher than Medium: price accuracy is _the_ metric that drives ranking, visibility, and suspension risk (the whole premise of the ADR). And Google's accuracy crawler checks specific currency points-of-sale — so even low real-user traffic in a currency can trigger a mismatch penalty when the landing page forces the wrong currency. Concretely it breaks whenever Google's display currency ≠ the language default: e.g. `lang=en` forces USD even if Google showed JPY; `zh→USD` is also questionable for TW/HK markets.\n\nGoogle handed you the interim fix in the same email: **restrict POS matching rules to native-currency-only** until the app can decouple currency from language. That caps the price-accuracy exposure at the cost of some global-auction visibility — a deliberate, Google-endorsed trade. The plan's current mitigation (\"align feed currency with target-market language\") is vague and doesn't actually use that lever. Recommend: adopt the matching-rule restriction now, and log it as a real backlog item to make landing-page currency independent of language.\n\n### #2 — Cross-doc inconsistency with the updated ARI plan (fixed-price → rate plans)\n\nThe coverage report classifies `PACKAGE-ID`, `RATE-PLAN-ID`, `PARTNER-ROOM-ID`, `PROMO-CODE`, `RATE-RULE-ID` as \"not applicable — ARI conditional rates / room bundles not on platform,\" and routes every click to the generic room-list.\n\nThat framing predates the 2026-06-22 ADR change: we now **deliberately model per-date fixed-price promotions as dedicated rate plans (PackageID)** pushed via the rate message. So \"ARI rates not on platform\" is no longer accurate — we _are_ the ARI partner pushing rate plans. The functional risk: if/when those fixed-price rate plans surface as room-level (`CLICK-TYPE=room`) results, a user who clicked a specific package on Google lands on the generic room-list, where that exact package price must still be visible, selectable, and matching — or it's a price/room mismatch.\n\nThis is probably fine _if_ the room-list page always renders the same rate plans at the same prices Google displayed — but that needs to be explicitly verified, not assumed. Action: confirm whether the pushed fixed-price packages can generate room-level clicks, and that `search-room-type` shows the identical rate. If yes, the generic landing is acceptable; if not, those clicks need deep-linking to the rate plan. Either way, update the report's \"not on platform\" wording."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1393",
+    "id": "17872",
+    "author": "Tom",
+    "created": "2026-06-22T11:53:41.510+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1393",
+    "text": "PR opened (target `master`): https://github.com/ohmyhotelco/oh-api/pull/813\n\n* **Title**: fix(api): null-safe upsert + defensive read for rate allotment\n* **Risk**: Medium (mapper WHERE predicate change, no schema migration)\n* **Build**: `:web-api:compileJava` → BUILD SUCCESSFUL\n* Branch rebased onto latest master (behind = 0)"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1389",
+    "id": "17966",
+    "author": "Tom",
+    "created": "2026-06-23T10:17:45.255+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1389",
+    "text": "@Tracy2 đã deploy lên PROD, check lại giúp anh nhé. Thank you em"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1389",
+    "id": "17976",
+    "author": "Tracy2",
+    "created": "2026-06-23T10:32:38.259+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1389",
+    "text": "@Tom tested on PROD => passed"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2040",
+    "id": "17904",
+    "author": "Tom",
+    "created": "2026-06-22T15:44:44.421+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2040",
+    "text": "PR opened: https://github.com/ohmyhotelco/oh-admin/pull/242\n\n**Root cause:** The upload \"new slot\" (`*ngIf=\"showNewSlot\"`) renders inside the sortable container `#dropList` but is not part of the photo array, so Sortable.js computed drag indexes off-by-one and ngx-sortablejs injected an `undefined` item → blank tile + wrong saved order. After reload the new-slot is closed so indexes matched, which is why reorder worked only after reopen.\n\n**Fix:** restrict dragging to real photo tiles (`draggable` + `filter`) in both hotel and room `photo-drag-drop` components so drag indexes match the array.\n\n**Verified** on the running app: upload A,B,C → drag C to front → Save now persists [C, A, B] with no blank tile."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2040",
+    "id": "17916",
+    "author": "Tom",
+    "created": "2026-06-22T16:06:21.583+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2040",
+    "text": "Dear @Tracy2 , đã điều chỉnh sort hotel-photo và room-photo, đã deploy lên dev. Check lại giúp anh nhé, thank you em"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2040",
+    "id": "17926",
+    "author": "Tracy2",
+    "created": "2026-06-22T17:28:19.700+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2040",
+    "text": "@Tom Passed\n\nHotel content\n\nRoomtype"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2040",
+    "id": "17974",
+    "author": "Tom",
+    "created": "2026-06-23T10:27:36.328+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2040",
+    "text": "@Tracy2 phần này lên Staging rồi nhé em. Check lại giúp anh, thank you em"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-602",
+    "id": "17878",
+    "author": "Mon",
+    "created": "2026-06-22T12:12:42.605+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-602",
+    "text": "Passed case HanaCard test normal on Dev env\n\nStart to verify on STG env"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-602",
+    "id": "17899",
+    "author": "Mon",
+    "created": "2026-06-22T14:38:12.301+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-602",
+    "text": "Self test passed  \nBooking “K26062210013H01” with “VN” by currency VND"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-602",
+    "id": "17900",
+    "author": "Mon",
+    "created": "2026-06-22T14:39:31.318+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-602",
+    "text": "Dear @Tracy2 ,\n\nPlease help me double check create all the booking member and non-member on ohmyhotel pc, mobile, hana\n\nI need to check for make sure all case booking when applied this task not make any problem\n\nThank you"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-602",
+    "id": "17901",
+    "author": "Tracy2",
+    "created": "2026-06-22T15:34:04.891+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-602",
+    "text": "@Mon test BK on STG => passed\n\nNon Member - PC**: K26062210014H01 - VND**\n\nMember - PC: **K26062210015H01 - VND**\n\nNon member - MO: **K26062210016H01 - KRW**\n\nMember _ MO: **K26062210017H01 - VND**\n\nHana: **K26062210018H01**"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-602",
+    "id": "17902",
+    "author": "Mon",
+    "created": "2026-06-22T15:42:29.119+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-602",
+    "text": "@Tracy2 Thank you"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-602",
+    "id": "17903",
+    "author": "Mon",
+    "created": "2026-06-22T15:44:31.268+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-602",
+    "text": "@Tracy2   \nEnough all"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-602",
+    "id": "17927",
+    "author": "Mon",
+    "created": "2026-06-22T17:31:02.955+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-602",
+    "text": "Hi @Tracy2 ,\n\nPlease help me double check again one more time on STG env\n\nThank you"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-602",
+    "id": "17932",
+    "author": "Tracy2",
+    "created": "2026-06-22T17:53:47.130+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-602",
+    "text": "@Mon \n\nMember PC: **K26062210021H01 (VND -EN)**\n\nNon member PC: **K26062210022H01 (VND - EN)**\n\nMember MO:  **K26062210023H01** **(VND- VI)**\n\nNon member MO: **K26062210024H01 (VND - KR)**\n\nHana: **K26062210026H01**"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-602",
+    "id": "17939",
+    "author": "Mon",
+    "created": "2026-06-22T18:05:56.084+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-602",
+    "text": "@Tracy2 \n\nAll info went right  \n\nBooking Master:\n\nTraveler\n\nThank you"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-602",
+    "id": "17968",
+    "author": "Mon",
+    "created": "2026-06-23T10:20:54.317+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-602",
+    "text": "Dear @Tracy2 ,\n\nPlease help me re-create new booking for all the last case on PROD env\n\nThank you"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-571",
+    "id": "17953",
+    "author": "Mon",
+    "created": "2026-06-22T19:16:29.103+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-571",
+    "text": "Result on the time running script at STG env"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-500",
+    "id": "17973",
+    "author": "Mon",
+    "created": "2026-06-23T10:27:02.434+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-500",
+    "text": "Dear @Tracy2 ,\n\nWe already migrated photos on Production environment\n\nPlease help me double check on that environment\n\nThank you so much"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2136",
+    "id": "17883",
+    "author": "Tom",
+    "created": "2026-06-22T13:03:51.180+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2136",
+    "text": "@Tracy2  đã deploy lại DEV, em check lại giúp anh nha. Thank you"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2136",
+    "id": "17896",
+    "author": "Tracy2",
+    "created": "2026-06-22T14:01:08.285+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2136",
+    "text": "@Tom width*height is more than 1280px , under 2000px still not validate\n\nUpload image 600x800px => upload suscess : failed"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2136",
+    "id": "17915",
+    "author": "Tom",
+    "created": "2026-06-22T16:05:11.967+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2136",
+    "text": "@Tracy2 anh đã update thêm các valid theo warning rồi nha. check lại giúp anh trên dev, thạnk you em  "
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2136",
+    "id": "17924",
+    "author": "Tracy2",
+    "created": "2026-06-22T17:01:21.678+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2136",
+    "text": "@Tom retested => passed"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2136",
+    "id": "17971",
+    "author": "Tom",
+    "created": "2026-06-23T10:26:01.347+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2136",
+    "text": "@Tracy2 phần này lên PROD rồi nhé, check lại giúp anh. Thank you em"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2148",
+    "id": "17949",
+    "author": "Calvin",
+    "created": "2026-06-22T19:07:12.113+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2148",
+    "text": "@Roy   \nThe final verification steps have been completed. At this point, there are no issues or blockers.  \nIn addition, I also documented the steps to be taken after deployment.  "
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2148",
+    "id": "17965",
+    "author": "Roy",
+    "created": "2026-06-23T10:15:19.677+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2148",
+    "text": "@Calvin What time is tomorrow’s deployment, and who will be participating?"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2148",
+    "id": "17970",
+    "author": "Calvin",
+    "created": "2026-06-23T10:23:07.730+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2148",
+    "text": "@Roy   \nThe deployment is scheduled for 6:00 AM (VN time) tomorrow.  \nI will be the primary person responsible for the deployment, and Harry will support me throughout the deployment and post-deployment verification process."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2121",
+    "id": "17967",
+    "author": "Tom",
+    "created": "2026-06-23T10:20:00.294+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2121",
+    "text": "@Tracy2 phần này lên PROD rồi, check lại giúp anh nhé. Thank you em"
+  }
+]

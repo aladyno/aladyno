@@ -1,0 +1,938 @@
+[
+ {
+  "type": "subtask",
+  "key": "ELS-2424",
+  "id": "17003",
+  "author": "Tom",
+  "created": "2026-07-07T10:31:10.487000+09:00",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2424",
+  "text": "Add Vendor Name and Room Type Name columns to Profit Share Excel export\nUpdate the Profit Share Excel download generation to include the Vendor Name and Room Type Name columns, populate them with the correct source values for representative booking/channel cases, and ensure the export format remains compatible with existing accounting workflows."
+ },
+ {
+  "type": "task",
+  "key": "ELS-2423",
+  "id": "17000",
+  "author": "Joseph",
+  "created": "2026-07-06T18:48:37.778000+09:00",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2423",
+  "text": "Phase K: rotate api.kmsKey (+ hana/abacus) and re-encrypt existing data to the new key\n## Glossary / Context\n\n* New task per ADR-002 rev.2 (2026-07-06). Encryption-key rotation is deferred to the final phase. During backend rollout the key material (C-B3 api.kmsKey, C-B4 hana AES, C-B5 abacus) is moved byte-for-byte into KMS but NOT rotated, so existing ciphertext still decrypts. This task rotates them last and re-encrypts the data.\n\n## Technical Approach\n\n* Follow the data re-encryption runbook (ELS-2049): stand up the new key, decrypt-with-old / encrypt-with-new across all affected stored ciphertext, cut the app over to the new key, retire the old.\n* Sequence per key type; validate encrypt/decrypt paths after each.\n\n## Constraints / Non-goals\n\n* Highest-risk step - run last, when every other Critical secret is already migrated and rotated and the system is stable.\n\n## Sequencing\n\n* Phase K (final). Blocks the ELS-2057 git-history scrub (all Critical rotated must be true first).\n\n"
+ },
+ {
+  "type": "task",
+  "key": "ELS-2422",
+  "id": "16999",
+  "author": "Joseph",
+  "created": "2026-07-06T18:48:31.886000+09:00",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2422",
+  "text": "Provision new shared web-api-family DB user (hybrid model, alternating _a/_b rotation)\n## Glossary / Context\n\n* New task per ADR-002 rev.2 (2026-07-06). Hybrid DB-user model for the backend rollout: one new shared DB user for the web-api mono-image family (7 services from one artifact), plus per-service users for services outside the family (queue-api).\n\n## Technical Approach\n\n* Create a new shared DB user (grants matching current web-api needs), stored at omh/<env>/shared/db-credentials; grant GetSecretValue on it to each web-api service role.\n* Run it in parallel with the legacy omh_user; migrate web-api services to read the shared secret; decommission omh_user once every reader has migrated.\n* Rotate the shared user with an alternating \\_a/\\_b two-user strategy (zero-downtime), because rotating it is a multi-service event. Remember the ProxySQL 3-place sync (RDS ALTER, ProxySQL mysql_users UPDATE + LOAD + SAVE, secret promotion).\n* Services outside the family keep their own omh/<env>/<service>/db-credentials with independent single-user rotation.\n\n## Constraints / Non-goals\n\n* No DB schema change. This is the C-B2 handling for Phase 2 backend rollout; relates to ELS-2054.\n\n## Sequencing\n\n* Phase 2 (backend rollout).\n\n"
+ },
+ {
+  "type": "task",
+  "key": "ELS-2421",
+  "id": "16998",
+  "author": "Joseph",
+  "created": "2026-07-06T18:48:24.369000+09:00",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2421",
+  "text": "Promote tl-push and queue-api pilots to PROD (read from vault + rotate exclusive creds)\n## Glossary / Context\n\n* New task per ADR-002 rev.2 (2026-07-06). After Staging passes all 7 success criteria, both pilot services go to PROD as the close of Phase 1.\n\n## Technical Approach\n\n* tl-push (ECS Fargate, PROD): deploy with the secrets-sm profile + taskRoleArn; resolve DB creds, api.kmsKey (moved, not rotated), and TL-Lincoln from omh/prod/\\*; rotate the tl-push-exclusive creds (TL-Lincoln, own DB user).\n* queue-api (EC2, PROD): assume queue-api-prod from the host instance profile; read DB creds from omh/prod/queue-api/\\*; rotate.\n* Confirm the same checks as Staging (no static keys, scoped access, rotation reload without redeploy).\n\n## Constraints / Non-goals\n\n* The shared web-api DB user (omh_user) stays read-only in PROD - its rotation waits for the backend rollout / Phase K. 6 sibling web-api services remain byte-for-byte unchanged.\n\n## Sequencing\n\n* Phase 1 (final). Blocked by the Staging ECS setup, ELS-2240 (task-role validation), and the PROD foundation task.\n\n"
+ },
+ {
+  "type": "task",
+  "key": "ELS-2420",
+  "id": "16997",
+  "author": "Joseph",
+  "created": "2026-07-06T18:48:17.935000+09:00",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2420",
+  "text": "Create PROD secrets foundation: prod KMS CMK, prod IAM roles, and omh/prod/* paths\n## Glossary / Context\n\n* New task per ADR-002 rev.2 (2026-07-06). To promote the two pilot services to PROD right after Staging, the PROD foundation must exist ahead of the general rollout.\n\n## Technical Approach\n\n* Create a dedicated PROD KMS CMK, alias alias/omh-secrets-prod, automatic annual rotation on, tags Environment=prod / Purpose=secrets-encryption / ManagedBy=secrets-migration.\n* Create per-service-per-env PROD IAM roles (ECS task roles for Fargate services; EC2 instance profiles + assume-role for EC2/Docker) scoped to omh/prod/<service>/\\* + kms:Decrypt via kms:ViaService=secretsmanager.\n* Establish the omh/prod/\\* path prefix. Follow the setup ordering (roles first, then CMK root-only bootstrap policy, then put-key-policy).\n\n## Constraints / Non-goals\n\n* Foundation only - no secret values migrated here. Single AWS account; prod isolation into its own account remains a recommended follow-up.\n\n## Sequencing\n\n* Phase 1 (before pilot PROD promotion).\n\n"
+ },
+ {
+  "type": "task",
+  "key": "ELS-2419",
+  "id": "16996",
+  "author": "Joseph",
+  "created": "2026-07-06T18:48:10.913000+09:00",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2419",
+  "text": "Set up ECS Fargate in Staging for the tl-push pilot (task-role validation)\n## Glossary / Context\n\n* New task per ADR-002 rev.2 (2026-07-06). The Dev pilot ran tl-push as Docker-on-EC2 (assume-role). To validate the native ECS task-role path before PROD, we stand up ECS Fargate in Staging and run tl-push there.\n\n## Technical Approach\n\n* Provision an ECS Fargate service for tl-push in Staging (task definition with SPRING_PROFILES_ACTIVE including secrets-sm, taskRoleArn scoped to omh/stg/tl-push-api/\\* + the Staging KMS key).\n* No static AWS keys; secrets resolved via the task role.\n* Leave the other 6 web-api services unchanged (profile-scoped override only).\n\n## Constraints / Non-goals\n\n* Infra/deploy setup only. Secret content and rotation are covered by the pilot tasks (ELS-2065/2068) and ELS-2240 validation.\n\n## Sequencing\n\n* Phase 1 (Staging). Blocks ELS-2240 (ECS task-role validation) and the pilot PROD promotion.\n\n"
+ },
+ {
+  "type": "task",
+  "key": "ELS-2418",
+  "id": "16995",
+  "author": "Joseph",
+  "created": "2026-07-06T18:15:01.798000+09:00",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2418",
+  "text": "[Deployment] Make a release Notes – Deployment [1.0/07072026]\n**Request**\n\nDeployment Make a release Notes – Deployment \\[1.0/07072026\\]\n\n---\n\n## Deploy Report — 2026-07-06\n\n### Summary\n\n* **Total Tasks:** 12 PRs (10 Jira issues)\n* **Environments:** `hotel-api`, `oh-api`, `batch-api`, `oh-admin`, `ohmytrip-pc`, `ohmytrip-mobile`\n* **Contributors:** 6\n\n### Tasks\n\n| # | Jira | Type | Repo | PR | Author | Deploy |\n| --- | --- | --- | --- | --- | --- | --- |\n| 1 | [ELS-2331](https://ohmyjira.atlassian.net/browse/ELS-2331) - zstd compression for Redis hotel content cache | Other | oh-api | [#919](https://github.com/ohmyhotelco/oh-api/pull/919) | calvin22-omh | hotel-api |\n| 2 | [OMH-679](https://ohmyjira.atlassian.net/browse/OMH-679) - Update Default Token Guest User B2C Search | Improvement | oh-api | [#930](https://github.com/ohmyhotelco/oh-api/pull/930) | longnk95 | oh-api |\n| 3 | [ELS-2037](https://ohmyjira.atlassian.net/browse/ELS-2037) - Optimize Heavy Admin Endpoints (CPU/Memory) | Other | oh-api | [#896](https://github.com/ohmyhotelco/oh-api/pull/896) | dan-omh | oh-api |\n| 4 | [BTBS-879](https://ohmyjira.atlassian.net/browse/BTBS-879) - Profit Share export: add Vendor/Room columns | VOC | oh-admin | [#265](https://github.com/ohmyhotelco/oh-admin/pull/265) | tomomh | oh-admin |\n| 5 | [BTBS-879](https://ohmyjira.atlassian.net/browse/BTBS-879) - Profit Share export: add Vendor/Room columns | VOC | oh-api | [#903](https://github.com/ohmyhotelco/oh-api/pull/903) | tomomh | oh-api |\n| 6 | [ELS-2340](https://ohmyjira.atlassian.net/browse/ELS-2340) - Fix Dashboard Reservation by Country | Improvement | oh-api | [#917](https://github.com/ohmyhotelco/oh-api/pull/917) | tomomh | oh-api, batch-api |\n| 7 | [ELS-2252](https://ohmyjira.atlassian.net/browse/ELS-2252) - Optimize Room Night Yearly chart query | Other | oh-api | [#884](https://github.com/ohmyhotelco/oh-api/pull/884) | tomomh | oh-api |\n| 8 | [ELS-2269](https://ohmyjira.atlassian.net/browse/ELS-2269) - Slow Request Logging for Admin API | Improvement | oh-api | [#901](https://github.com/ohmyhotelco/oh-api/pull/901) | tantm91 | oh-api |\n| 9 | [OMT-77](https://ohmyjira.atlassian.net/browse/OMT-77) - Replace Instagram redirect URL in footer | Improvement | ohmytrip-pc | [#109](https://github.com/ohmyhotelco/ohmytrip-pc/pull/109) | Mon-OMH | ohmytrip-pc |\n| 10 | [OMT-77](https://ohmyjira.atlassian.net/browse/OMT-77) - Replace Instagram redirect URL in footer | Improvement | ohmytrip-mobile | [#97](https://github.com/ohmyhotelco/ohmytrip-mobile/pull/97) | Mon-OMH | ohmytrip-mobile |\n| 11 | [OMH-696](https://ohmyjira.atlassian.net/browse/OMH-696) - Fix hotel-name search double-space | Bug Fix | oh-api | [#927](https://github.com/ohmyhotelco/oh-api/pull/927) | Mon-OMH | oh-api |\n| 12 | [OMH-700](https://ohmyjira.atlassian.net/browse/OMH-700) - Fix price filter min=max boundary | Bug Fix | oh-api | [#926](https://github.com/ohmyhotelco/oh-api/pull/926) | Mon-OMH | oh-api |\n\n### Deploy by Environment\n\n* **oh-api:** 8 tasks (#930, #896, #903, #917, #884, #901, #927, #926)\n* **hotel-api:** 1 task (#919) → EC2 `prd-hotelsearch-1..4` + post-deploy on `prd-trigger-1`\n* **batch-api:** 1 task (#917) → EC2 `prd-batch`\n* **oh-admin:** 1 task (#265) → ECS `fargate-admin` + EC2 `admin.sh`\n* **ohmytrip-pc:** 1 task (#109) → EC2 `omt-pc.sh`\n* **ohmytrip-mobile:** 1 task (#97) → EC2 `omt-mobile.sh`\n\n### Manual Deployment Steps (in order)\n\n**1. HotelSearch API** (#919 — zstd compression) — run on `prd-hotelsearch-1..4`:\n\n```bash\nsudo sh /root/deploy1.sh   # api-hotel\nsudo sh /root/deploy2.sh   # api-hotel2\n```\n\nThen post-deploy on `prd-trigger-1` (AFTER all hotelsearch instances are done):\n\n```bash\nsudo sh /root/hotel-search/deploy1.sh   # hotel-search sync 1\nsudo sh /root/hotel-search/deploy2.sh   # hotel-search sync 2\n```\n\n**2. Batch API** (#917): SSH `prd-batch` → `sudo sh /root/deploy.sh`\n\n**3. Frontend** (run on `prd-web-as`):\n\n```bash\nsudo sh /home/ap-user/script/admin.sh      # oh-admin (#265)\nsudo sh /home/ap-user/script/omt-pc.sh     # ohmytrip-pc (#109)\nsudo sh /home/ap-user/script/omt-mobile.sh # ohmytrip-mobile (#97)\n```\n\n**4. Admin API (ECS):** `fargate-admin` — remember to tick **Force new deployment**\n\n**5. Grafana:** deploy after backend services to update traffic monitoring (`prd-apm-server`).\n\n### Notes\n\n* **ELS-2331 (#919)** is the heaviest PR — changes Redis config + zstd codec in both `hotel-api` and `trigger-api`; monitor CPU/metrics after deploy.\n* **BTBS-879** has 2 PRs (oh-admin #265 + oh-api #903) — deploy both for full Profit Share export functionality.\n* **ELS-2340 (#917)** must be deployed to both oh-api and batch-api.\n* **OMT-77** has 2 PRs (PC #109 + mobile #97).\n\n### Contributors\n\n* **tomomh:** 4 PRs\n* **Mon-OMH:** 4 PRs\n* **calvin22-omh:** 1 PR\n* **longnk95:** 1 PR\n* **dan-omh:** 1 PR\n* **tantm91:** 1 PR\n\n"
+ },
+ {
+  "type": "task",
+  "key": "ELS-2417",
+  "id": "16994",
+  "author": "Joseph",
+  "created": "2026-07-06T18:03:03.780000+09:00",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2417",
+  "text": "Check and update Sanha maintenance July\n**Request**:  \n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=b9bd087d78e7&id=d7213156-7d17-4583-8e8a-40acd6de5989&&collection=&height=820&occurrenceKey=null&width=1153&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n  \n\\[Notice\\] Security Inspection Notice for Thursday, July 9\n\n‌\n\nHello, this is Sanha Information Technology.  \nWe wish your company continued prosperity.\n\nWe plan to conduct security inspections to provide more stable services.  \nDuring the maintenance period, some services may experience intermittent connection delays or disconnections,  \nPlease refer to this for your preparation and work progress in advance.\n\nInspection Details\n\n* Maintenance Date and Time: 2026.07.09 (Thu) 00:00 \\~ 05:00\n* Maintenance Records: Server security inspection and updates\n\nRequest for Cooperation  \nDuring server maintenance periods, page access may be temporarily unsmooth or there may be intermittent disconnections.\n\n\\[PMS\\]\n\n* If you have any necessary reports, please prepare them in advance.\n* Please complete the final work before or after the maintenance.\n* Please refrain from using WINGS as much as possible.\n* After maintenance, please check whether the WINGS interface is functioning properly.\n\n\\[CMS\\]\n\n* Please double-check CMS and Extranet to ensure no missed reservations are made.\n* Please manage any missed reservations manually by PMS.\n* CMS access may not be ideal during operation. Also, please refrain from adjusting allocations or registering fees during maintenance hours.\n\n  \n\\*Since this is a web server operation, the API (reservation/inventory) server will operate normally without any issues.\n\n\\[Booking Engine\\]\n\n* After inspection, any Deny/Wait/Wait/Waitcancel cases confirmed will be notified via each hotel's email regarding the reservation.\n* Please check your card approval history on the PG official page to see if there are any reservations that have not been sent to PMS after PG payment has been completed.\n\nWe will do our best to provide better service.\n\nThank you.\n\nSincerely, Sanha Information Technology."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2416",
+  "id": "16991",
+  "author": "Tom",
+  "created": "2026-07-06T17:28:34.656000+09:00",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2416",
+  "text": "Update reservation 665136 payment method from VCC to Cash\nReview the attached reservation list for 665136 - Felix by STX Hotel & Suite and update the settlement/payment method from VCC to Cash as requested by the hotel.\n\n‌\n\n| Booking Item Code |\n| --- |\n| K26060410389H01 |\n| K26062510719H01 |\n| S26062110254H01 |\n| K26061811716H01 |\n| S26070210172H01 |\n| K26070210241H01 |\n| S26062810441H01 |\n| K26063010305H01 |\n| K26060210386H01 |\n| S26070210102H01 |\n| K26061611152H01 |\n| S26061110906H01 |\n| K26060811153H01 |\n| S26060110628H01 |\n| K26062911925H01 |\n| K26062710402H01 |\n| S26070210379H01 |\n| K26070210217H01 |\n| K26070210761H01 |\n| K26062911931H01 |\n| K26062811505H01 |\n| S26062710865H01 |\n| K26070210655H01 |\n| K26070211432H01 |\n| S26070210080H01 |\n| K26060310647H01 |\n| S26063010177H01 |\n| K26070210861H01 |\n| K26062911848H01 |\n| K26062711069H01 |\n| K26062811580H01 |\n| K26070310064H01 |\n| K26062511109H01 |\n| K26062511747H01 |\n| S26070110311H01 |\n| K26062911349H01 |\n| S26070310233H01 |\n| K26062610736H01 |\n| K26062910995H01 |\n| K26062911245H01 |\n| S26070110607H01 |\n| K26063011223H01 |\n| K26070110728H01 |\n| K26062710024H01 |\n| K26062710681H01 |\n| K26062911928H01 |\n| S26070211326H01 |\n| K26062510959H01 |\n| K26070310612H01 |\n| K26063011924H01 |\n| K26062611063H01 |\n| K26062610356H01 |\n| K26070211123H01 |\n"
+ },
+ {
+  "type": "task",
+  "key": "ELS-2415",
+  "id": "16989",
+  "author": "Joseph",
+  "created": "2026-07-06T16:54:14.510000+09:00",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2415",
+  "text": "Analyze API document ticket.com\n**Request**:  \nAnalyze API document  \n<custom data-type=\"smartlink\" data-id=\"id-0\">https://affiliate.tiket.com/docs/hotel-api/gmfd84i0dogqv-multi-hotel-search-v2</custom> "
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2414",
+  "id": "16988",
+  "author": "Tom",
+  "created": "2026-07-06T16:52:56.226000+09:00",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2414",
+  "text": "Update payment method to Prepay/Cash for all reservations listed in the attached file\nChange the payment method from Card to Prepay/Cash for every reservation included in the attached file, following the hotel's request.\n\n‌\n\n| Booking Item Code |\n| --- |\n| K25122512298H01 |\n| S26031610301H01 |\n| S26031610497H01 |\n| K26040110807H01 |\n| S26040210211H01 |\n| S26041010443H01 |\n| S26041110575H01 |\n| K26042010356H01 |\n| K26042210018H01 |\n| S26042410223H01 |\n| K26042610113H01 |\n| S26042610224H01 |\n| K26050610226H01 |\n| K26050810643H01 |\n| K26050810668H01 |\n| S26050810449H01 |\n| K26051010578H01 |\n| K26051010705H01 |\n| K26051110337H01 |\n| S26051110224H01 |\n| K26051110776H01 |\n| S26051210259H01 |\n| K26051310236H01 |\n| K26051410190H01 |\n| K26051710836H01 |\n| K26051911558H01 |\n| K26051911945H01 |\n| K26052011415H01 |\n| K26052210921H01 |\n| K26052211182H01 |\n| K26052310410H01 |\n| S26052310576H01 |\n| S26052310621H01 |\n| K26052310948H01 |\n| K26052410533H01 |\n| S26052410476H01 |\n| S26052410492H01 |\n| K26052410583H01 |\n| S26052410513H01 |\n| S26052410604H01 |\n| S26052410659H01 |\n| S26052410740H01 |\n| K26052410958H01 |\n| S26052410818H01 |\n| K26052610059H01 |\n| K26052610312H01 |\n| S26052610486H01 |\n| K26052610602H01 |\n| K26052610810H01 |\n| K26052610875H01 |\n| S26052610696H01 |\n| S26052610724H01 |\n| K26052610935H01 |\n| K26052611244H01 |\n| K26052611388H01 |\n| S26052611085H01 |\n| S26052710010H01 |\n| S26052710622H01 |\n| K26052711274H01 |\n| K26052810628H01 |\n| K26052810961H01 |\n| S26052810835H01 |\n| K26052811048H01 |\n| K26052811306H01 |\n| K26052910479H01 |\n| S26053110438H01 |\n| S26053110796H01 |\n| K26053110994H01 |\n| K26053111140H01 |\n| S26053111064H01 |\n| K26060110115H01 |\n| S26060110636H01 |\n| K26060211441H01 |\n| S26060211038H01 |\n| K26060310618H01 |\n| S26060410681H01 |\n| K26060510318H01 |\n| K26060711229H01 |\n| K26060811113H01 |\n| K26061210400H01 |\n| S26061410600H01 |\n| K26061610470H01 |\n| K26061611083H01 |\n| K26061910207H01 |\n| K26062110286H01 |\n"
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2413",
+  "id": "16987",
+  "author": "Tracy",
+  "created": "2026-07-06T16:28:25.319000+09:00",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2413",
+  "text": "Verify the VCC cancellation and validate the revised accounting figures\nConfirm the hotel has completed the VCC payment cancellation for this booking, and check that the updated buying rate and vendor/billing amounts are reflected correctly in the system."
+ },
+ {
+  "type": "task",
+  "key": "ELS-2412",
+  "id": "16986",
+  "author": "Justin",
+  "created": "2026-07-06T15:44:37.943000+09:00",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2412",
+  "text": "Return OKR aggregate metrics through the get_okr_metrics MCP tool\n⛔ **DEFERRED — v1 out of scope.** Derived from booking/revenue data → depends on Q1 (bookings source). Can be computed CRM-side from the other domains if ELLIS does not provide it.\n\nTool: get_okr_metrics\n\n* Input: period\n* Output: `active channel count, daily bookings, monthly TTV per account (Tier0), Greater-China share, revenue YTD`\n\nUse: auto-refresh OKR KR1–KR5.  \nConstraints: read-only; RBAC-scoped; audit-logged.\n\nBlocked by Q1 (via query_bookings / ELS-2025). Source: GSM demand 1.7. See the full spec on the Epic (ELS-2024)."
+ },
+ {
+  "type": "task",
+  "key": "ELS-2411",
+  "id": "16985",
+  "author": "Justin",
+  "created": "2026-07-06T15:44:33.197000+09:00",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2411",
+  "text": "Return per-channel QPS usage and API health through the get_qps MCP tool\n⛔ **DEFERRED — v1 out of scope.** Gated on triage Q2 (QPS/API-health data residence: ELLIS API vs gateway/connectivity/monitoring). Do not start until Q2 is confirmed via ELS-2025.\n\nAlso absorbs the `qpsLimit` / `connectionType` fields explicitly excluded from get_channel (ELS-2033) in v1.\n\nTool: get_qps\n\n* Input: channel\n* Output: `per-channel QPS usage & limit, 429 rate, offline events, response time`\n\nUse: QPS management (Tripbtoz, RTX, Hikari), stability monitoring.  \nConstraints: read-only; RBAC-scoped; audit-logged.\n\nBlocked by ELS-2025 (Q2). Source: GSM demand 1.6. See the full spec on the Epic (ELS-2024)."
+ },
+ {
+  "type": "task",
+  "key": "ELS-2410",
+  "id": "16984",
+  "author": "Justin",
+  "created": "2026-07-06T15:44:24.582000+09:00",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2410",
+  "text": "Return ELLIS rate parity and availability status through the get_availability_status MCP tool\n⛔ **DEFERRED — v1 out of scope.** Gated on triage Q2 (availability/route-off data residence: ELLIS API vs connectivity/monitoring). Do not start until Q2 is confirmed via ELS-2025.\n\nTool: get_availability_status\n\n* Input: channel, time range\n* Output: `rate(hotel/room/date/channel), parity flag, singleUse rate, allotment/hardblock, availability, routeOff/offline events, precheck failure rate`\n\nUse: rate parity, Route-off (e.g. Ctrip offline) monitoring, allotment checks.  \nConstraints: read-only; RBAC-scoped; audit-logged.\n\nBlocked by ELS-2025 (Q2). Source: GSM demand 1.4. See the full spec on the Epic (ELS-2024)."
+ },
+ {
+  "type": "task",
+  "key": "ELS-2409",
+  "id": "16983",
+  "author": "Justin",
+  "created": "2026-07-06T15:44:18.961000+09:00",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2409",
+  "text": "Return ELLIS booking records and aggregates through the query_bookings MCP tool\n⛔ **DEFERRED — v1 out of scope.** Gated on triage Q1 (booking data residence: ELLIS vs a separate booking/distribution system). Do not start until Q1 is confirmed via ELS-2025.\n\n**Business priority: HIGHEST** per the GSM demand doc (Aiden, 2026-07-06) — this is the source for REPORT weekly booking analytics; it replaces the current 14-field weekly xlsx.\n\nTool: query_bookings\n\n* Input: date range (basis = bookingDate | checkOut | checkIn), channel, hotel, country, status, currency\n* Output: `bookingItemCode, bookingDate, checkInDate, checkOutDate, sellerName(=channel), sellerCountry, hotelName, hotelCode, hotelCountry, hotelRegion, roomTypeCode, roomTypeName, ratePlanName, roomNights, billing(TTV), revenue(margin), currency, bookingStatus(Confirmed/Reserved/Cancelled), cancelDate, guestName(masked)`\n* Aggregates: WoW, channel performance, country mix, category trends.\n\nConstraints: read-only; RBAC-scoped; audit-logged; PII masking (guestName); pagination required (tens of thousands of rows); original + base currency (FX).\n\nBlocked by ELS-2025 (Q1 confirmation). Source: GSM demand 1.1. See the full spec on the Epic (ELS-2024)."
+ },
+ {
+  "type": "task",
+  "key": "ELS-2408",
+  "id": "16982",
+  "author": "Roy",
+  "created": "2026-07-06T14:17:10.696000+09:00",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2408",
+  "text": "Add local cache for channel auth key lookup on 3 hotels search APIs (hotel-api)\n### Current situation (based on production metrics, 2026-07-06)\n\nEvery channel API request calls Redis GET SELLER_COMP_KEY:{apikey} to load the partner secret used for signature verification (KeyService.java:44-50). There is no local cache, so auth GETs run at about 2,200 per second (1:1 with channel request volume).\n\nThe core problem is coupling, not load. The lookup has a 300ms timeout and a shared circuit breaker, so if the prod-access-control cluster slows down even briefly, authentication fails for all channels at once. At 2,200 calls per second, even a short Redis hiccup piles up slow calls quickly and can open the circuit breaker, and an open circuit breaker on the auth path means immediate auth failure for every channel.\n\n### Why improve now\n\nThis was identified while reviewing the search-path code and production metrics for the channel QPS expansion effort. The failure coupling above exists at today's traffic level, and the risk grows as QPS increases (spikes of 3,000 to 5,000 today, more after expansion) since auth call volume grows proportionally. With the cache, auth Redis calls drop from about 2,200/s to a few dozen per second, removing the coupling; during a Redis hiccup, cache hits keep authenticating normally for up to 30 seconds. The change is small in scope (two files, no behavior change for existing callers), which makes it a good first step.\n\n### **Why cache the search APIs only**\n\nAPI keys must be revocable immediately when a transaction issue is detected. A local cache spread across multiple containers cannot be invalidated instantly. So we split by risk.\n\n* Booking/payment paths: no cache. Keep the per-request Redis lookup so revocation takes effect immediately.\n* Search APIs (initial rollout, 3 endpoints): cache allowed. In the worst case, a revoked key can run price/room-information lookups for up to 30 more seconds. No money moves on these endpoints.  \n  a. POST /channel/ota/v2.0/hotels/availability  \n  b. POST /channel/ota/v2.0/hotels/rooms/availability  \n  c. POST /channel/ota/v2.0/hotels/rooms/information\n* lowest-availability and b2c endpoints are excluded from the initial rollout. Expansion will be reviewed after checking production metrics.\n\nSignature verification itself is not cached. The Signature header changes every second and is re-verified on every request. Only the static lookup result (secret, actYn) is cached.\n\n### Changes\n\n* KeyService: add Caffeine AsyncCache<String apikey, CompKeyVo> with expireAfterWrite 30s, maximumSize 1000, recordStats(). Concurrent misses on the same apikey are coalesced into a single Redis lookup (default AsyncCache behavior). Lookup errors are never cached; \"key not found\" is negative-cached for 5 to 10 seconds only.\n* The cached CompKeyVo is shared across requests, so the signature verification result (equalSignature) must not be written to the cached object. It is returned per request via a copy or a separate return value.\n* AuthorizationWebFilter: pass useCache=true only when the request path matches the whitelist of the 3 endpoints above. The default is false, so all other callers behave exactly as they do today.\n\n### Acceptance criteria\n\n- [ ] Auth Redis GET rate drops from about 2,200/s to tens per second (8 containers × active partners / 30s). Verified via cache hit-rate metric (Prometheus)\n- [ ] Cache scope is limited to the 3 endpoints above. All other paths (lowest-availability, b2c, booking/payment) keep the per-request Redis lookup\n- [ ] Key revocation takes effect within 30s on search paths and immediately on booking paths\n- [ ] Redis lookup failures are never cached (verified by test)\n- [ ] No per-request state is written to the cached VO. No signature-result interference between concurrent requests (verified by test)\n\n"
+ },
+ {
+  "type": "task",
+  "key": "ELS-2407",
+  "id": "16980",
+  "author": "planning",
+  "created": "2026-07-06T13:49:25.330000+09:00",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2407",
+  "text": "Request to Change the Payment Method for a Reservation\n_Cloned from BTBS-922_\n\nFollowing the hotel's request, please change the payment method for the reservations in the attached file from Card to Prepay/Cash. "
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2406",
+  "id": "16979",
+  "author": "Tracy",
+  "created": "2026-07-06T13:22:28.142000+09:00",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2406",
+  "text": "Update payment status and VCC status for all listed bookings\nReview the attached booking list and update the 47 bookings so that payment status is set to \"Fully paid\", VCC status is set to \"Approved\", and Vendor Balance is set to 0 for each booking."
+ },
+ {
+  "type": "task",
+  "key": "ELS-2405",
+  "id": "16978",
+  "author": "planning",
+  "created": "2026-07-06T12:28:54.103000+09:00",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2405",
+  "text": "Request to amend the buying rate - S26060510930H01\n_Cloned from BTBS-849_\n\nDear team,\n\nS26060310676H01 // Kumho Seorak Resort  \n  \nPlease change data as below:  \nV payment: change to Not Paid  \nVendor Sum Amt: change to 306,000  \nVendor Add Amt: change to 109,310  \nVendor Revenue Amt: change to 8,686  \nVendor Balance: change to 306,000  \nBilling Revenue: 5.65  \n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=55e49abc6de9&id=e0320b3a-5e60-433f-8455-5884d06e41d1&&collection=&height=1003&occurrenceKey=null&width=1906&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n**Reason**: KR team request to add KRW 109,310 to the buying rate. And Vendor Sum Amount updated from 196,690 to 306,000. The hotel has completed the cancellation of the VCC payment for this booking.\n\nThank you."
+ },
+ {
+  "type": "comment",
+  "key": "OMH-608",
+  "id": "18979",
+  "author": "Daniel",
+  "created": "2026-07-06T11:15:59.683+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-608",
+  "text": "🔧 _Implementation complete — moved to In Review._\n\n_PR:_ https://github.com/ohmyhotelco/oh-api/pull/928\n_Branch:_ `OMH-608-b2b-nationality-zz-fallback` → `master`\n\n_What was done_\n\n* _Qunar / Meituan_ (`QunarHotelBookingService`, `MeituanHotelBookingService`): removed the hardcoded `CN`; sellers never send nationality, so the system now stores the `ZZ` \"unknown\" sentinel.\n* _Alitrip_ (`AlitripReservationService`): parse the seller-sent `<Country>` value (new `country` field on `CreateOrderRequest`) and forward it _as-is_; fall back to `ZZ` only when absent.\n* _DB migration_ (`db-migration/OMH-608_nationality_zz_sentinel.sql`): registers `ZZ = \"Unknown\"` in `BS_COUNTRY_CODE` (idempotent) + backfills existing `CN` → `ZZ` for Qunar/Meituan/Elong/Agoda, scoped by `BOOKER_COMP_CODE`. Alitrip history intentionally left unchanged.\n* _Test_: `CreateOrderRequestNationalityTest` covers the Alitrip `<Country>` parse and the ZZ fallback.\n\n⚠️ _DBA action before running the migration:_ fill the comp-code placeholders (`:QUNAR_COMP_CODE`, `:MEITUAN_COMP_CODE`, `:ELONG_COMP_CODE`, `:AGODA_COMP_CODE`) with the actual per-environment seller company codes.\n\n_Verification:_ `./gradlew :web-api:test` (JDK 21) — module compiles, new test green."
+ },
+ {
+  "type": "comment",
+  "key": "OMH-745",
+  "id": "18980",
+  "author": "Harry",
+  "created": "2026-07-06T11:34:25.588+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-745",
+  "text": "Hi @Justin\n\nAnswers for the `attachedFileUrl` domain question (`CO_BOARD_ATTACHED_FILE.ATTACHED_FILE_URL`):\n\n1. **Storage format → (a) root-relative path.** The URL is stored and served as a root-relative path, resolved against the page origin (`www.ohmyhotel.com`). It is not an absolute URL on another host, and not a storage key.\n\n2. **Cross-origin CORS → N/A.** Since the URL is same-origin, the cross-origin case does not apply. (For completeness: no permissive CORS is configured for these files anyway — a cross-origin fetch-blob would not succeed.)\n\n3. **Environments → same.** The same host/scheme pattern applies across dev / staging / prod. The legacy localhost rewrite to dev-newwww was only a local-dev convenience, matching your root-relative inference.\n\n**Conclusion:** attachment links are same-origin → the native browser download works in both legacy and v2, so **BC-2 is a no-op**. No fetch-blob fallback is needed in v2, and nothing blocks the notice CloudFront route flip from this side."
+ },
+ {
+  "type": "comment",
+  "key": "OMH-745",
+  "id": "18981",
+  "author": "Justin",
+  "created": "2026-07-06T11:36:27.445+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-745",
+  "text": "@Harry Well informed, thanks~"
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2027",
+  "id": "18982",
+  "author": "Daniel",
+  "created": "2026-07-06T11:40:18.963+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2027",
+  "text": "Hi @Joseph,\nPlease create a new repo for with name **oh-ellis-mcp**.\n\nWhy not hare-cc-plugins:\n\n1. Wrong artifact type — hare-cc-plugins is a mono-repo of Claude Code plugins (markdown skills, prompts); ellis-mcp is a production Java service with OAuth2, RBAC, audit, and secrets handling. It needs service-grade CI/CD and security review that a prompt-asset repo isn't built for.\n2. hare-cc-plugins is a public repo.\n\nWhy not oh-api:\n\n* Toolchain conflict — oh-api is Java 21 + Spring Boot 3.2.4 + WebFlux; ellis-mcp is Java 25 + Spring Boot 4.1 + Spring AI 2.0. Merging means either downgrading ellis-mcp or maintaining two toolchains/BOMs inside an already heavy multi-module build."
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2394",
+  "id": "18983",
+  "author": "Tom",
+  "created": "2026-07-06T11:41:26.750+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2394",
+  "text": "@Tracy2 Phần này anh test lại thì thấy vẫn show ra, có lẽ trong quá trình em tạo chưa reload lại page exclusive dashboard\n\n[image attachment]"
+ },
+ {
+  "type": "comment",
+  "key": "ELS-1099",
+  "id": "18984",
+  "author": "Zia",
+  "created": "2026-07-06T11:52:47.517+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-1099",
+  "text": "Dear <custom data-type=\"mention\" data-id=\"id-0\">@Joo</custom> \n\n> First, apologies for the confusion my earlier comment caused — **I'm revising my view: country-specific rates aren't necessary.**\n>\n> Let's focus on the gap itself. The \\~7–8% discrepancy is real — it comes from the B2C **Opening Promotion** (7% for Japan hotels / 6% for others, plus the Hana-card 8%), which is applied on B2C but **not included in the Google feed** — is that correct?  \n> From the promotion admin screen, this Opening Promotion is **uniform across all sales countries** (same 7%/6%), so it doesn't vary by user country. That means country-specific rates aren't needed, and the fix is likely just to **include this promotion in the final price we push to Google**. Could you confirm my understanding against this comment?\n>\n> To confirm:\n>\n> * **(a)** For a given hotel/date/room, is the final B2C price the **same for all user countries**? If it's uniform (as the screen suggests), a single final price resolves the gap.\n> * **(b)** Could you explain **why this promotion wasn't included in the Google feed in the first place** — i.e., which pricing layers the feed reads vs skips? I'd like to check whether anything else from the same layer is also missing. (This ties into the full price-layer inventory I requested at 11:09am separately.)\n> * **(c)** An **effort estimate** to include the missing promotion(s) in the pushed price.\n> \n> Thanks!"
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2399",
+  "id": "18985",
+  "author": "Tracy2",
+  "created": "2026-07-06T12:12:19.289+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2399",
+  "text": "## A. AUTH\n\n**TC-A1 Login thường : PASSED**\n\n* Step: Vào /login, nhập ID/PW hợp lệ, Sign in.\n* Expected: `POST /user/login` và `POST /user/create-token` trả 200, tạo session; vendor sang landing /vendor/booking, seller sang /seller/booking. Không CORS/401.\n\n[image attachments]\n\n**TC-A2 Login OTP (certifyNeededYn=Y) - there is no this function**\n\n* Step: Login account cần OTP, request code, nhập code, verify.\n* Expected: `POST /user/certify` (gửi mã) và `POST /user/certify/confirm` (verify rồi login) trả 200. Vào được app.\n\n**TC-A3 Login sai và brute-force rate limit - After more than 60 failed login attempts within one minute, the system still returns the normal \"incorrect password\" error instead of responding with HTTP 429. It's ok? @Tom**\n\n* Step: Nhập sai PW nhiều lần (hơn 30 lần/phút cùng IP).\n* Expected: các lần đầu trả lỗi đăng nhập bình thường; khi vượt ngưỡng trả HTTP 429 (rate limiter partner host mới hoạt động).\n\n[image attachment]\n\n**TC-A4 Logout**: Đang đăng nhập, Logout. Expected: session xóa, redirect /login.\n\n[image attachment]\n\n**TC-A5 Find password**: **PASSED**\n\n/find-password, nhập email/ID, gửi. Expected: `POST /user/password/send` 200, nhận email reset.\n\n[image attachments]\n\n**TC-A6 Change password**: **PASSED** /user/password (forced/expired), đặt mật khẩu mới. Expected: `PUT /user/password` 200, logout.\n\n[image attachment]\n**TC-A7 Auth guard**: **PASSED** Truy cập route nội bộ khi chưa login. Expected: redirect /login.\n\n[image attachment]"
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2394",
+  "id": "18986",
+  "author": "Tracy2",
+  "created": "2026-07-06T12:23:54.986+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2394",
+  "text": "@Tom anh cho section 1 show data ra luôn giúp em đc không? Để gạch ngang hết như bên dưới cũng đc"
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2405",
+  "id": "18987",
+  "author": "planning",
+  "created": "2026-07-06T12:51:05.889+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2405",
+  "text": "Tracy created this task."
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2405",
+  "id": "18988",
+  "author": "planning",
+  "created": "2026-07-06T12:52:59.148+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2405",
+  "text": "Dear @Daniel @Tracy ,\n\nMay I know if there are any updates? Thank you."
+ },
+ {
+  "type": "comment",
+  "key": "ELS-1099",
+  "id": "18989",
+  "author": "Joo",
+  "created": "2026-07-06T13:11:12.393+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-1099",
+  "text": "Hi @Zia,\n\nThanks — let me clarify based on the current B2C logic:\n\nAt the OMH B2C system, there is an additional special discount that varies by country, applied when users book via B2C, called the hotel promotion. Therefore:\n\n(a)  \nNo — the final B2C price is NOT the same across all user countries.  \nIt depends on language/currency (i.e. user context) because of this country-based hotel promotion.  \nSo a single uniform price cannot fully resolve the gap.\n\n(b)  \nTo confirm, this is a special B2C-level promotion (hotel promotion) and is independent from room / rate plan promotions.  \nAs mentioned earlier, this is the reason it is not reflected in the Google feed:\n\nGoogle does not support country-specific pricing logic  \nWe can only set a fixed price (in one currency) and push it to Google  \nGoogle will then convert the price dynamically per country, but does not allow different base prices per country\n\nSo this B2C-specific promotion layer cannot be directly applied to Google.\n\n(c)  \nProposed approach:  \nWe can consider applying a fixed adjustment when displaying Google prices on B2C  \n(e.g. always apply \\~6% discount on prices coming from Google)\n\nHowever, I’m not able to decide this adjustment level.  \nCould you please help confirm with the Marketing team or relevant stakeholders on what discount rate should be applied?\n\nThanks!"
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2375",
+  "id": "18990",
+  "author": "Tracy",
+  "created": "2026-07-06T13:13:28.849+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2375",
+  "text": "@Tan this update is correct.\nHowever, JP team would like to change a little bit as yellow highlight in the image.\nAs is: 土曜日\nChange to: 土曜日・祝日\n\n[image attachment]"
+ },
+ {
+  "type": "comment",
+  "key": "ELS-1099",
+  "id": "18991",
+  "author": "Zia",
+  "created": "2026-07-06T13:17:41.664+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-1099",
+  "text": "Dear <custom data-type=\"mention\" data-id=\"id-0\">@Joo</custom>  Before the answer, could you check: for the **same hotel / date / room**, do two users in different countries get a **different discount %**, or the **same % with only the currency differing**?"
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2275",
+  "id": "18993",
+  "author": "Tracy",
+  "created": "2026-07-06T13:23:55.521+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2275",
+  "text": "Anh @Daniel\nVCC status và Vendor Balance ==> chưa có được update, check lại giúp e"
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2399",
+  "id": "18995",
+  "author": "Tracy2",
+  "created": "2026-07-06T13:37:55.194+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2399",
+  "text": "## B. JOIN / REGISTER (/join, không cần login)\n\n**TC-B1 Terms**: **PASSED** load và accept terms. Endpoints: `POST /common/terms`, `/common/detail-code`, `/common/country` 200.\n\n**TC-B2 Partner register**: **PASSED** điền công ty, duplicate-check số ĐKKD (`POST /partner/register/check`); submit (`PUT /partner/register`) 200.\n\n**TC-B3 Staff register**: **PASSED** duplicate-check staff ID (`POST /partner/staff/id-check`); submit (`PUT /partner/staff`) 200.\n\n---\n\n## C. SELLER PORTAL (login seller)\n\n**TC-C1 Seller Bookings (/seller/booking): PASSED - there is no function assign PIC / Change BK status**\n\n* Endpoints: `POST /partner/booking/hotel/list`, `/detail`, `/partner/booking/status`, `PUT /partner/booking/pic-assign`, `/booker`, `POST /partner/booking/hotel/cancel`, `/admin/user/comp/vendor/mapping`. Expected: tất cả 200.\n\n**TC-C2 Booking actions** (Voucher, Invoice, Card receipt, Payment, Email): `POST /partner/booking/hotel/voucher`, `/partner/booking/invoice`, `/partner/payment/card/receipt`, `PUT /partner/payment/v2`, `POST /common/ums/send`. Voucher/ Receipt - not work on Seller => no available to test\n\n**TC-C3 Bookings Excel export**: **PASSED** `POST /partner/booking/hotel/excel-v2` (blob).\n\n**TC-C4 Create Booking (/seller/create-booking)**: **PASSED** search hotel. `POST /partner/hotel/list/v2`, `/common/currency` 200. K26070610001H01\n\n**TC-C5 Seller Invoice (/seller/invoice)**: Not available to test\n\n**TC-C6 Invoice Excel**: Not available to test\n\n**TC-C7 Print pages**: Not available to test\n\n**TC-C8 Seller FAQ (/seller/faq)**: **PASSED** Read only\n\n**TC-C9 Seller Notice (/seller/notice)**: **PASSED** list/đọc notice. `GET /content/notice`, `/content/notice/detail` 200.\n\n[image attachments throughout]"
+ },
+ {
+  "type": "comment",
+  "key": "ELS-1099",
+  "id": "18997",
+  "author": "Joo",
+  "created": "2026-07-06T13:41:28.918+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-1099",
+  "text": "<custom data-type=\"mention\" data-id=\"id-0\">@Zia</custom> for the **same hotel / date / room** ,  two users in different countries if **different** currency => **different discount %**"
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2275",
+  "id": "18998",
+  "author": "Daniel",
+  "created": "2026-07-06T13:41:54.494+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2275",
+  "text": "Hi @Tracy\nVendor Balance có phải chỗ này ko?\n\n[image attachment]"
+ },
+ {
+  "type": "comment",
+  "key": "ELS-1099",
+  "id": "18999",
+  "author": "Zia",
+  "created": "2026-07-06T13:44:17.147+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-1099",
+  "text": "<custom data-type=\"mention\" data-id=\"id-0\">@Joo</custom> Thanks. To lock this down unambiguously, could you give me a concrete worked example rather than the abstract case? For the **same hotel, same date, same room**, three users — **Korea (KRW), Japan (JPY), US (USD)** — please show: the **base price**, the **discount % applied**, and the **final price** in each currency.\n\nThe reason I'm asking for numbers: \"different currency → different discount %\" is a bit ambiguous, since a discount % normally isn't driven by currency. The example will settle whether the **% itself** differs by country, or whether the % is the same and only the **currency** differs. Could you share that 3-user example? Thanks!"
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2275",
+  "id": "19000",
+  "author": "Daniel",
+  "created": "2026-07-06T13:46:26.657+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2275",
+  "text": "@Tracy Check lại thử em"
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2407",
+  "id": "19001",
+  "author": "planning",
+  "created": "2026-07-06T13:49:36.641+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2407",
+  "text": "Tracy created this task."
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2338",
+  "id": "19002",
+  "author": "Tan",
+  "created": "2026-07-06T13:51:58.849+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2338",
+  "text": "@Holden please test on STG, thanks!"
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2275",
+  "id": "19003",
+  "author": "Tracy",
+  "created": "2026-07-06T13:56:05.073+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2275",
+  "text": "@Daniel VCC status vẫn là Approval Request\nPhải chuyển qua Approved mới dc a ơi\n\n[image attachment]"
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2399",
+  "id": "19004",
+  "author": "Holden",
+  "created": "2026-07-06T13:59:46.123+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2399",
+  "text": "## D. VENDOR PORTAL (login vendor)\n\n**TC-D1 Vendor Bookings (/vendor/booking)**\n\n* `/admin/basis/ums-data` Show 500 => **Failed**\n\n**TC-D2 Vendor Bookings Excel => Passed**\n\n**TC-D3 Vendor Billing (/vendor/billing) => Passed**\n\n**TC-D4 Billing Excel/download => Passed**\n\n**TC-D5 Dashboard (/vendor/dashboard) => Passed**\n\n**TC-D6 Dashboard Excel => Passed**\n\n**TC-D7 Hotel Contents (/vendor/hotel-content)**\n\n* **Failed**: Upload img and click Save => Error 400\n\n**TC-D8 Room Types (/vendor/room-types) => Passed**\n\n**TC-D9 Rate Plans (/vendor/rate-plans) => Passed**\n\n**TC-D10 Rate and Allotment (/vendor/rate-allotment) => Passed**\n\n**TC-D11 Rate/Allotment Excel => Not available to test**\n\n**TC-D12 Promotion (/vendor/promotion) => Passed**\n\n**TC-D13 Vendor FAQ (/vendor/faq)** và **TC-D14 Vendor Notice (/vendor/notice)** => **Failed**\n\n* Expected: Vendor FAQ (/vendor/faq) / Actual: Show /content/faq\n* Expected: Vendor Notice (/vendor/notice) / Actual: Show /content/notice\n\n[image attachments throughout]"
+ },
+ {
+  "type": "comment",
+  "key": "OMH-310",
+  "id": "19005",
+  "author": "Zia",
+  "created": "2026-07-06T14:58:43.808+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-310",
+  "text": "Dear <custom data-type=\"mention\" data-id=\"id-0\">@Harry</custom> <custom data-type=\"mention\" data-id=\"id-1\">@Joseph</custom>\n\nBefore starting search Phase 2, we're verifying current behavior on production. Two things need confirmation.\n\n1. **\"Recommend\" sort — is there a defined logic?**\n\n  \nSearching Seoul (Jul 24–25, 2 adults), the #1 result under Recommend sort is a test hotel (hotelCode=1001097) — actually located in Busan, 0 bookable rooms. (this is only about the sort.)\n\n* If a logic exists → just list the factors (e.g., bookings, reviews, availability). A doc link is enough.\n* If none (default order) → a one-line \"none\" is fine. In that case, planning will define a ranking policy in Phase 2.\n\n2. **Re-verifying the B-2 answer (ELS-1910) — measured behavior differs**  \n  Your answer: \"regionCode is the priority; dates/rooms-\\* are optional — defaults load if omitted.\"  \n  Production test, Jul 6:\n\n* `regionCode=102514` alone → **0 results** / still **0** after adding dates + destinationCode\n* Minimum working combination: `regionCode` + `destination-type` + `destination-countryCode` + `destination-isDomestic` + `dynamicRateYn` + `rooms-0-adultCount/childCount` (+ dates) → 587 results, correct Seoul list\n* The \"defaults\" shown in the UI are session state only, not applied to the API call → \"defaults load if omitted\" does not hold.\n\n**Requests**: \n\n① Confirm the exact required minimum parameter set — **verified against the actual implementation**, not assumptions. \n\n② If \"defaults on omission\" was the intended spec, confirm whether current behavior is a bug. \n\n③ Also: with the working combination, results load correctly but the destination label stays blank — is this a separate fix?\n\nWe need the accurate contract now. Please verify URL/parameter answers against the implementation before responding."
+ },
+ {
+  "type": "comment",
+  "key": "ELS-1807",
+  "id": "19008",
+  "author": "Tracy",
+  "created": "2026-07-06T15:17:06.404+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-1807",
+  "text": "Closed case until further notice - KR team could not contact bizmoah"
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2345",
+  "id": "19009",
+  "author": "Claire",
+  "created": "2026-07-06T15:23:02.388+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2345",
+  "text": "user closed case"
+ },
+ {
+  "type": "comment",
+  "key": "OMH-742",
+  "id": "19010",
+  "author": "Mon",
+  "created": "2026-07-06T15:24:19.379+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-742",
+  "text": "Hi @Tracy2 ,\n\nPlease help me double check on STG env\n\nPC and mobile version we should add the parameter on the link like this after the link event: \"?preview=true\"\n\nOrigin PC: https://test-newwww.ohmyhotel.com/event/100208\nOrigin Mobile: https://test-newm.ohmyhotel.com/event/100208\n\nAfter update:\n\nOrigin PC: https://test-newwww.ohmyhotel.com/event/100208?preview=true\n\nOrigin Mobile: https://test-newm.ohmyhotel.com/event/100208?preview=true\n\nThank you"
+ },
+ {
+  "type": "comment",
+  "key": "ELS-1099",
+  "id": "19012",
+  "author": "Joo",
+  "created": "2026-07-06T15:39:36.128+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-1099",
+  "text": "<custom data-type=\"mention\" data-id=\"id-0\">@Zia</custom> Settiing hotel promotion on dev enviroment\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=9aaabe6891af&id=df7f2308-d7b2-4bb1-9ea0-dc3462663087&&collection=&height=770&occurrenceKey=null&width=1722&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n100031: KRW - 7%\n\n100033: JPY: 10%\n\nhotel 177974 room **Double room - Semi** Date 20-21/7 \n\n* JPY\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=4c46bf754129&id=cfe9f095-8e00-4c20-bd0a-58156a8ced15&&collection=&height=991&occurrenceKey=null&width=1917&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n* KRW: \n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=bcace985714c&id=bdc7eaf0-6b8f-4de4-b5a5-aecda641544d&&collection=&height=992&occurrenceKey=null&width=1914&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n"
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2024",
+  "id": "19013",
+  "author": "Justin",
+  "created": "2026-07-06T15:43:04.777+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2024",
+  "text": "**GSM data requirements — full spec (Aiden, 2026-07-06)** [reproduced here so it is readable without the attachment]\n\n**PURPOSE**\nConnect the currently folder/xlsx-based AI CRM + REPORT (weekly booking analytics) to ELLIS real-time data via a read-only ELLIS MCP → a complete AI CRM (CRM + stats dashboard / weekly report + OKR + Daily Critical 6). Today booking data is a weekly xlsx upload and the CRM runs on folders + mail/Teams — manual, with a time lag.\nPrinciples: read-only first / PII masked / structured JSON responses / pagination for large queries.\n\n**DATA DOMAINS (fields · queries)**\n\n**1.1 Bookings — TOP PRIORITY** (source for REPORT booking analytics; replaces the current 14-field xlsx)\nFields: `bookingItemCode, bookingDate, checkInDate, checkOutDate, sellerName(=channel), sellerCountry, hotelName, hotelCode, hotelCountry, hotelRegion, roomTypeCode, roomTypeName, ratePlanName, roomNights, billing(TTV), revenue(margin), currency, bookingStatus(Confirmed/Reserved/Cancelled), cancelDate, guestName(masked)`\nQuery: date range (basis = bookingDate/checkOut/checkIn), channel, hotel, country, status, currency\nUse: weekly booking insights, WoW, channel performance, country mix, category trends.\n→ v1: **DEFERRED** (residence via triage Q1). Tracked as the `query_bookings` story.\n\n**1.2 Channels / Sellers** (channel = CRM account)\nFields: `channelId, name, country, region, status(active/inactive), connectionType(API/Extranet/Switching), settlementCycle, currency, commission/override, qpsLimit, liveDate`\nAggregates: bookings / TTV / revenue per channel (by period); active channel count.\n→ v1: `list_channels` (ELS-2032) + `get_channel` (ELS-2033). `qpsLimit`/`connectionType` excluded from v1 (Q2) → `get_qps` story.\n\n**1.3 Hotels & Mapping** — core for mapping issues\nHotel: `hotelCode, name, country, region, star, contractType(direct/3rd-party), status`\nMapping: `roomTypeCode ↔ roomTypeName (1:1), ratePlanName, codeSystem(Legacy/Ellis), per-channel mapping status, per-channel mapping ratio, blacklist flag, singleUse flag (rate-plan level)`\nUse: DIDA code inconsistency, Single Use, Agoda mapping gap, Tourmind disputes. Legacy↔Ellis code reconciliation is essential.\n→ v1: `get_mapping_status` (ELS-2035).\n\n**1.4 Rates & Availability**\nFields: `rate(hotel/room/date/channel), parity flag, singleUse rate, allotment/hardblock, availability, routeOff/offline events, precheck failure rate`\nUse: rate parity, Route-off (e.g. Ctrip offline) monitoring, allotment checks.\n→ v1: **DEFERRED** (Q2). Tracked as the `get_availability_status` story.\n\n**1.5 Settlement / Billing**\nFields: `settlement cycle & amount, invoice, receivables, intercompany flag, currency`\nUse: MoMo bi-weekly settlement, billing disputes, receivables.\n→ v1: `get_settlement` (ELS-2034).\n\n**1.6 QPS / API Health**\nFields: `per-channel QPS usage & limit, 429 rate, offline events, response time`\nUse: QPS management (Tripbtoz, RTX, Hikari), stability monitoring.\n→ v1: **DEFERRED** (Q2). Tracked as the `get_qps` story.\n\n**1.7 OKR Aggregates** (optional — convenient if provided)\nFields: `active channel count, daily bookings, monthly TTV per account (Tier0), Greater-China share, revenue YTD`\nUse: auto-refresh OKR KR1–KR5. If not provided, computed CRM-side from 1.1–1.5.\n→ v1: **DEFERRED** (Q1-dependent). Tracked as the `get_okr_metrics` story.\n\n**BUILD PHASES (GSM view)**\nP1: 1.1 Bookings · 1.2 Channels · 1.3 Hotels&Mapping (highest immediate impact)\nP2: 1.4 Rates/Availability · 1.5 Settlement · 1.6 QPS (operations · settlement · stability)\nP3: 1.7 OKR (convenience — can be computed)\n\n> Note: GSM P1 ≠ our v1 committed scope. v1 = ELLIS-direct tools (channels, channel detail, settlement, mapping). Bookings/Rates/QPS/OKR are gated on the ELS-2025 survey / triage Q1–Q3.\n\n**QUERY / FORMAT SPEC**\nCommon filters: `dateFrom, dateTo, dateBasis(bookingDate|checkOut|checkIn), channel, hotel, country, status, currency`\nPagination: limit/offset or cursor + sorting (specify sort key)\nCurrency/FX: keep original currency + state base currency; include FX rate if possible (OKR=KRW, bookings=JPY/local)\nTimezone: state reference TZ in responses\nResponse: JSON, standardized field names (matching this spec)\n\n**OUTPUT ↔ REQUIRED DATA**\n\n* Weekly booking insight / dashboard ← 1.1\n* Channel performance · CRM accounts ← 1.2 + 1.1\n* Mapping gap (DIDA·Single Use·Agoda·Tourmind) ← 1.3\n* Rate parity · Route-off ← 1.4\n* Settlement · MoMo · billing ← 1.5\n* QPS management ← 1.6\n* OKR (KR1–5) ← 1.7 or computed from 1.1–1.5\n* Daily Critical 6 ← all + latest events (offline / receivables / mapping changes)\n\n**CONSTRAINTS**\n\n1. Read-only first (writes later). 2. Mask PII (guestName). 3. Standardized fields (consistent with REPORT's 14 fields). 4. Pagination required (bookings can be tens of thousands). 5. Auth: company standard read scope + access logging.\n\n**OPEN QUESTIONS FOR DEV** (also raised on ELS-2025)\n\n* Any limit on query range / row count for real-time booking queries?\n* Is the Legacy vs Ellis code mapping field queryable in ELLIS?\n* Can FX conversion be provided?\n* Can the 3 P1 domains open first, then expand in phases — and on what timeline?\n\nSource: `1-Projects/assets/2026-06 ELLIS MCP/ELLIS_MCP_DataRequirements.md` (EN) / `_KR.md`."
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2024",
+  "id": "19014",
+  "author": "Justin",
+  "created": "2026-07-06T15:43:07.657+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2024",
+  "text": "@Daniel — new GSM data requirements (Aiden, 2026-07-06). Action needed:\n\n* v1 tool stories now carry GSM's requested field lists — ELS-2032 (list_channels), ELS-2033 (get_channel), ELS-2034 (get_settlement), ELS-2035 (get_mapping_status). Please reconcile them against your API inventory (ELS-2025) and flag any field ELLIS cannot expose.\n* 4 open questions added to ELS-2025 (query limits, Legacy↔Ellis code field, FX conversion, phased opening).\n* Deferred demand (Bookings, Rates/Availability, QPS, OKR) is filed as separate backlog stories, blocked on the Q1–Q3 data-residence decisions — not part of the current v1 build.\n\nBookings is GSM's #1 business priority, but its data source is still unconfirmed (Q1); that decision comes first before it can move."
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2025",
+  "id": "19015",
+  "author": "Justin",
+  "created": "2026-07-06T15:43:10.644+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2025",
+  "text": "**GSM demand doc (Aiden, 2026-07-06)** raises 4 dev-team questions to close alongside the API inventory:\n\n1. **Query limits** — is there a max query range / row count for real-time booking queries (bookings can be tens of thousands)?\n2. **Legacy vs Ellis code** — is the code-system mapping field (Legacy ↔ Ellis) queryable through the ELLIS read API? (core for mapping analysis — `get_mapping_status` / ELS-2035)\n3. **FX** — can the API provide FX conversion, or should the MCP layer convert? (OKR base = KRW, bookings = JPY/local)\n4. **Phased opening** — can the 3 P1 domains (bookings, channels, hotels & mapping) open first, then expand — and on what timeline?\n\nPlease fold the answers into the inventory reply so the v1 tool stories (ELS-2032/2033/2034/2035) can finalize field mapping."
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2338",
+  "id": "19017",
+  "author": "Holden",
+  "created": "2026-07-06T16:02:49.597+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2338",
+  "text": "@Tan **re-test on STG => Passed**\n\n**HTTP 200** — `errorCode: \"E00111\"`, `errorMessage: \"The check-in date has passed.\"` → graceful, correct.\n\n[image attachment]"
+ },
+ {
+  "type": "comment",
+  "key": "OMH-742",
+  "id": "19018",
+  "author": "Tracy2",
+  "created": "2026-07-06T16:06:59.282+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-742",
+  "text": "@Mon tested on STG => passed\n\n100061 - The best Vietnam beach resorts\n\nOrigin PC: https://test-newwww.ohmyhotel.com/event/100061\nOrigin Mobile: https://test-newm.ohmyhotel.com/event/100061\n\nAfter update:\n\nOrigin PC: https://test-newwww.ohmyhotel.com/event/100061?preview=true\n\nOrigin Mobile: https://test-newm.ohmyhotel.com/event/100061?preview=true\n\n[image attachments]"
+ },
+ {
+  "type": "comment",
+  "key": "OMH-310",
+  "id": "19019",
+  "author": "Harry",
+  "created": "2026-07-06T16:12:39.091+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-310",
+  "text": "Hi <custom data-type=\"mention\" data-id=\"id-0\">@Zia</custom> \n\nThank you for the detailed production test. We checked the actual implementation before answering. Here are the answers for each point:\n\n1. **\"Recommend\" sort — logic?** Confirmed: **none**. There is no ranking algorithm today (no booking, review, or availability factors). The API simply returns hotels in the default order of the hotel content master data. So yes — planning can define the ranking policy in Phase 2.\n\n**2-①. Exact required minimum parameters (verified against the implementation)** Your production test result is correct. The parameters fall into two groups:\n\n**Group A — required for the search query to run** (missing any → 0 results):\n\n* `regionCode`\n* `destination-type`\n* `destination-countryCode`\n* `destination-isDomestic`\n* `dynamicRateYn`\n* `rooms-0-adultCount` / `rooms-0-childCount`\n* `checkInDate` / `checkOutDate`\n\nWhy dates and rooms are strictly required: the backend cannot calculate real-time availability and pricing without check-in/out dates and guest counts.\n\n**Group B — only used to display the destination label on the UI** (they do NOT affect the search result):\n\n* `destination-cityNameLn / En / Ko / Ja / Vi / Zh`\n\nThis is why your test returned 587 correct results without them.\n\n**2-②. About the previous B-2 answer (ELS-1910)** We confirm the previous answer was **not correct**, and we are sorry for the confusion. To be precise: the system has **no default mechanism**. The \"defaults\" you see in the UI are session values that the frontend fills in and sends explicitly. So the current behavior (0 results when parameters are missing) is **by design, not a bug**.\n\n**3-③. Blank destination label** Yes, this is a **separate issue** from the search query. The label is blank because the frontend renders it from the Group B parameters above — when they are omitted, the search still works but the label has nothing to show. If planning wants the label to be filled automatically from `regionCode`, that would be a **new improvement task** — please let us know and we will create a ticket.\n\nThanks!"
+ },
+ {
+  "type": "comment",
+  "key": "OMH-742",
+  "id": "19020",
+  "author": "Mon",
+  "created": "2026-07-06T16:26:11.498+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-742",
+  "text": "Thank you @Tracy2"
+ },
+ {
+  "type": "comment",
+  "key": "ELS-947",
+  "id": "19024",
+  "author": "Tom",
+  "created": "2026-07-06T16:33:36.504+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-947",
+  "text": "@Tracy2 Hi, các lỗi ạnh đã fix trên DEV có gì em check lại giúp anh nhé, thank you"
+ },
+ {
+  "type": "comment",
+  "key": "OMH-310",
+  "id": "19025",
+  "author": "Zia",
+  "created": "2026-07-06T16:34:07.120+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-310",
+  "text": "<custom data-type=\"mention\" data-id=\"id-0\">@Harry</custom> Thank you for the clear, implementation-verified answers — all three points are confirmed on our side.\n\nTo be clear on next steps: this check was to understand the current state, **no action is needed and nothing will proceed for now** — no tickets, no changes. We've recorded the findings as reference documentation and will reach out when the related work actually starts."
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2027",
+  "id": "19026",
+  "author": "Joseph",
+  "created": "2026-07-06T16:44:17.189+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2027",
+  "text": "@Daniel I've already create this repo, please check again\nhttps://github.com/ohmyhotelco/oh-ellis-mcp.git"
+ },
+ {
+  "type": "comment",
+  "key": "OMH-745",
+  "id": "19027",
+  "author": "Mon",
+  "created": "2026-07-06T16:49:28.110+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-745",
+  "text": "Dear @Justin ,\n\nAnswering the ⭐ PAGE_VIEW_COUNT question first, per endpoint. Method: read oh-api source directly, pinned at `oh-api @ b9cc85d2aaa` (2026-07-01), plus a manual cross-check on the live site.\n\n**notice detail — YES, increments on every read.** `ContentNoticeService.getContentNoticeDetail` calls `updateViewCount` unconditionally (`web-api/.../service/content/ContentNoticeService.java:78`) → `ContentNoticeMapper.xml:165-167`: `UPDATE CO_BOARD_DETAIL SET PAGE_VIEW_COUNT = PAGE_VIEW_COUNT+1 WHERE POST_SEQ = #{postSeq}` (note: no `DELETE_YN` guard — it bumps even soft-deleted posts). Also verified manually: reloading a notice detail page bumps `pageViewCount` by exactly 1 per request.\n\n**faq detail — YES, also increments** (this was the \"unknown\"). `ContentFaqDetailService.java:46` calls `updateViewCount` when the row is found → `ContentFaqDetailMapper.xml:23-28` (`WHERE DELETE_YN='N' AND POST_SEQ = ...`). So the accordion refetch-on-expand does inflate the count — one +1 per expand click.\n\n**event detail — pure read, confirmed.** `ContentEventDetailService` contains no write at all; the only two `<update>` statements in the whole customer content mapper set are the notice/faq ones above. Event list is also read-only.\n\n**Implication for v2 caching:** event detail is safe to edge-cache; notice + faq detail are not as-is (read and count-bump would need splitting, or we accept losing the counter — note the customer-facing pages never render it; only my-page notice does). Two extra data points: the SELECT runs **before** the UPDATE, so the response carries the pre-increment value; and since detail-GET mutates, SSR prefetch + client refetch would indeed double-count, as you suspected.\n\nSide findings from the same code pass (mostly response-side, FYI for Dante — happy to hand over the references):\n\n* `beforePostTitle` / `nextPostTitle` **are** emitted (`ContentNoticeService.java:86,93`) — the FE model just never declared them.\n* FAQ detail reads from `CO_BOARD_DETAIL`, not `CO_BOARD_CONTENT` as the FE JSDoc claims (`ContentFaqDetailMapper.xml:17`).\n* `postCategoryName` uses master code `CO002` (`ContentFaqMapper.xml:21`) — FE's `CO02` is a typo.\n* Language fallback is inconsistent: list queries use `IFNULL(*_${language}, *_EN)`, detail queries have **no** EN fallback.\n* `GET /content/event/detail/html` wraps raw `eventHtml` from DB into a full HTML doc and injects an `iframeResizer` `<script>` server-side; the route is in `ignoreSchemaUrlPatternList` (marked `// TEST`) — relevant to the eventHtml trust-boundary/CSP question.\n\nI'll follow up separately on my request-side items (`boardMasterSeq` / `stationTypeCode` / `itemCategoryCode` / `termsSeqs`).\n\nThank you,"
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2028",
+  "id": "19028",
+  "author": "Daniel",
+  "created": "2026-07-06T16:53:03.097+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2028",
+  "text": "Dear @Justin ,\nRegarding **ELS-2028** — I've analyzed the task. **Blocker: the \"internal IdP\" this ticket depends on does not exist yet, and no ticket in the epic provisions it** _(source: epic ELS-2024 child-task scan + codebase audit — the platform today only has hand-rolled social login and a custom JWT service, neither OAuth 2.1-capable)_.\n\nTwo options:\n\n| | Option A — Keep current access control | Option B — Build a new internal IdP |\n| --- | --- | --- |\n| Timeline | 0 extra days — stay on ELS-2027's network restriction + gateway token _(source: ticket ELS-2027)_ | ~7–9 days with an experienced resource + AI assistance _(source: rough estimate; preconditions: confirm the ELLIS user table's password-hash scheme early and secure infra access)_ — Keycloak in our VPC, federated to the existing ELLIS user table via User Storage SPI |\n| Scale | Rollout capped at dev-team scope — company-wide rollout explicitly requires SSO _(source: ticket)_ | Unblocks this ticket and serves as the SSO foundation for the whole ELLIS system |\n| Debt | RBAC / audit (ELS-2029 / ELS-2030) cannot bind calls to real users on a shared token | ELLIS DB stays the single source of truth; employee offboarding auto-blocks login, optional event-driven session revoke |\n\n## Appendix — Security debt found during the audit (schedule regardless of IdP decision)\n\n| Finding | Location |\n| --- | --- |\n| Plaintext OAuth client secrets committed to git | `web-api/src/main/resources/application.yml` |\n| Hardcoded JWT signing secret | `web-api/.../jwt/JwtTokenService.java` |\n| Spring Security effectively | `web-api/.../config/SecurityConfig.java` |\n| Internal admin shares the custom JWT with end users | `AdminRouter`, `AuthorizationWebFilter` |"
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2399",
+  "id": "19029",
+  "author": "Holden",
+  "created": "2026-07-06T16:53:19.541+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2399",
+  "text": "## E. SHARED / CROSS-PORTAL\n\n**TC-E1 Staff List (/member/staff)** (manageUserYn): `POST /partner/staff`, `/common/detail-code` 200. => **PASSED**\n\n**TC-E2 User-Info modal**: sửa/tạo staff, check ID. `PUT/POST /partner/staff`, `/partner/staff/id-check` 200. => **PASSED**\n\n**TC-E3 Corp-Info modal**: `POST /partner/register/info` 200. => **PASSED**\n\n**TC-E4 Bank-account popup**: `GET /admin/user/comp/bank` 200. => **Not available to test**\n\n**TC-E5 Terms modal**: `POST /common/terms` 200. => **Not available to test**\n\n**TC-E6**: search room, xem hotel/room info và condition, request payment, create booking. `POST /partner/hotel/room/list`, `/partner/hotel/information`, `/partner/hotel/room/condition`, `PUT /partner/payment/v2`, `POST /partner/booking/v2`, `/partner/booking/code`, `/admin/corporate/*`. **=> Covered by Part C**\n\n### Booking callback (không có auth guard)\n\n**TC-E7**: /vendor/booking/create (`POST /admin/booking/hotel/confirmation-no`); /vendor/booking/cancel (`POST /admin/booking/hotel/cancel-no`). Expected: resolve đúng trên host mới.\n\n[image attachments]"
+ },
+ {
+  "type": "comment",
+  "key": "OMH-742",
+  "id": "19031",
+  "author": "Mon",
+  "created": "2026-07-06T17:07:44.563+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-742",
+  "text": "Dear @Zia ,\n\nFinally test on Staging env already finish\n\nAnd this task will be deploy on the next time becus we finish finally on STG over deadline time to send pull request Production\n\nThank you\n\nCC: @Harry"
+ },
+ {
+  "type": "comment",
+  "key": "ELS-1099",
+  "id": "19032",
+  "author": "Zia",
+  "created": "2026-07-06T17:09:08.623+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-1099",
+  "text": "<custom data-type=\"mention\" data-id=\"id-0\">@Joo</custom> Thanks — the example confirms it: the discount % varies by the user's country (JP 10%, KR 7% for the same hotel/room/date).\n\nOne important point: the discount depends on the **country/market**, not on the **currency** — the currency just follows the country. Google already converts currency automatically (FX), so the part we actually need to reflect on Google is the **country-based discount**, not the currency.\n\nAnd Google **does** support different prices per country (resolved by IP) — this is **country-specific rates**. So this discount can be represented on Google; it isn't a Google limitation. We would push each country's discounted price as a separate rate for that country (KR → 7%, JP → 10%, etc.), matching B2C per country. With that, we wouldn't need the flat adjustment or a Marketing-set rate — we'd just use the actual per-country prices.\n\nCould you please:\n\n1. Confirm whether the per-country difference (KR 7% / JP 10%) is the **actual production configuration**, or was set up in dev to demonstrate — this affects how urgent and broad it is.\n2. Review the **country-specific rates** approach and share an **effort estimate**.\n\n(One alignment point: Google resolves country by IP, so it should map to the same sales-country the promotion uses.)\n\nRef: <custom data-type=\"smartlink\" data-id=\"id-1\">https://developers.google.com/hotels/hotel-prices/dev-guide/fenced-rates</custom> (This is the same as the Google Docs approach I suggested this morning.)"
+ },
+ {
+  "type": "comment",
+  "key": "ELS-947",
+  "id": "19033",
+  "author": "Tracy2",
+  "created": "2026-07-06T17:12:17.521+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-947",
+  "text": "@Tom em thấy vẫn failed nha anh, nó y cũ chưa sửa gì hết. Bật ẩn danh luôn r á\n\n[image attachments]"
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2067",
+  "id": "19034",
+  "author": "Tan",
+  "created": "2026-07-06T17:14:11.892+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2067",
+  "text": "anh @Joseph\n\n## Request to Joseph — Restructure the tl-push-api/tllincoln Secret JSON with Fully-Qualified Property Keys\n\n@Joseph — before I wire this ticket, could you edit the plaintext of the secret `omh/dev/tl-push-api/tllincoln` (created under ELS-2205) so its JSON keys are the **fully-qualified Spring property paths** rather than bare field names?\n\n### What the change looks like\n\n**Current shape (assumed — please confirm what's actually stored):**\n\n```json\n{\n  \"agtId\": \"...\",\n  \"agtPassword\": \"...\",\n  \"baseUrl\": \"...\",\n  \"bookUrl\": \"...\",\n  \"resaBookUrl\": \"...\",\n  \"resaBookAgtId\": \"...\",\n  \"resaBookPassword\": \"...\",\n  \"userName\": \"...\",\n  \"password\": \"...\"\n}\n```\n\n**Requested shape:**\n\n```json\n{\n  \"vendor.hotel.tllincoln.agtId\": \"...\",\n  \"vendor.hotel.tllincoln.agtPassword\": \"...\",\n  \"vendor.hotel.tllincoln.baseUrl\": \"...\",\n  \"vendor.hotel.tllincoln.bookUrl\": \"...\",\n  \"vendor.hotel.tllincoln.resaBookUrl\": \"...\",\n  \"vendor.hotel.tllincoln.resaBookAgtId\": \"...\",\n  \"vendor.hotel.tllincoln.resaBookPassword\": \"...\",\n  \"vendor.hotel.tllincoln.userName\": \"...\",\n  \"vendor.hotel.tllincoln.password\": \"...\"\n}\n```\n\nValues stay byte-for-byte identical — only the **keys** change from the bare vendor-field names to the full Spring property path already used in `application-{env}.yml` (`vendor.hotel.tllincoln.*`).\n\n`pushHotels` (the hotel-code whitelist) stays out of the secret — it's non-secret and lives in the base YAML per ADR-002.\n\n### Why this matters — multi-secret collision\n\nSpring Cloud AWS's `spring.config.import: aws-secretsmanager:...` mounts each secret's JSON keys **verbatim** into the Spring `Environment` at the top level. There is no per-secret namespace. That's fine for a single secret, but the pilot already imports one secret (`omh/dev/shared/api-kms-key` for ELS-2066) and Phase C3 will add many more (payment secrets, OAuth secrets, ~50 vendor keys, etc.). Several of those secrets naturally share generic field names — most obviously `password` and `userName`.\n\nIf two imported secrets both expose a `password` field:\n\n```yaml\nspring:\n  config:\n    import:\n      - \"aws-secretsmanager:omh/dev/tl-push-api/tllincoln\"    # has \"password\"\n      - \"aws-secretsmanager:omh/dev/vendor/hotellink\"         # also \"password\"\n```\n\nSpring Boot's rule is \"later import wins,\" so `${password}` resolves to the hotellink value and the TL-Lincoln password becomes silently unreachable. A reviewer reading the code can't tell which secret owns the reference. Reordering the import list quietly changes runtime behavior. Debugging this class of failure at 2am is unpleasant.\n\nWith fully-qualified keys, each secret contributes its own uniquely-named property (`vendor.hotel.tllincoln.password` vs `vendor.hotel.hotellink.password`), and nothing collides regardless of how many secrets we import.\n\n### Consumer-side simplification (bonus)\n\nWith the qualified-key layout, `application-tlpush-dev.yml` needs **only** the import line — no explicit `${agtId}`, `${password}`, etc. placeholders to map JSON keys to Spring properties:\n\n```yaml\nspring:\n  config:\n    activate:\n      on-profile: tlpush-dev\n    import:\n      - \"aws-secretsmanager:omh/dev/shared/api-kms-key\"\n      - \"aws-secretsmanager:omh/dev/tl-push-api/tllincoln\"\n```\n\nThe existing `@ConfigurationProperties(prefix = \"vendor.hotel.tllincoln\")` binding picks up the SM values directly. The 9 hardcoded fields in `application-dev.yml` become dead weight under the `tlpush-dev` profile (SM PropertySource overrides them at boot) and can be removed / left as-is at our leisure.\n\n### Convention proposal for the whole Phase C rollout\n\nWhile we're here, I'd like to propose we standardize this JSON-key convention for **every** secret ADR-002 migrates going forward:\n\n> Every field inside a Secrets Manager JSON payload is stored under its **full Spring property path** — the exact key that `@ConfigurationProperties(prefix=...)` / `@Value(\"${...}\")` already reference in application-*.yml.\n\nConcretely for the pilot secrets already created:\n\n| Secret path | Current key(s) | Suggested key(s) |\n| --- | --- | --- |\n| `omh/dev/shared/api-kms-key` | `kmsKey` | `api.kmsKey` |\n| `omh/dev/tl-push-api/db-credentials` | `username`, `password`, ... | _stays as-is_ — the aws-secretsmanager-jdbc driver expects the literal keys `username`/`password` and it's the driver's contract, not Spring Boot's Environment |\n| `omh/dev/tl-push-api/tllincoln` | `agtId`, `password`, ... | `vendor.hotel.tllincoln.agtId`, `vendor.hotel.tllincoln.password`, ... |\n\nThe `db-credentials` secret is a special case — it's consumed by the JDBC driver at connection time (not by Spring Boot property resolution), so its key contract is set by AWS's driver library, not by us. Every other secret should use the qualified-path convention.\n\nIf you're OK with this convention, I'll also open a small follow-up on ELS-2066 to re-key `api-kms-key` and drop the `${kmsKey}` placeholder from `application-tlpush-dev.yml`.\n\n### What I need from you\n\n1. Update the plaintext of `omh/dev/tl-push-api/tllincoln` to use the fully-qualified keys shown above. Values unchanged.\n2. Confirm the standardized-key convention so I can apply it consistently to future pilot / rollout secrets.\n\nOnce done, I'll wire the import into `application-tlpush-dev.yml` and validate TL-Lincoln flows on Dev.\n\nThanks!\n\n_AI-Assisted: claude-code (drafting), reviewed by Tan._"
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2414",
+  "id": "19035",
+  "author": "Tom",
+  "created": "2026-07-06T17:17:13.777+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2414",
+  "text": "## VOC SQL — Change vendor payment method Card(VCC) → Prepay/Cash\n\n**Target:** `BK_BOOKING_HOTEL_ITEM` — 85 booking items, Hotel Bridge Seogwipo (`761405`)\n\n**Current state (verified):** all 85 rows are `VENDOR_PAYMENT_TYPE_CODE = 'Prepay'` + `VENDOR_PAYMENT_METHOD_CODE = 'VCC'` (77 × `VPS01` Not Paid, 8 × `VPS03` Fully Paid)\n\n**Change:** `VENDOR_PAYMENT_METHOD_CODE`: `VCC` → `Cash` (type stays `Prepay`) — applied to **all 85** per ops decision.\n\n### STEP 1 — VERIFY (before) — expect 85 rows: Prepay / VCC\n\n```sql\nSELECT BOOKING_ITEM_CODE, VENDOR_PAYMENT_TYPE_CODE, VENDOR_PAYMENT_METHOD_CODE,\n       VENDOR_PAYMENT_STATUS_CODE, BOOKING_STATUS_CODE, VENDOR_BALANCE_AMOUNT\nFROM BK_BOOKING_HOTEL_ITEM\nWHERE BOOKING_ITEM_CODE IN ( ...85 booking item codes: 'K25122512298H01','S26031610301H01','S26031610497H01','K26040110807H01','S26040210211H01','S26041010443H01','S26041110575H01','K26042010356H01','K26042210018H01','S26042410223H01','K26042610113H01','S26042610224H01','K26050610226H01','K26050810643H01','K26050810668H01','S26050810449H01','K26051010578H01','K26051010705H01','K26051110337H01','S26051110224H01','K26051110776H01','S26051210259H01','K26051310236H01','K26051410190H01','K26051710836H01','K26051911558H01','K26051911945H01','K26052011415H01','K26052210921H01','K26052211182H01','K26052310410H01','S26052310576H01','S26052310621H01','K26052310948H01','K26052410533H01','S26052410476H01','S26052410492H01','K26052410583H01','S26052410513H01','S26052410604H01','S26052410659H01','S26052410740H01','K26052410958H01','S26052410818H01','K26052610059H01','K26052610312H01','S26052610486H01','K26052610602H01','K26052610810H01','K26052610875H01','S26052610696H01','S26052610724H01','K26052610935H01','K26052611244H01','K26052611388H01','S26052611085H01','S26052710010H01','S26052710622H01','K26052711274H01','K26052810628H01','K26052810961H01','S26052810835H01','K26052811048H01','K26052811306H01','K26052910479H01','S26053110438H01','S26053110796H01','K26053110994H01','K26053111140H01','S26053111064H01','K26060110115H01','S26060110636H01','K26060211441H01','S26060211038H01','K26060310618H01','S26060410681H01','K26060510318H01','K26060711229H01','K26060811113H01','K26061210400H01','S26061410600H01','K26061610470H01','K26061611083H01','K26061910207H01','K26062110286H01' );\n```\n\n### STEP 2 — EXECUTE — expect 85 rows affected\n\n```sql\nUPDATE BK_BOOKING_HOTEL_ITEM\nSET VENDOR_PAYMENT_TYPE_CODE   = 'Prepay',\n    VENDOR_PAYMENT_METHOD_CODE = 'Cash',\n    LAST_UPDATE_UNO = 10000,          -- TODO: replace with operator UNO\n    LAST_UPDATE_DATETIME = NOW()\nWHERE BOOKING_ITEM_CODE IN ( /* same 85-code list */ )\n  AND VENDOR_PAYMENT_METHOD_CODE = 'VCC';\n```\n\n### STEP 3 — VERIFY (after) — expect 1 row: Prepay / Cash / 85\n\n```sql\nSELECT VENDOR_PAYMENT_TYPE_CODE, VENDOR_PAYMENT_METHOD_CODE, COUNT(*) AS CNT\nFROM BK_BOOKING_HOTEL_ITEM\nWHERE BOOKING_ITEM_CODE IN ( /* same 85-code list as STEP 1 */ )\nGROUP BY VENDOR_PAYMENT_TYPE_CODE, VENDOR_PAYMENT_METHOD_CODE;\n```\n\n### ROLLBACK — restore VCC\n\n```sql\nUPDATE BK_BOOKING_HOTEL_ITEM\nSET VENDOR_PAYMENT_TYPE_CODE   = 'Prepay',\n    VENDOR_PAYMENT_METHOD_CODE = 'VCC',\n    LAST_UPDATE_UNO = 10000,\n    LAST_UPDATE_DATETIME = NOW()\nWHERE BOOKING_ITEM_CODE IN ( /* same 85-code list as STEP 1 */ )\n  AND VENDOR_PAYMENT_METHOD_CODE = 'Cash';\n```\n\n### Notes\n\n* The `AND VENDOR_PAYMENT_METHOD_CODE = 'VCC'` guard makes the UPDATE idempotent (safe to re-run; skips rows already changed).\n* 8 of the 85 items are already **Fully Paid via VCC** (`VPS03`, balance 0, past check-in): `K25122512298H01, S26031610497H01, K26040110807H01, S26040210211H01, S26041110575H01, K26042210018H01, S26042410223H01, K26042610113H01`. This SQL changes their payment method only — it does **not** touch payment status/balance. If those VCC charges need refunding, that is a separate VOC.\n* DB update does not void any VCC card already issued on the provider side — check/void there if applicable."
+ },
+ {
+  "type": "comment",
+  "key": "OMH-742",
+  "id": "19036",
+  "author": "Zia",
+  "created": "2026-07-06T17:20:03.711+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-742",
+  "text": "@Mon Then it will be deployed this Thursday. Understood.\n\nI'll update Julia on my side. I also completed QA testing on both PC and mobile in the STG environment. Everything looks good from my side. Thank you for handling this so quickly."
+ },
+ {
+  "type": "comment",
+  "key": "OMH-697",
+  "id": "19037",
+  "author": "Harry",
+  "created": "2026-07-06T17:23:09.112+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-697",
+  "text": "@Justin — status update: **the v2 SSR origin is live end-to-end on production.** Smoke-test URL you can curl right now: `https://www.ohmyhotel.com/test-page-v2` — the SSR HTML carries the CloudFront Via header, the X-Origin-Route origin header, `OMH_ENV=prod` (your runtime threading), and a real server-to-server CMS call result baked in.\n\n**A-plan status:**\n\n* **A1** done (prod) — the loader POSTs `apiv2.ohmyhotel.com/content/event` from inside the task (wrapped in your loadWithFallback): `HTTP 200 · 1731 bytes · 156ms`, visible in the page HTML.\n  staging: `https://test-newapi.ohmyhotel.com`\n  dev: `https://dev-newapi.ohmyhotel.com`\n* **A2** done — ALB health check on `/health`, target healthy, no CMS dependency.\n* **A3** done — real render + CMS round-trip ~0.3s, well within OriginReadTimeout 30s / ALB 60s.\n* **A4** done — deregistration 45s + tini; three zero-downtime rolls today under it.\n* **A5** done — task 1 vCPU/2GB, autoscaling live (CPU 60% target tracking, min 2 / max 6).\n* **A6** — a proposal below.\n\n**Infra shape (all codified in `v2-routes.json` + snapshot, drift-check green):** same-domain second origin `v2-web ALB` distinguished by an `X-Origin-Route: v2` custom header → ALB 443 rule (Host www + header) → TG `farget-omh-monorepo-pc` (/health, drain 45s) → service `ohmyhotel-monorepo-pc` on cluster `fargate-omh-monorepo-pc`. `m`-host falls through to legacy at the ALB, as the manifest promised.\n\n**CI/CD:** split into PROD-CI (build → ECR `run-<run_id>`, IMMUTABLE + lifecycle-managed → stage assets to the run-scoped artifact path) and PROD-CD (resolve `ci_run_id`, default latest → deployment-team check → verify image+assets → promote assets to the live bucket BEFORE the roll → register a task-def revision pinned to the run tag → `update-service` → wait stable → health check). Any retained CI version is redeployable by dispatching CD with an older `ci_run_id` — same rollback model as legacy. PR up shortly with 7 commits.\n\n**A6 finding + proposal.** The origin streams fine (local: TTFB 0.5s vs total 2.5s with a Suspense probe). Through CloudFront it degrades: with no origin-request policy CloudFront replaces `User-Agent` with \"Amazon CloudFront\", isbot classifies the origin request as a bot, and the default entry.server switches to `onAllReady` — so the origin itself buffers. Fixable (AllViewer origin-request policy), but it surfaces the real cost of streaming: UA-dependent behavior through every hop. Given your Phase 2 scope already lists \"**hybrid shell-SSR + client/streamed price**\" as an option, I'd propose we pick the **client** branch for the volatile data — same pattern legacy hotel-list ships today (and what Agoda does for search): SSR the SEO-relevant shell/content, client-fetch the prices after hydrate. Bots still get the full static content; prices aren't indexed anyway. If you agree, A6 (chunked end-to-end) drops out of this ticket's scope, and the streaming validation only revives if a Phase 2 page actually needs it. OK to de-scope?\n\nRemaining before close: PR PR103 (https://github.com/ohmyhotelco/ohmyhotel-monorepo/pull/103), one real CI→CD dispatch end-to-end, live-bucket lifecycle rule, and the A5 load test."
+ },
+ {
+  "type": "comment",
+  "key": "ELS-1313",
+  "id": "19038",
+  "author": "Tan",
+  "created": "2026-07-06T17:27:21.693+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-1313",
+  "text": "<custom data-type=\"mention\" data-id=\"id-0\">@Tracy</custom> <custom data-type=\"mention\" data-id=\"id-1\">@Holden</custom> <custom data-type=\"mention\" data-id=\"id-2\">@Calvin</custom> This feature has been deployed to the staging environment. Please test it."
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2399",
+  "id": "19042",
+  "author": "Holden",
+  "created": "2026-07-06T17:34:33.662+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2399",
+  "text": "## F. EXTERNAL HOST - verify KHÔNG bị ảnh hưởng\n\n**TC-F1 ExImBay fgkey**: chạy thanh toán ExImBay. `ApiService.mainPost('/api/eximpay/fgkey')` vẫn trỏ mainUrl (http://ohmyhotel.biz), KHÔNG đổi. Expected: fgkey tạo ok như cũ. => **PASSED**\n\n**TC-F2 ExImBay gateway**: submit tới eximbayApiUrl (api.eximbay.com). Expected: gateway hoạt động như cũ. => **PASSED** (verified via PR #87)\n\n**TC-F3 Hiển thị ảnh đã upload**: URL prefix IMG_URL_S3 (photos.ohmyhotel.com). Expected: ảnh vẫn render (không đổi).\n\n[image attachments]"
+ },
+ {
+  "type": "comment",
+  "key": "ELS-1099",
+  "id": "19043",
+  "author": "Joo",
+  "created": "2026-07-06T17:35:14.571+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-1099",
+  "text": "Hi @Zia,\n\nThank you for sharing the document — I’ve reviewed it and have a few observations and a proposal:\n\n1. **Manual price upload**:  \n  The pricing rules that are manually uploaded do not have a fixed API. So whenever the admin updates them, the system would need to **regenerate the data and re-upload manually**.\n2. **B2C Hotel Promotion complexity**:  \n  The **B2C Hotel Promotion** includes many conditions beyond just country (e.g. region, booking date range, check-in date, specific hotel lists, max discount amount, etc.). You can refer to the Hotel Promotion setup in admin for full details.\n3. **Key point / proposal**:  \n  Since this is a **custom promotion defined by OMH**, one possible approach is:  \n  👉 Why don’t we **create a separate promotion specifically for Google**, and I will adjust the pricing logic to reflect that promotion when pushing data to Google?\n\nThis way, we can keep the Google pricing consistent and avoid being constrained by the complex B2C promotion logic.\n\nPlease let me know your thoughts. Thanks!\n\n1. ![](blob:https://media.staging.atl-paas.net/?type=file&localId=112475f27e47&id=050d3e54-e1b3-4b30-9c95-aa7fe9b01902&&collection=&height=726&occurrenceKey=null&width=1291&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n\n"
+ },
+ {
+  "type": "comment",
+  "key": "OMH-663",
+  "id": "19044",
+  "author": "Harry",
+  "created": "2026-07-06T17:40:42.004+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-663",
+  "text": "Hi @Justin , I checked the ticket. The CloudFront flip works, but I found one gap we need to add to the scope.\n\nLegacy-pc is an Angular SPA (with SSR on first load). After the first load, Angular Router handles navigation on the client side — those navigations never reach CloudFront. So the flip only works for full page loads (direct URL, refresh, external links), not for internal `routerLink` clicks.\n\nOur own plan already states this in `docs/migration/cloudfront-s3-ecs-architecture.md` (\"Links from an Angular page ↔ a React page must be full page navigations\").\n\nSo for each flipped path, we need a small legacy change:\n\n1. Change every `routerLink` to that path into a real `<a href>` (full page navigation for migrate).\n2. Remove the path from the Angular route table, so a missed link fails loudly instead of silently showing the old page.\n\nFor `/privacy` (the pilot), the impact is small: only the footer link uses `routerLink` (`footer.component.html`). The service-transfer modal already uses `window.open`, and the login popup uses a plain `<a href>` — both are fine.\n\nCan we add this legacy link change as a step in this ticket (or a small subtask)? Without it, users who click the footer link will still see the legacy page after the flip.\n\nThanks"
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2408",
+  "id": "19045",
+  "author": "Calvin",
+  "created": "2026-07-06T17:42:23.953+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2408",
+  "text": "@Roy\nI agree with this approach. Applying a local cache only to the three Hotel Search Service endpoints makes sense. It significantly reduces the number of requests to ElastiCache and helps handle higher traffic as QPS increases in the future.\n\nJust to confirm the key points:\n\n1. The local cache will only be applied to the three Hotel Search Service endpoints. The booking and payment paths will **not** use the local cache.\n2. Only the static `SELLER_COMP_KEY` lookup value is cached. The signature itself is **not** cached, since it changes on every request and must always be verified.\n3. The cache TTL is 30 seconds. If a Redis lookup fails, the result must **not** be cached."
+ },
+ {
+  "type": "comment",
+  "key": "ELS-1099",
+  "id": "19046",
+  "author": "Zia",
+  "created": "2026-07-06T17:53:32.475+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-1099",
+  "text": "<custom data-type=\"mention\" data-id=\"id-0\">@Joo</custom> Thanks for the proposal. First, to be clear on the requirement: for this integration, **accurate price parity is a hard requirement** — the Google price must match the actual B2C price the user pays. A simplified Google-only discount that gives Google users a _different_ deal than direct users changes the product; that's a business decision, not a default we take to save effort.\n\nAccurate implementation is achievable — the per-itinerary conditions are already handled by our existing pricing logic, and the only cross-user part (country) is covered by Google's country-specific rates. This is standard for OTAs.\n\nSo could you give me a **rough effort estimate for the correct implementation** (the feed applying our actual pricing, per-country, so Google matches B2C)? **I'll use it to confirm the direction with Julia — please send a rough estimate by end of day today.**"
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2416",
+  "id": "19047",
+  "author": "Tom",
+  "created": "2026-07-06T18:01:51.943+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2416",
+  "text": "## VOC SQL — Change vendor payment method VCC → Prepay/Cash\n\n**Target:** `BK_BOOKING_HOTEL_ITEM` — 53 booking items, Felix by STX Hotel & Suite (`665136`)\n\n**Current state (verified):** all 53 rows are `VENDOR_PAYMENT_TYPE_CODE = 'Prepay'` + `VENDOR_PAYMENT_METHOD_CODE = 'VCC'` (50 × `VPS01` Not Paid, 3 × `VPS03` Fully Paid — full status breakdown in Notes)\n\n**Change:** `VENDOR_PAYMENT_METHOD_CODE`: `VCC` → `Cash` (type stays `Prepay`) — applied to **all 53** per ops decision.\n\n### STEP 1 — VERIFY (before) — expect 53 rows: Prepay / VCC\n\n```sql\nSELECT BOOKING_ITEM_CODE, VENDOR_PAYMENT_TYPE_CODE, VENDOR_PAYMENT_METHOD_CODE,\n       VENDOR_PAYMENT_STATUS_CODE, BOOKING_STATUS_CODE, VENDOR_BALANCE_AMOUNT\nFROM BK_BOOKING_HOTEL_ITEM\nWHERE BOOKING_ITEM_CODE IN ( ...53 booking item codes: 'K26060410389H01','K26062510719H01','S26062110254H01','K26061811716H01','S26070210172H01','K26070210241H01','S26062810441H01','K26063010305H01','K26060210386H01','S26070210102H01','K26061611152H01','S26061110906H01','K26060811153H01','S26060110628H01','K26062911925H01','K26062710402H01','S26070210379H01','K26070210217H01','K26070210761H01','K26062911931H01','K26062811505H01','S26062710865H01','K26070210655H01','K26070211432H01','S26070210080H01','K26060310647H01','S26063010177H01','K26070210861H01','K26062911848H01','K26062711069H01','K26062811580H01','K26070310064H01','K26062511109H01','K26062511747H01','S26070110311H01','K26062911349H01','S26070310233H01','K26062610736H01','K26062910995H01','K26062911245H01','S26070110607H01','K26063011223H01','K26070110728H01','K26062710024H01','K26062710681H01','K26062911928H01','S26070211326H01','K26062510959H01','K26070310612H01','K26063011924H01','K26062611063H01','K26062610356H01','K26070211123H01' );\n```\n\n### STEP 2 — EXECUTE — expect 53 rows affected\n\n```sql\nUPDATE BK_BOOKING_HOTEL_ITEM\nSET VENDOR_PAYMENT_TYPE_CODE   = 'Prepay',\n    VENDOR_PAYMENT_METHOD_CODE = 'Cash',\n    LAST_UPDATE_UNO = 10000,          -- TODO: replace with operator UNO\n    LAST_UPDATE_DATETIME = NOW()\nWHERE BOOKING_ITEM_CODE IN ( /* same 53-code list */ )\n  AND VENDOR_PAYMENT_METHOD_CODE = 'VCC';\n```\n\n### STEP 3 — VERIFY (after) — expect 1 row: Prepay / Cash / 53\n\n```sql\nSELECT VENDOR_PAYMENT_TYPE_CODE, VENDOR_PAYMENT_METHOD_CODE, COUNT(*) AS CNT\nFROM BK_BOOKING_HOTEL_ITEM\nWHERE BOOKING_ITEM_CODE IN ( /* same 53-code list as STEP 1 */ )\nGROUP BY VENDOR_PAYMENT_TYPE_CODE, VENDOR_PAYMENT_METHOD_CODE;\n```\n\n### ROLLBACK — restore VCC\n\n```sql\nUPDATE BK_BOOKING_HOTEL_ITEM\nSET VENDOR_PAYMENT_TYPE_CODE   = 'Prepay',\n    VENDOR_PAYMENT_METHOD_CODE = 'VCC',\n    LAST_UPDATE_UNO = 10000,\n    LAST_UPDATE_DATETIME = NOW()\nWHERE BOOKING_ITEM_CODE IN ( /* same 53-code list as STEP 1 */ )\n  AND VENDOR_PAYMENT_METHOD_CODE = 'Cash';\n```\n\n### Notes\n\n* The `AND VENDOR_PAYMENT_METHOD_CODE = 'VCC'` guard makes the UPDATE idempotent (safe to re-run; skips rows already changed).\n* Status breakdown of the 53: BKS02 Confirmed × 39 (1 fully paid), BKS03 Cancelled × 3, BKS05 Reserved × 7 (2 fully paid), BKS06 Cancelled(Replied) × 4.\n* 3 items are already **Fully Paid via VCC** (`VPS03`, balance 0): `K26060410389H01, K26062510719H01, S26062110254H01`. This SQL changes their payment method only — it does **not** touch payment status/balance. If those VCC charges need refunding, that is a separate VOC.\n* 7 items are cancelled (BKS03/BKS06, vendor sum 0) — included anyway per the hotel's list; changing method on them has no settlement impact.\n* DB update does not void any VCC card already issued on the provider side — check/void there if applicable."
+ },
+ {
+  "type": "comment",
+  "key": "OMH-742",
+  "id": "19048",
+  "author": "Mon",
+  "created": "2026-07-06T18:02:47.704+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-742",
+  "text": "Hi @Zia ,\n\nI got it\n\nThank you so much"
+ },
+ {
+  "type": "comment",
+  "key": "ELS-1099",
+  "id": "19049",
+  "author": "Joo",
+  "created": "2026-07-06T18:14:41.493+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-1099",
+  "text": "<custom data-type=\"mention\" data-id=\"id-0\">@Zia</custom> Please wait a moment, I need to do some research before answering."
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2408",
+  "id": "19050",
+  "author": "Roy",
+  "created": "2026-07-06T18:19:27.414+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2408",
+  "text": "@Calvin For now, we're just confirming the opinion, so let's write the implementation details later."
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2416",
+  "id": "19051",
+  "author": "Tom",
+  "created": "2026-07-06T18:40:45.850+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2416",
+  "text": "PR opened: https://github.com/ohmyhotelco/oh-api/pull/934 (migration script `20260706-ELS-2416-vcc-to-cash-665136`, target `master`). Claude AI SQL Review (Low risk, 53 rows, safe to execute) and the SOP §6 Production Approval Checklist are in the PR body. Next: 2 approvals incl. Tech Lead → merge → staging run + evidence before any Production execution."
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2375",
+  "id": "19052",
+  "author": "Tan",
+  "created": "2026-07-06T18:43:32.157+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2375",
+  "text": "@Tracy done!"
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2414",
+  "id": "19053",
+  "author": "Tom",
+  "created": "2026-07-06T18:50:19.177+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2414",
+  "text": "PR opened: https://github.com/ohmyhotelco/oh-api/pull/935 (migration script `20260706-ELS-2414-vcc-to-cash-761405`, target `master`). Claude AI SQL Review (Low risk, 85 rows, safe to execute) and the SOP §6 Production Approval Checklist are in the PR body. Next: 2 approvals incl. Tech Lead → merge → staging run + evidence before any Production execution."
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2375",
+  "id": "19054",
+  "author": "Tracy",
+  "created": "2026-07-06T18:54:45.316+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2375",
+  "text": "Checked on PROD\n\n[image attachment]"
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2400",
+  "id": "19055",
+  "author": "Tom",
+  "created": "2026-07-06T19:03:35.010+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2400",
+  "text": "@Tracy xem giúp em task này, có thể diễn dãi rõ hơn xíu được không chị?\nThêm Vendor Remark vào booking sheet thì thêm ở đâu chị ?\nVậy nếu thay đổi Vendor Remark ở Promotion thì ở booking cũ có load lại mới, chức năng resend mail lúc này sẽ lấy giá trị Vendor Remark nào?"
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2400",
+  "id": "19056",
+  "author": "Tracy",
+  "created": "2026-07-06T19:15:27.985+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2400",
+  "text": "@Tom\n1. Em cần check xem cái Vendor Remark này đang dùng để làm gì, nếu thay đổi thì sẽ ảnh hưởng đến cái gì?\n2. Sau khi check xong thì mình sẽ discuss về cái này, rồi sẽ note vào task này những bước tiếp theo"
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2350",
+  "id": "19057",
+  "author": "Tan",
+  "created": "2026-07-06T19:57:07.960+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2350",
+  "text": "## [S1] Where MealAmount lives in the Dida flow\n\n**Answer:** returned at **all 3 calls** (not search-only), inside the per-night `PriceList[]`.\n\n| Call | Endpoint | `PriceList[].MealAmount`? |\n| --- | --- | --- |\n| Search | `/api/rate/pricesearch` | mapped (`DidaPriceSearchRs`) |\n| Price Confirm (PreBook) | `/api/rate/PriceConfirm` | mapped (same DTO) |\n| Booking Confirm/Search | `/api/booking/HotelBookingConfirm`, `/HotelBookingSearch` | in Dida doc, our DTO drops it |\n\n**Field path** (all calls): `Success…HotelList[].RatePlanList[].PriceList[].{StayDate, MealAmount(int), MealType(int)}` — per StayDate. Dida doc: _\"MealAmount is always ≤ number of guests\"_ (0 = none, 1 = 1 of 2, …), which matches the epic's three-state rule.\n\n**Recommended capture point:** **PriceConfirm** — `DidaRoomConditionService.parser()`. It runs once per booking (low volume), and its output `DidaRoomTypeCodedData` is already threaded into booking + saved to the snapshot, so no search→booking threading is needed. Today it collapses `MealAmount>0` → boolean `freeBreakfastYn` (L194-195, reads only night 1); capture the raw count here instead.\n\n**Sources:** Dida PriceSearch (https://apidoc.didatravel.com/booking-api/price-search.html) · PriceConfirm (https://apidoc.didatravel.com/booking-api/price-confirm.html) · BookingSearch (https://apidoc.didatravel.com/booking-api/booking-search.html)"
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2067",
+  "id": "19058",
+  "author": "Tan",
+  "created": "2026-07-06T20:05:17.697+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2067",
+  "text": "## Rotation Solution for TL-Lincoln Secret — Proposed Approach\n\n@Joseph — following up on the ELS-2067 wiring plan. The pilot's ADR success criterion #2 requires that the TL-Lincoln credential rotate **without a redeploy**, but the default `spring.config.import: aws-secretsmanager:...` mechanism (which we're using for `api.kmsKey` in ELS-2066) is **boot-only** — Spring Cloud AWS fetches the secret once at startup, values become a static PropertySource, and stay frozen until the app restarts.\n\nTo close the \"rotate without redeploy\" gap, I'm proposing the following.\n\n### Chosen mechanism — `@RefreshScope` + Actuator `/refresh` + Rotation Lambda webhook\n\n```\nRotation Lambda triggered (schedule / manual)\n   ↓\nLambda 4-step rotation flow:\n   a. createSecret  — new value in AWSPENDING version\n   b. setSecret     — sync new cred to TL-Lincoln vendor\n                      (pauses on human-in-the-loop for vendor-side password change)\n   c. testSecret    — probe call verifying new cred works\n   d. finishSecret  — promote AWSCURRENT + POST /omh-check/webapi/refresh\n   ↓\nApp receives POST /refresh\n   ↓\nSpring rebuilds Environment (re-fetches omh/<env>/tl-push-api/tllincoln)\n   ↓\n@RefreshScope beans re-inject values on next access (CGLIB proxy pattern)\n   ↓\nNext TL-Lincoln SOAP call uses new credential — zero downtime, no redeploy\n```\n\n### Component breakdown\n\n**App-side (I'll implement)**\n\n* **Dependency**: `org.springframework.cloud:spring-cloud-context` (~15 min including version alignment with Boot 3.2.4).\n* **Config bean**: refactor TL-Lincoln properties into a single `@ConfigurationProperties(prefix = \"vendor.hotel.tllincoln\")` + `@RefreshScope`. All 9 fields on one bean. Consumers inject the bean (CGLIB proxy) — no source-of-truth change from their side.\n* **Endpoint**: expose Actuator's built-in `refresh` at `POST /omh-check/webapi/refresh` via `management.endpoints.web.exposure.include` and `path-mapping.refresh`. No custom controller code — Spring Cloud Context's `RefreshEndpoint` handles it.\n* **Endpoint security**: dedicated `SecurityFilterChain` for `/omh-check/webapi/refresh` with HTTP Basic Auth. Credentials live in a separate `omh/<env>/tl-push-api/refresh-endpoint-creds` secret (loaded via `spring.config.import`) so the auth password itself isn't hardcoded. Rotation Lambda reads that secret to build the `Authorization: Basic` header.\n\n**AWS-side (needs DevOps involvement)**\n\n* **Rotation Lambda** (full automation per this ticket): Python or Node.js function implementing the 4-step SM rotation contract. Since TL-Lincoln has no management API to programmatically change our agent password, the `setSecret` step **pauses on human-in-the-loop** — the Lambda writes the pending value to an SSM Parameter (or SNS notification), waits for a signed \"go\" from the operator who's changed the password on the vendor portal, then `testSecret` runs a probe SOAP call to confirm the new cred works, `finishSecret` cuts over AWSCURRENT and POSTs the refresh endpoint. This gives us the ADR success #2 \"no redeploy\" property while acknowledging the vendor-side reality.\n* **Attach rotation**: `aws secretsmanager rotate-secret --secret-id ... --rotation-lambda-arn ... --rotation-rules AutomaticallyAfterDays=90` after the Lambda is deployed.\n* **Lambda IAM**: `GetSecretValue` / `PutSecretValue` / `UpdateSecretVersionStage` / `DescribeSecret` on the tllincoln secret + KMS `Decrypt` on the env CMK + network egress to the app's refresh endpoint (VPC config or NAT).\n* **Endpoint accessibility**: Lambda in the same VPC as the TL-push EC2 host so it can hit `http://<host>:6200/omh-check/webapi/refresh` on the private network. No public exposure of the refresh endpoint.\n\n### Open question for you\n\n**Refresh endpoint auth scheme.** Basic Auth (username/password in the `omh/<env>/tl-push-api/refresh-endpoint-creds` secret, Rotation Lambda reads it and builds the `Authorization: Basic` header) is the simple path for Dev/Staging. For PROD, I could also design an HMAC-signed request scheme (Lambda signs the request body with a shared HMAC key stored in SM, the endpoint verifies the signature server-side) so there's no static shared password traveling over the wire — but that's a bigger app-side commitment and a heavier Lambda authoring effort.\n\nWhich would you like?\n\n* **A**: Basic Auth everywhere (Dev / Staging / PROD).\n* **B**: Basic Auth for Dev/Staging in this ticket, HMAC scheme designed and implemented as a follow-up on the PROD-identity-gate ticket.\n* **C**: HMAC from the start (adds ~2–3 h to app-side effort + Lambda code).\n\nI'd lean **B** for velocity — get the pilot demoing rotation on Basic Auth, then harden for PROD alongside the ECS Fargate task-role work. Happy to go with A or C if you'd rather.\n\nOnce you confirm A/B/C I'll implement Phase 1 (app-side, ~2–3 h) and pair with DevOps on the Rotation Lambda (network wiring + IAM + 4-step function code).\n\n_AI-Assisted: claude-code (drafting), reviewed by Tan._"
+ },
+ {
+  "type": "comment",
+  "key": "OMH-663",
+  "id": "19059",
+  "author": "Justin",
+  "created": "2026-07-07T09:40:05.869+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-663",
+  "text": "@Harry — agreed, and thanks for catching this. You're right: the CloudFront flip only intercepts full page loads, so any legacy `routerLink` into a flipped path would keep showing the old page after the flip.\n\nLet's make this a **per-page flag-on prerequisite**: for each path we flip, we'll (1) convert its legacy `routerLink`s to real `<a href>` full page navigations, and (2) remove the path from the Angular route table so a missed link fails loudly instead of silently serving legacy. We'll do it one page at a time, alongside each page's flag-on — starting with /privacy (the footer link).\n\nNo scope concern on the pilot side — the impact is small per page (footer link only for the legal pages). Thanks again."
+ },
+ {
+  "type": "comment",
+  "key": "OMH-697",
+  "id": "19060",
+  "author": "Justin",
+  "created": "2026-07-07T09:47:53.938+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-697",
+  "text": "@Harry — great milestone, and yes, let's de-scope A6. Agreed on the client-fetch branch for volatile data; here's the principle I'd like to lock so Phase 2 doesn't drift:\n\n**SSR (edge-cacheable) = the SEO/OG-relevant shell + stable content** — hotel identity, description, images, location, static attributes, the search _landing_ content. **Client-fetch (post-hydrate) = per-user / volatile** — price, availability, member-specific pricing, personalized recommendations.\n\nThe reasoning matches yours: volatile/per-user data can't be edge-cached anyway, so SSR-ing it just loads the origin per request with none of the cache benefit — while `ssr-cached` shell + client price is both cache-friendly and the proven OTA pattern (legacy hotel-list, Agoda). I'll retract my earlier \"member-price first paint\" point — member price needs the auth cookie/token, so it's inherently per-user and non-cacheable; client-fetch is the natural home for it. LCP is the hero image, carried by the SSR shell.\n\nTwo things to pin so we don't re-litigate later:\n\n* **hotel detail OG = stable fields only** (name, hero image, description, rating) — **no price** (volatile; share-time ≠ view-time). This keeps the OG scrape fully server-rendered without coupling it to pricing.\n* **search/list**: SEO landing content (city/area landings) is SSR; the actual filtered results + availability are client-fetch — the filter permutations are unbounded and per-availability, so they were never edge-cacheable.\n\n**Streaming revival trigger** (so A6 isn't lost, just deferred): revive only if a Phase 2 page needs a _single slow server-computed datum that is also SEO/OG-relevant_ — none in the current Phase 2 list. If that page appears, the AllViewer origin-request policy (to stop CloudFront's UA swap flipping isbot → buffering) is its prerequisite, noted here. I'd keep the origin build stream-_capable_ (no buffering baked in) so reviving it is config, not re-plumbing.\n\nSo: A6 out of OMH-697 scope, confirmed on the client branch for volatile data, origin left stream-capable. The rest of your close-out list (PR #103, CI→CD dispatch, lifecycle rule, A5 load test) looks right. Thanks for driving this home."
+ },
+ {
+  "type": "comment",
+  "key": "ELS-1099",
+  "id": "19062",
+  "author": "Zia",
+  "created": "2026-07-07T10:24:33.790+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-1099",
+  "text": "Dear <custom data-type=\"mention\" data-id=\"id-0\">@Joo</custom> We discussed Country-specific Rates throughout the day yesterday, from the morning until the end of the workday, but you mentioned that further research is still needed. This makes me concerned that there may be a gap in our understanding of the issue. As I mentioned yesterday, we do not have an alternative approach, as ensuring price accuracy is our top priority.\n\nSince I did not receive an answer by the end of the day yesterday, could you please share your findings and the estimated implementation timeline by this morning?\n\nI would also like us to make sure we fully understand each other and agree on the final timeline by the end of today. If we are unable to reach an agreement today, I will request a meeting with Julia and Justin tomorrow."
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2340",
+  "id": "19063",
+  "author": "Tom",
+  "created": "2026-07-07T10:27:58.206+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2340",
+  "text": "@Tracy2 phần này đã deploy lên PROD rồi nhé em, check lại giúp anh. Số liệu 2 chart đã giống nhau\n\n[image attachment]"
+ },
+ {
+  "type": "comment",
+  "key": "OMH-696",
+  "id": "19064",
+  "author": "Mon",
+  "created": "2026-07-07T10:28:28.812+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-696",
+  "text": "Dear @Holden ,\n\nThis feature already in Production env\n\nPlease help me double check again one more time\n\n[image attachments]\nThank you"
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2318",
+  "id": "19065",
+  "author": "Tom",
+  "created": "2026-07-07T10:29:03.081+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2318",
+  "text": "@Tracy2 , phần này đã deploy lên PROD, check lại giúp anh nhé, thank em"
+ },
+ {
+  "type": "comment",
+  "key": "OMH-700",
+  "id": "19066",
+  "author": "Mon",
+  "created": "2026-07-07T10:29:04.005+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-700",
+  "text": "Dear @Holden ,\n\nThis feature already in Production env\n\nPlease help me double check again one more time\n\nThank you"
+ },
+ {
+  "type": "comment",
+  "key": "OMH-736",
+  "id": "19067",
+  "author": "Mon",
+  "created": "2026-07-07T10:29:53.653+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-736",
+  "text": "Dear @Lexi ,\n\nThis update already in Production\n\nPlease help me double check again one more time\n\nThank you"
+ },
+ {
+  "type": "comment",
+  "key": "ELS-1099",
+  "id": "19068",
+  "author": "Joo",
+  "created": "2026-07-07T10:30:49.317+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-1099",
+  "text": "<custom data-type=\"mention\" data-id=\"id-0\">@Zia</custom> I have reviewed the documentation and found that rate rules cannot be applied in this case. Instead, I will use rate modifications (<custom data-type=\"smartlink\" data-id=\"id-1\">https://developers.google.com/hotels/hotel-prices/xml-reference/ari-rate-modifications?hl=vi</custom> ), with ModificationActions representing the discount percentage applied after deduction.\n\nYou can also configure UserCountries to target users from specific countries based on your settings. "
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2252",
+  "id": "19069",
+  "author": "Tom",
+  "created": "2026-07-07T10:32:14.618+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2252",
+  "text": "@Tracy2 phần này đã lên PROD, có gì check lại giúp anh nhé, thank you em"
+ },
+ {
+  "type": "comment",
+  "key": "OMH-679",
+  "id": "19071",
+  "author": "Harry",
+  "created": "2026-07-07T10:34:11.839+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-679",
+  "text": "Hi @Tracy2 pls check again prod"
+ },
+ {
+  "type": "comment",
+  "key": "OMH-700",
+  "id": "19072",
+  "author": "Holden",
+  "created": "2026-07-07T10:39:10.825+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-700",
+  "text": "@Mon tested on PROD env\n\nCase 1 — min = max at the LOWEST bound => Passed\n\n* PC\n\n[image attachment]\n* MOweb\n\n[image attachment]\nCase 2 — min = max at the HIGHEST bound => Passed\n\n* PC\n\n[image attachment]\n* MOweb\n\n[image attachment]"
+ },
+ {
+  "type": "comment",
+  "key": "OMH-700",
+  "id": "19073",
+  "author": "Mon",
+  "created": "2026-07-07T10:39:31.834+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-700",
+  "text": "Nice, thank you @Holden"
+ },
+ {
+  "type": "comment",
+  "key": "OMH-696",
+  "id": "19074",
+  "author": "Holden",
+  "created": "2026-07-07T10:45:01.594+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-696",
+  "text": "@Mon tested on PROD env => Passed\n\n* PC\n\n[image attachments]\n* MOweb\n\n[image attachment]"
+ },
+ {
+  "type": "comment",
+  "key": "ELS-2067",
+  "id": "19075",
+  "author": "Joseph",
+  "created": "2026-07-07T10:46:50.927+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2067",
+  "text": "Finding — TL-Lincoln secret key format (blocks secrets-sm wiring)\n\nBinding prefix in oh-api = vendor.hotel.tllincoln (@ConfigurationProperties / @Value).\n\nSpring Cloud AWS does NOT derive a prefix from the secret path. spring.config.import aws-secretsmanager adds each JSON key to the Spring Environment at top-level, verbatim. Flat keys (agtId, password, userName, baseUrl...) would (1) fail to bind to the vendor.hotel.tllincoln prefix and (2) collide with generic top-level properties.\n\nFix: the secret must hold fully-qualified keys, e.g. vendor.hotel.tllincoln.agtId, vendor.hotel.tllincoln.password ... (9 fields; pushHotels stays out of the secret, in config).\n\nAction: since ELS-2205 is Done, run put-secret-value on omh/dev/tl-push-api/tllincoln (and Staging) with the qualified keys BEFORE cutting over to the secrets-sm profile. Verify with get-secret-value | jq keys — every key must start with vendor.hotel.tllincoln. Full detail is in the ELS-2205 description."
+ },
+ {
+  "type": "comment",
+  "key": "ELS-1914",
+  "id": "19076",
+  "author": "Joo",
+  "created": "2026-07-07T10:48:37.676+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-1914",
+  "text": "@Zia This is the aggregated result for hotels in JP/KR/VN, along with the detailed list.\n\n[image attachment]\nTotal hotel: 3725\n\nHotel missing city: 2\n\nHotel missing province: 169:\n\nHotel missing postal code: 19\n\nHotel missing phone: 117\n\nHotel missing addr: 2\n\nHotel Valid: 3426\n\n[image attachments]Pls help me to check"
+ },
+ {
+  "type": "comment",
+  "key": "OMH-696",
+  "id": "19077",
+  "author": "Mon",
+  "created": "2026-07-07T10:48:58.667+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-696",
+  "text": "Nice, thank you @Holden"
+ },
+ {
+  "type": "comment",
+  "key": "OMH-736",
+  "id": "19079",
+  "author": "Lexi",
+  "created": "2026-07-07T10:54:19.291+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-736",
+  "text": "@Mon PROD QA => pass (PC/MO)\n\n[image attachment]\nThank you"
+ }
+]

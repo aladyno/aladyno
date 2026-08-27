@@ -1,0 +1,209 @@
+[
+  {
+    "type": "comment",
+    "key": "ELS-1721",
+    "id": "18297",
+    "author": "Dang Minh Duc (Ben)",
+    "created": "2026-06-25T17:18:44.419+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1721?focusedCommentId=18297",
+    "text": "Dear a@Joseph @Tan , according to SCM, the number of breakfasts included will be calculated according to the room's min/max occupancy configuration.. you can base on this information and set it up. Thank you"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1721",
+    "id": "18305",
+    "author": "Tan",
+    "created": "2026-06-25T17:41:15.497+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1721?focusedCommentId=18305",
+    "text": "/// meal plan current info\n/// A - All meals\n/// B - Breakfast included\n/// C - Dinner included\n/// D - Breakfast and dinner included\n/// E - Lunch included\n/// F - Breakfast, lunch and dinner included\n/// G - Gold (The same I)\n/// H - Halfboard (아침/점심/저녁 중 2회) -> give Qunar just Breakfast & Dinner\n/// I - All Inclusive\n/// L - Breakfast and lunch included\n/// N - None\n/// S - Silver (Breakfast included)\n/// Z - N/A\n\nWhile reviewing the code that was transferred from Tranaport to Qunar, I found the following mapping information:\n\n* G = I\n* S = B\n\nCould you please help confirm whether this is correct, @Tracy @Joseph ?\n\nIf so, I will map it as follows for Traveloka:\n\n* G = AI\n* S = BF"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2037",
+    "id": "18303",
+    "author": "Dan",
+    "created": "2026-06-25T17:40:00.065+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2037?focusedCommentId=18303",
+    "text": "ELS-2037 — getAdminVendorRateAllotmentV2 Performance Optimization\n\nOptimization of com.ohmy.api.service.admin.vendor.AdminVendorRateAllotmentService.getAdminVendorRateAllotmentV2, a heavy admin endpoint contributing to high CPU and memory utilization.\n\nFiles changed\n* web-api/src/main/java/com/ohmy/api/service/admin/vendor/AdminVendorRateAllotmentService.java\n* web-api/src/main/resources/com/ohmy/api/mapper/writer/admin/vendor/AdminVendorRateAllotmentMapper.xml\n\n#1 — DB connection pool exhaustion (FIXED). Problem: The 8 source queries were executed as a Mono.zip of 8 Flux...subscribeOn(boundedElastic()). They ran concurrently, so each request borrowed 8 connections at the same time. With a HikariCP pool of max 20, ~2 concurrent requests saturated the pool, queuing/timing out the rest — a direct driver of the high CPU/memory in the ticket. Fix: All reads now run sequentially on a single worker thread inside one Mono.fromCallable(...).subscribeOn(Schedulers.boundedElastic()), via a new synchronous helper queryToList(...) (collects the MyBatis ResultHandler stream into a list). Peak connections per request dropped from 8 to 1. Removed the Mono.zip + nested flatMap/map and the separate promotionCheckinRangeMono. Removed the now-unused queryWithResultHandler Flux helper and the unused Flux import. Still runs off the Netty event loop (boundedElastic), so the event loop is not blocked. Trade-off: Slightly higher per-request latency (sequential vs parallel), in exchange for not exhausting the pool — net throughput under load improves.\n\n#3 — O(N×M) scan over promotionCheckinRange (FIXED). Problem: Inside the deepest loop, every promotionDetail ran promotionCheckinRange.stream().filter(...) — a full linear scan repeated per detail = quadratic. Fix: Group the checkin ranges once into a Map<Integer, List<...>> keyed by planPromotionSeq, then look up with getOrDefault(seq, Collections.emptyList()) -> O(1) per detail. Only V2 was changed; the legacy V1 (getAdminVendorRateAllotment) still has the old scan but is not wired to the handler (handler calls V2 only).\n\n#4 — objectMapper.convertValue(..., ArrayNode.class) churn in the sort phase (FIXED). Problem: The sort phase called convertValue(stream.sorted()..., ArrayNode.class) at every nesting level. Each call re-serializes and re-deserializes the whole subtree into brand-new nodes — heavy CPU and transient garbage. Fix: New helper toSortedArrayNode(JsonNode, Comparator<JsonNode>) reorders the existing child node references and addAlls them into a fresh ArrayNode — no serialization, no deep copy. Replaced all 6 sort calls plus the hasAllotmentOnly convertValue. Behaviour preserved.\n\n#5 — Push onSalesOnly filtering down to SQL. All DB-side filtering is guarded by onSalesOnly == true, which only V2 sets. When the flag is false the generated SQL is byte-identical to before. (a) Contract status 'A' filter via guarded shared SQL fragment onSalesContractStatusFilter. (b) salesStopYn = 'N' filters also pushed at the DB level, still guarded by the flag. The filters use parent-level flags (VVRT/VVRP/VVPP). getPlanList and getPlanDailyPriceList need VD_VENDOR_ROOM_TYPE (alias VVRT) INNER JOIN wrapped in the same guard. Deliberately NOT pushed: getAllotmentList contract status; hasPriceOnly / hasAllotmentOnly.\n\n#6 — Merge onSalesOnly + hasPriceOnly into a single tree pass (FIXED). Collapsed two separate full traversals into one if (onSalesOnlyFlag || hasPriceOnlyFlag) traversal. Predicates compose in the same order; output is byte-equivalent. Equivalence verified across all 4 flag combinations.\n\n#7 — Fold the filter into the build loop (FIXED). Filtering is independent per contract, now runs inline at the moment each contract node is built via helper applyOnSalesAndPriceFilter(contractNode, onSalesOnly, hasPrice). The contract list is now walked once. Behaviour preserved.\n\nVerification: ./gradlew :web-api:compileJava -> success (exit 0). Mapper XML validated as well-formed; all 7 <include> references resolve. No existing unit tests reference this service."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-671",
+    "id": "18226",
+    "author": "Mon",
+    "created": "2026-06-25T11:56:10.759+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-671?focusedCommentId=18226",
+    "text": "Hi @Harry ,\n\nCould you please help us request the payment transaction logs from OnePay for the transaction below?\n\nReason: On our side we cross-checked two bookings — one failed and one succeeded. The failed one was caused by a few request parameters missing from the data OnePay returned to us. We'd therefore like to request the log of the request parameters OnePay sent back to us, based on the transaction details below.\n\nOnePay callback to us: /payment-complete?vpc_*\n\nTransaction / booking details to look up:\n* Order ID (vpc_OrderInfo): K26062310912H01\n* Date: 2026-06-23\n* Time range: 09:32:00 – 10:00:00 (GMT+7)\n\nThank you!"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-671",
+    "id": "18232",
+    "author": "Mon",
+    "created": "2026-06-25T12:25:59.377+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-671?focusedCommentId=18232",
+    "text": "Dear @Tracy ,\n\nPlease help me request to get log from OnePay to get all around transaction for this Booking:\n\nOrder ID (vpc_OrderInfo): K26062310912H01\n\nPlease just request get and ignore my reason, becus we shouldn't send to them that info\n\nVietnamese: Chị ơi, nhờ chị xin log bên OnePay giúp em ạ, em cần check case bug liên quan đến booking này ấy chị, cảm ơn chị\n\nThank you so much"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-671",
+    "id": "18295",
+    "author": "Tracy",
+    "created": "2026-06-25T17:13:45.373+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-671?focusedCommentId=18295",
+    "text": "@Mon Onepay replied\n\nLog redirect:\n\n23-06-2026 09:34:41\n\nhttps://www.ohmyhotel.com/payment-complete?itemCategoryCode=IC02&bookingItemCode=K26062310912H01&email=tracytestomh@gmail.com&pgName=onepay&couponItemCode=&couponItemCode2=&vpc_Amount=1621500&vpc_Card=TECHCOMBANK&vpc_CardNum=**********0011&vpc_Command=pay&vpc_MerchTxnRef=K26062310912H012606231132193717&vpc_Merchant=OP_OHMYHOTEL&vpc_Message=Approved&vpc_OrderInfo=K26062310912H01&vpc_PayChannel=APP&vpc_TransactionNo=PAY-7VTdLk5lQXOKPWpzbaSOTg&vpc_TxnResponseCode=0&vpc_Version=2&vpc_SecureHash=0506C39CE4DE6E0BB0D4361F27F1A9C19FB1752A5E867F3F4757C306B3E3132C\n\n======\n\nIPN log shows that a 500 error response was returned to OnePay. => Please check\n\nK26062310912H012606231132193717\n\n2026-06-23 09:34:41\n\n{\"body\":\"\",\"headers\":{},\"method\":\"GET\",\"url\":[https://apiv2.ohmyhotel.com/payment/onepay/paymentNotification?vpc_Amount=1621500...]}\n\n2026-06-23 09:35:11\n\n{\"body\":\"\",\"headers\":{...\"X-Cache\":\"Error from cloudfront\"...},\"status_code\":500}"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-671",
+    "id": "18301",
+    "author": "Mon",
+    "created": "2026-06-25T17:31:32.816+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-671?focusedCommentId=18301",
+    "text": "Thank you so much @Tracy"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2243",
+    "id": "18227",
+    "author": "Daniel",
+    "created": "2026-06-25T12:00:56.530+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2243?focusedCommentId=18227",
+    "text": "Dear @Tracy ,\nRoot Cause: The email delivery was suppressed by the AWS SES service.\n\"EmailValidationSuppressed\": Amazon SES has suppressed sending to this address due to email validation. The address quality confidence level is below your configured threshold. For details on validation checks and threshold configuration…\nAction Taken: Moving the email notification to Mailjet service to ensure successful delivery.\nPrevention: /"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2245",
+    "id": "18246",
+    "author": "Tracy",
+    "created": "2026-06-25T13:39:29.686+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2245?focusedCommentId=18246",
+    "text": "Anh @Daniel Please investigate this case.\nCC: anh @Joseph"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2224",
+    "id": "18298",
+    "author": "Tracy2",
+    "created": "2026-06-25T17:18:58.961+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2224?focusedCommentId=18298",
+    "text": "@Tan Tested on DEV - PASSED\n\nResult on https://ohmyjira.atlassian.net/browse/ELS-2226"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2222",
+    "id": "18299",
+    "author": "Daniel",
+    "created": "2026-06-25T17:21:13.511+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2222?focusedCommentId=18299",
+    "text": "Dear @Tracy ,\n\nRoot Cause:\n\tThis incident is linked to PIR ELS-1734 — both originate from the same booking burst on 2026-06-01.\n\tSummary of the two related incidents:\n\tELS-1734 (PIR): On 2026-06-01 (11:23–11:28 GMT+8), CTRIP automatically took our products offline because the booking API failure rate hit 57.14% (4 of 7 requests failed), exceeding the 50% threshold.\n\nAction Taken:\n\tThe underlying API failure issue has been resolved (tracked under PIR ELS-1734)\n\nPrevention:\n\tTaking bookings for about 5 minutes, between 12:25 and 12:30 there were approximately 18 bookings.\n\tThere are 2 similar cases: the log shows 1 request from the channel, but no response log.\n\t2061288376157470720 is the booking checked.\n\t1400826417160096: this one has already been canceled by the OP."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2226",
+    "id": "18296",
+    "author": "Tracy2",
+    "created": "2026-06-25T17:17:58.567+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2226?focusedCommentId=18296",
+    "text": "* Seller A — flag OFF (\"do not provide 3rd-party rates\"). - Business Trip In Vietnam\n* Seller B — flag ON (\"provide 3rd-party rates\"). - OHMY TEST PREPAY\n\nPASSED- TC1 — Partner Dotbiz, seller does NOT provide 3rd-party -> only direct rates shown. Steps: 1. Login to the Dotbiz Platform as Seller A (flag OFF). 2. Search hotels for a destination where you know there are both direct and 3rd-party rates. 3. Open one of the hotels and view the room/rate list. Expected: Hotel list shows only hotels where OMH has a direct contract. Hotels that only have 3rd-party rates do not appear. Room/rate list shows only rates from the direct contract source. No rates labelled Hotelbeds, Agoda, EAN, Dida, Dotw, Fitruums or Rakuten. Tested on Rex Hotel Saigon > Only direct rate is displayed : PASSED\n\nPASSED- TC2 — Partner Dotbiz, seller DOES provide 3rd-party -> full mix shown (regression). Steps: 1. Login to the Dotbiz Platform as Seller B (flag ON). 2. Repeat the same search as TC1. Expected: Result is identical to what Seller B saw before this change. Both direct contract rates and 3rd-party rates appear. This is the main regression check — existing sellers must see no difference. Tested on Rex Hotel Saigon > show both our rate & 3rd parties rate : PASSED\n\nPASSED: TC3 — Admin Create Booking on B2B channel, seller does NOT provide 3rd-party -> only direct rates. Steps: 1. On oh-admin, open Create Booking. 2. Pick the B2B channel and select Seller A as the booking seller. 3. Run the hotel search, open a hotel, view rooms/rates. Expected: Behaviour matches TC1 — only direct-contract rates are shown. The seller's restriction is respected even when ops is the one operating the search.\n\nPASSED - TC4 — Admin Create Booking on B2B channel, seller DOES provide 3rd-party -> full mix (regression). Steps: 1. On oh-admin, open Create Booking, B2B channel, select Seller B. 2. Run the same hotel/room search. Expected: Same mix of rates as before this change. No regression on existing B2B sellers in admin Create Booking.\n\nPASSED - TC5 — B2C flow is untouched. Steps: 1. Run a regular B2C search (customer-facing site, or B2C tab on admin Create Booking). 2. Use the same hotel as TC1/TC3. Expected: Both direct and 3rd-party rates show normally — the seller flag has no effect on B2C searches. B2C - ADMIN. B2C - OMH / OMT.\n\nPASSED: TC6 — Flipping the seller flag takes effect immediately on the next search. Steps: 1. Start with Seller B (flag ON). Run a B2B search -> you see direct + 3rd-party rates (baseline from TC2). 2. On the admin Seller page, change Seller B's flag to OFF and save. 3. Run the same B2B search again. 4. Switch the flag back to ON and save. 5. Run the search one more time. Expected: After step 3, the search no longer shows 3rd-party rates — only direct contract. After step 5, the search again shows the full mix. Toggling the flag should be reflected on the very next search the seller makes."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-666",
+    "id": "18214",
+    "author": "Lexi",
+    "created": "2026-06-25T11:11:01.549+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-666?focusedCommentId=18214",
+    "text": "@Dante Have you reviewed all the requirements? Please update the expected schedule or leave it as a comment. Thank you."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-666",
+    "id": "18294",
+    "author": "Dante",
+    "created": "2026-06-25T17:10:04.088+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-666?focusedCommentId=18294",
+    "text": "@Lexi — technical review below.\n\nTechnical review — OMH inline payment migration (Options A & B). Reviewed: this ticket, both UI mockup spec panels, the 3 NICEPAY manuals (CARD-KEYIN / AUTH / DIRECT), the prior investigation on OMH-466, and the current code in legacy-pc, legacy-mobile, and oh-api.\n\nScope assumption: this covers the KRW / NICEPAY path only. The payment page already branches by currency — USD->Alipay, VND->OnePay — which I'm treating as out of scope. PM please confirm.\n\n1) Feasibility — both A and B are feasible, and both building blocks are already proven in-house (OMT). Card key-in (shared by A & B): already running in production for OMT flights via NICEPAY /webapi/card_keyin.jsp (omhnew002m, AES EncData + SHA256 SignData, with mandatory net-cancel). Per OMH-466, we already hold card key-in (non-auth) merchant approval, and omhnew002m (nonFlight) is already registered — same MID/key as flight, so no new merchant setup is needed. On the OMH side, the FE already has /payment/v2, /payment/card/validate, and the card models, and /payment/v2 already books hotels (HTLRV). So this is mostly wiring + UI, not a new integration. Option A — Quick Pay via unified popup: reuses our existing NICEPAY popup (goPay / nicepay-3.0.js, omhnew001m) with credit card hidden. Minimal change. Option B — Quick Pay via direct call: direct call is just extra parameters on the same Auth Payment request, and is already being implemented for OMT flight payments on a merchant account that supports the direct-call flow. The existing verify + booking path is reused; no new PG integration. Per-provider params: Kakao DirectKakao=Y; Naver DirectEasyPay=E020 + EasyPayMethod=E020=CARD; PAYCO DirectPayco=Y; Samsung DirectEasyPay=E021 (PC direct call uses nicepay-3.0.js, already our SDK).\n\n2) Estimated effort (developer-days; excludes QA-team testing and UAT): Shared — card key-in: FE 3, BE 2.5, Dev self-test 2. Option A add-on: FE 1, BE 0.5, Dev self-test 1. Option B add-on: FE 2, BE 0.5, Dev self-test 2. -> Option A ~ 9–11 dev-days (~2 weeks with FE + BE in parallel). Option B ~ 11–13 dev-days (~2.5 weeks). About 7–8 of these days are the shared card key-in, reusable for either option.\n\nDev self-test basis: ~0.2–0.3 day/case — card key-in (~9 cases), Quick Pay A (4 providers × success/cancel), Quick Pay B (4 providers × success/cancel/terms-gate) — all × PC + Mobile, plus regression on the untouched USD/VND paths.\n\nQA-team testing (separate workstream): this is a sizable, payment-critical change, so beyond our dev self-testing it needs formal QA-team testing. That effort is not included in the dev-days above.\n\n3) Needs confirmation: Scope: KRW / NICEPAY only — USD/Alipay and VND/OnePay out of scope? (PM please confirm.)\n\nRecommendation: Both viable; B gives the better UX (in-page, 1 step) and is the target. Both building blocks are already proven in OMT on existing merchant accounts, so B is feasible without an external gate. Suggest building the shared card key-in first, then B's Quick Pay (referencing OMT's direct-call implementation), with A available as a fallback. cc @Harry"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2274",
+    "id": "18293",
+    "author": "Joseph",
+    "created": "2026-06-25T17:08:35.115+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2274?focusedCommentId=18293",
+    "text": "@Dan Already created"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2235",
+    "id": "18263",
+    "author": "Calvin",
+    "created": "2026-06-25T15:30:55.022+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2235?focusedCommentId=18263",
+    "text": "@Roy\nI've already completed the code removal.\nThe changes will be included in the next deployment scheduled for 30/6. After deployment and validation, I will update you again once everything has been verified."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2235",
+    "id": "18264",
+    "author": "Roy",
+    "created": "2026-06-25T15:32:36.383+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2235?focusedCommentId=18264",
+    "text": "@Calvin\nSounds good. I'll also report this deployment to the Justin tomorrow morning.\n\nCongratulations in advance on wrapping up this cycle."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2235",
+    "id": "18282",
+    "author": "Calvin",
+    "created": "2026-06-25T16:18:16.598+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2235?focusedCommentId=18282",
+    "text": "@Roy Thank you for your support throughout this migration."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2066",
+    "id": "18280",
+    "author": "Joseph",
+    "created": "2026-06-25T16:10:50.441+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2066?focusedCommentId=18280",
+    "text": "Scope clarification — this is §2 MOVE only (no re-encryption). Per ELS-2049 runbook -> Pilot Scope Amendment (v2). This ticket is in pilot scope and executes the runbook's §2 Move procedure for api.kmsKey ONLY.\n\nWhat \"Move\" means here: The key value stays byte-for-byte identical; we only change where the app reads it from. Store the existing api.kmsKey value verbatim in Secrets Manager at omh/<env>/web-api/kms-key, encrypted with alias/omh-secrets-<env> (the per-env CMK encrypts the secret). App resolves the KMSKEY bind param from the vault instead of the YAML literal. Same value -> same MySQL AES_ENCRYPT/AES_DECRYPT behavior -> all existing ciphertext still decrypts. No data migration. No re-encryption. No change to what data is encrypted.\n\nDo NOT do this (it would silently become ELS-2073): Do not switch the column crypto to the KMS Encrypt/Decrypt API (envelope encryption). That changes the ciphertext format -> existing MySQL-AES ciphertext would no longer decrypt -> forces a full re-encryption. Re-encryption / rotation of the key value is §3 and is tracked separately in ELS-2073 (currently DEFERRED). Read the description phrase \"update the encrypt/decrypt path to use KMS\" as \"resolve the key value from the KMS-backed vault\", NOT \"replace MySQL AES with KMS crypto\".\n\nValidation (runbook §4) — Dev -> Staging: Canary set: fixed (table, pk, known-plaintext) rows; decrypt with the vault-sourced key and assert equality before/after the move. Count parity: COUNT(col) WHERE col IS NOT NULL unchanged per table across §1.1 columns. App smoke: booking lookup, payment read, and any flow touching §1.1 columns returns correct data post-cutover.\n\nRollback: Config-only: revert the property to the YAML literal. Instant and safe — no data is ever touched.\n\nDoD (pilot): Value stored in Secrets Manager (verbatim) + app wired to read from vault. §4 validation passes in Dev -> Staging. Reviewed by Security + a backend owner."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2066",
+    "id": "18286",
+    "author": "Joseph",
+    "created": "2026-06-25T16:29:21.443+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2066?focusedCommentId=18286",
+    "text": "https://ohmyjira.atlassian.net/browse/ELS-2274 creates the omh/<env>/web-api/kms-key secret; https://ohmyjira.atlassian.net/browse/ELS-2066 wires the app to read it and validates. The secret must exist first."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2066",
+    "id": "18287",
+    "author": "Joseph",
+    "created": "2026-06-25T16:29:23.851+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2066?focusedCommentId=18287",
+    "text": "Scope update — secret creation split out to ELS-2274. The \"create the omh/<env>/web-api/kms-key secret\" step has been split into ELS-2274 (mirrors ELS-2204 / ELS-2205 / ELS-2206 create-secret pattern).\n\nThis ticket (ELS-2066) is now WIRE + VALIDATE only: Resolve the KMSKEY bind param from the vault-backed secret (created by ELS-2274) instead of the YAML literal. Validate per runbook §4 (canary decrypt + count parity) in Dev -> Staging. Rollback = config-only revert to the YAML literal.\n\nLinked is blocked by ELS-2274 (secret must exist before wiring)."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2066",
+    "id": "18292",
+    "author": "Joseph",
+    "created": "2026-06-25T16:53:22.927+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2066?focusedCommentId=18292",
+    "text": "Path correction — secret is shared/, not web-api/. Follow-up to the previous note: the secret created by ELS-2274 now lives at omh/<env>/shared/api-kms-key (not omh/<env>/web-api/kms-key).\n\nReason: api.kmsKey is the same key value used by web-api, hotel-api and trigger-api, so it belongs in a shared single-source-of-truth scope (avoids cross-service coupling / drift). See ELS-2274 and the shared/-scope proposal on ELS-2060.\n\nFor this ticket (wire + validate): resolve the KMSKEY bind param from omh/<env>/shared/api-kms-key. Everything else (byte-for-byte value, §4 validation, config-only rollback) is unchanged."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2060",
+    "id": "18291",
+    "author": "Joseph",
+    "created": "2026-06-25T16:53:19.302+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2060?focusedCommentId=18291",
+    "text": "Convention gap — add a shared/ scope for cross-service material. The current scheme omh/<env>/<service>/<secret-name> assumes every secret is owned by exactly one service. That holds for DB credentials and vendor creds, but not for shared encryption-key material used identically by multiple services.\n\nConcrete case: api.kmsKey. Per the ELS-2049 runbook §1.1, the same api.kmsKey value is used across web-api, hotel-api, and trigger-api. Forcing it under one service path (e.g. web-api/) creates one of two failure modes: Cross-service IAM coupling: other services' roles must read into web-api/'s namespace -> breaks the per-service isolation this convention is meant to enforce. Duplication + drift: a per-service copy of the same key risks copies diverging; if one rotates out of sync, ciphertext written by one service becomes undecryptable by another -> data corruption.\n\nProposed addition: Add a reserved scope for material that legitimately crosses service boundaries: omh/<env>/shared/<secret-name> e.g. omh/<env>/shared/api-kms-key. Rules: Use shared/ ONLY for material genuinely consumed by 2+ services as a single source of truth (encryption keys, shared signing keys). Default remains <service>/. Single secret, single value; grant read to each consuming service role explicitly (least-privilege per reader, not a wildcard). Same env-prefix addressing boundary, CMK, and tagging rules as service-scoped secrets.\n\nAction: ELS-2274 (create api.kmsKey secret) has been pointed at omh/<env>/shared/api-kms-key on this basis. Please ratify shared/ in the published convention so downstream rollout tickets (ELS-2054 / ELS-2073) reference it consistently."
+  }
+]

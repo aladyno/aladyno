@@ -1,0 +1,344 @@
+[
+ {
+  "type": "subtask",
+  "key": "OMH-713",
+  "id": "16749",
+  "author": "Mon",
+  "created": "2026-06-29T19:14:19.646+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-713",
+  "text": "Implement TTL for B2C_OMH_OTP_SEARCH_BOOKING:{email}_COUNTING_EMAIL_VERIFY\nUpdate the OTP search booking email verification counting key so it is created with an appropriate TTL, aligned with the related OTP key or the business-approved duration. Ensure the Redis/cache write path sets the expiration correctly and does not affect the existing verification logic."
+ },
+ {
+  "type": "task",
+  "key": "ELS-2328",
+  "id": "16748",
+  "author": "Joseph",
+  "created": "2026-06-29T18:58:00.197+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2328",
+  "text": "[Deployment] Make a release Notes – Deployment [1.0/06302026]\n**Request**  \n\\[Deployment\\] Make a release Notes – Deployment \\[1.0/06302026\\]"
+ },
+ {
+  "type": "task",
+  "key": "OMH-712",
+  "id": "16747",
+  "author": "Justin",
+  "created": "2026-06-29T18:41:50.393+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-712",
+  "text": "Phase 1 retrospective and commit the PC page-migration playbook\n> Parent: OMH-456 (PC Phase 1 — static/CMS). Closes Phase 1. Source of truth: `docs/migration/v2-migration-plan.md` §6.\n\n# Goal\n\nCapture the Phase 1 retrospective and commit the **page-migration playbook** that Phases 2–5 (and the later Mobile / Hana epics) follow.\n\n# Scope\n\n* Finalize the page-migration playbook (drafted in the /notice pilot, OMH-706): the repeatable per-page recipe — fm-analyze → fm-plan → fm-gen → fm-e2e → fm-verify → fm-flip, the **2-PR flag pattern**, the **SSG prerender** setup, visual regression in 5 languages at every viewport, and the nginx flag flip.\n* Update `docs/migration/v2-migration-plan.md` §6 (Phase 1 status) and `docs/migration/tracker.json`.\n* Capture lessons across the 6 pages: what diverged from the pilot, any BE gaps (e.g. `/common/ums/send` for /app-download), and gate friction (test-harness, route-flip, edge/infra).\n\n# Dependencies\n\n* Depends on the 6 Phase 1 page Tasks: OMH-706 (/notice), /faq, /event, /terms, /privacy, /app-download.\n\n# Acceptance\n\n* The page-migration playbook is committed to the repo.\n* OMH-456's success criteria are reviewed against the 6 shipped pages.\n* Phase 2 (OMH-457, authenticated user pages) readiness is noted — what carries over from Phase 1 and what is new for authenticated / SPA routes."
+ },
+ {
+  "type": "task",
+  "key": "OMH-711",
+  "id": "16746",
+  "author": "Justin",
+  "created": "2026-06-29T18:41:43.891+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-711",
+  "text": "Migrate the PC /app-download page to React Router v7\n> Parent: OMH-456 (PC Phase 1 — static/CMS). Source of truth: `docs/migration/v2-migration-plan.md` §6. Rendering: **SSG** (build-time prerender). **Sequence this page LAST in Phase 1** (BE-schema blocker below).\n\n# Goal\n\nMigrate the legacy PC `/app-download` page to `apps/web-pc` (React Router v7), served via the nginx feature flag.\n\n# Legacy source\n\n* `apps/legacy-pc/src/app/pages/app-download/` (+ `app-download-routing.module.ts`)\n* `apps/legacy-pc/src/app/shared/bottom-contents/app-download/` (the reusable footer block)\n\n# Scope\n\n* RR v7 app-download route, prerendered at build (SSG): store badges / QR / hero.\n* **Send-link form**: posts `/common/ums/send` (`sendLink`). **BLOCKER** — this endpoint is **TRACK** status (OMH-605 B3): the FE omits `countryPhoneCode` (`// TODO 스키마 추가되면 마무리`) pending a BE schema decision. The static page can be built and the code PR landed, but **flag-ON is blocked until the** `/common/ums/send` BE schema is decided so the send-link request is complete (no silently-dropped field).\n* i18n via `@omh/shared-i18n` (5 languages); UI via `@omh/shared-ui`.\n* **2-PR pattern** (code PR flag-OFF + one-line flag-ON); frontend-migration-plugin pipeline; follow the /notice playbook (OMH-706).\n\n# Dependencies (Phase 0 + BE)\n\n* Blocked by **OMH-653** + **OMH-659**; needs **OMH-660** + **OMH-661**; flag-ON needs **OMH-663** + ECS/CloudFront (OMH-697 / OMH-698).\n* **flag-ON additionally blocked by the** `/common/ums/send` BE schema decision (OMH-605 B3 / TRACK).\n\n# Acceptance\n\n* /app-download serves from web-pc via the nginx flag; legacy reachable by toggling the flag off.\n* Build output is static HTML (SSG); visual regression passes at desktop / tablet / mobile in all 5 languages within 0.1%.\n* SEO: URL inspection confirms correct indexing.\n* The send-link form posts a valid `/common/ums/send` request per the finalized BE schema (including `countryPhoneCode`) — no field silently dropped."
+ },
+ {
+  "type": "task",
+  "key": "OMH-710",
+  "id": "16745",
+  "author": "Justin",
+  "created": "2026-06-29T18:41:34.069+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-710",
+  "text": "Migrate the PC /privacy page to React Router v7\n> Parent: OMH-456 (PC Phase 1 — static/CMS). Source of truth: `docs/migration/v2-migration-plan.md` §6. Rendering: **SSG** (build-time prerender).\n\n# Goal\n\nMigrate the legacy PC `/privacy` page to `apps/web-pc` (React Router v7), served via the nginx feature flag.\n\n# Legacy source\n\n* `apps/legacy-pc/src/app/pages/privacy/` (+ `privacy-routing.module.ts`)\n\n# Scope\n\n* RR v7 privacy route, prerendered at build (SSG). Pure static content (no runtime data fetch).\n* i18n via `@omh/shared-i18n` (5 languages); UI via `@omh/shared-ui`.\n* **2-PR pattern** (code PR flag-OFF + one-line flag-ON); frontend-migration-plugin pipeline; follow the /notice playbook (OMH-706).\n\n# Dependencies (Phase 0)\n\n* Blocked by **OMH-653** + **OMH-659**; needs **OMH-660** (layout shell); flag-ON needs **OMH-663** + ECS/CloudFront (OMH-697 / OMH-698).\n* No runtime data fetch → **OMH-661** (Query provider) not required.\n\n# Acceptance\n\n* /privacy serves from web-pc via the nginx flag; legacy reachable by toggling the flag off.\n* Build output is static HTML (SSG); visual regression passes at desktop / tablet / mobile in all 5 languages within 0.1%.\n* SEO: URL inspection confirms correct indexing."
+ },
+ {
+  "type": "task",
+  "key": "OMH-709",
+  "id": "16744",
+  "author": "Justin",
+  "created": "2026-06-29T18:41:28.694+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-709",
+  "text": "Migrate the PC /terms and agreement-viewer routes to React Router v7\n> Parent: OMH-456 (PC Phase 1 — static/CMS). Source of truth: `docs/migration/v2-migration-plan.md` §6. Rendering: **SSG** (build-time prerender).\n\n# Goal\n\nMigrate the legacy PC terms / agreement-viewer routes to `apps/web-pc` (React Router v7), served via the nginx feature flag.\n\n# Legacy source\n\n* `apps/legacy-pc/src/app/pages/common-agreement/` (+ `common-agreement-routing.module.ts`)\n* The same agreement text is consumed by the login terms modal (`apps/legacy-pc/src/app/shared/modals/login/component/terms`) — keep the agreement content source single so the modal and the standalone viewer stay consistent.\n\n# Scope\n\n* RR v7 routes for the terms-of-service + related agreement viewer pages, prerendered at build (SSG). Pure static content (no runtime data fetch).\n* i18n via `@omh/shared-i18n` (5 languages); UI via `@omh/shared-ui`.\n* **2-PR pattern** (code PR flag-OFF + one-line flag-ON); frontend-migration-plugin pipeline; follow the /notice playbook (OMH-706).\n\n# Dependencies (Phase 0)\n\n* Blocked by **OMH-653** + **OMH-659**; needs **OMH-660** (layout shell); flag-ON needs **OMH-663** + ECS/CloudFront (OMH-697 / OMH-698).\n* No runtime data fetch → **OMH-661** (Query provider) not required.\n\n# Acceptance\n\n* The agreement viewer routes serve from web-pc via the nginx flag; legacy reachable by toggling the flag off.\n* Build output is static HTML (SSG); visual regression passes at desktop / tablet / mobile in all 5 languages within 0.1%.\n* SEO: URL inspection confirms correct indexing.\n* The agreement content stays consistent with the login terms modal's source."
+ },
+ {
+  "type": "task",
+  "key": "OMH-708",
+  "id": "16743",
+  "author": "Justin",
+  "created": "2026-06-29T18:41:21.161+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-708",
+  "text": "Migrate the PC /event pages (list + detail with marketing CTAs) to React Router v7\n> Parent: OMH-456 (PC Phase 1 — static/CMS). Source of truth: `docs/migration/v2-migration-plan.md` §6. Rendering: **SSG** (build-time prerender).\n\n# Goal\n\nMigrate the legacy PC `/event` list + detail pages (with marketing CTAs) to `apps/web-pc` (React Router v7), served via the nginx feature flag.\n\n# Legacy source\n\n* `apps/legacy-pc/src/app/pages/event/` + `event/event-detail/`\n* Content model: `apps/legacy-pc/src/app/apis/models/content/event/`\n* (Already a top-level public page in legacy — no my-page lift-out needed.)\n\n# Scope\n\n* RR v7 event list + detail, prerendered at build (SSG).\n* Marketing CTAs fire telemetry events → **soft-depends on OMH-662** (telemetry event bus) for CTA event parity. If OMH-662 has not landed, render the CTAs and defer the telemetry-parity check to flag-ON.\n* Data via `@omh/shared-data` content service (confirm event coverage at fm-analyze); i18n (`@omh/shared-i18n`, 5 languages); UI via `@omh/shared-ui`.\n* **2-PR pattern** (code PR flag-OFF + one-line flag-ON); frontend-migration-plugin pipeline; follow the /notice playbook (OMH-706).\n\n# Dependencies (Phase 0)\n\n* Blocked by **OMH-653** + **OMH-659**; needs **OMH-660** + **OMH-661**; flag-ON needs **OMH-663** + ECS/CloudFront (OMH-697 / OMH-698).\n* CTA telemetry parity soft-depends on **OMH-662**.\n\n# Acceptance\n\n* /event list + detail serve from web-pc via the nginx flag; legacy reachable by toggling the flag off.\n* Build output is static HTML (SSG); visual regression passes at desktop / tablet / mobile in all 5 languages within 0.1%.\n* SEO: URL inspection confirms correct indexing.\n* Marketing CTAs navigate correctly and fire telemetry events at parity with legacy (once OMH-662 lands)."
+ },
+ {
+  "type": "task",
+  "key": "OMH-707",
+  "id": "16742",
+  "author": "Justin",
+  "created": "2026-06-29T18:41:02.569+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-707",
+  "text": "Migrate the PC /faq pages (list + detail with category filter) to React Router v7\n> Parent: OMH-456 (PC Phase 1 — static/CMS). Source of truth: `docs/migration/v2-migration-plan.md` §6. Rendering: **SSG** (build-time prerender).\n\n# Goal\n\nMigrate the legacy PC `/faq` list + detail pages (with category filtering) to `apps/web-pc` (React Router v7), served via the nginx feature flag.\n\n# Legacy source\n\n* `apps/legacy-pc/src/app/pages/my-page/faq/`\n* Content model: `apps/legacy-pc/src/app/apis/models/content/faq/`\n* NOTE: legacy nests faq under `my-page/`, but it is **public content** — v2 lifts it to a standalone public route (no auth gate).\n\n# Scope\n\n* RR v7 faq list (with **category filter**) + detail, prerendered at build (SSG).\n* Data via `@omh/shared-data` content service; model against the confirmed `content-display.md` family (confirm faq coverage at fm-analyze; flag any BE gap).\n* i18n via `@omh/shared-i18n` (5 languages); UI via `@omh/shared-ui`.\n* **2-PR pattern** (code PR flag-OFF + one-line flag-ON); frontend-migration-plugin pipeline.\n* Follow the page-migration playbook established by the /notice pilot (OMH-706).\n\n# Dependencies (Phase 0)\n\n* Blocked by **OMH-653** + **OMH-659**; needs **OMH-660** + **OMH-661**; flag-ON needs **OMH-663** + ECS/CloudFront (OMH-697 / OMH-698).\n* Follows the /notice pilot (OMH-706).\n\n# Acceptance\n\n* /faq list (category filter works) + detail serve from web-pc via the nginx flag; legacy reachable by toggling the flag off.\n* Build output is static HTML (SSG).\n* Visual regression passes at desktop / tablet / mobile in all 5 languages within the 0.1% tolerance.\n* SEO: URL inspection confirms correct indexing."
+ },
+ {
+  "type": "task",
+  "key": "OMH-706",
+  "id": "16741",
+  "author": "Justin",
+  "created": "2026-06-29T18:39:50.855+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-706",
+  "text": "Migrate the PC /notice pages (list + detail) to React Router v7 — Phase 1 pilot\n> Parent: OMH-456 (PC Phase 1 — static/CMS). Source of truth: `docs/migration/v2-migration-plan.md` §6. Rendering: **SSG** (build-time prerender).\n\n# Goal\n\nMigrate the legacy PC `/notice` list + detail pages to `apps/web-pc` (React Router v7), served via the nginx feature flag. **This is the Phase 1 pilot** — it establishes the page-migration playbook the other five Phase 1 pages follow.\n\n# Legacy source\n\n* `apps/legacy-pc/src/app/pages/my-page/notice/` (list) + `notice/notice-detail/` (detail)\n* Content model: `apps/legacy-pc/src/app/apis/models/content/notice/`\n* NOTE: legacy nests notice under `my-page/`, but it is **public content** — v2 lifts it to a standalone public route (no auth gate).\n\n# Scope\n\n* RR v7 routes for the notice list + detail, **prerendered at build (SSG)** — static HTML, no runtime SSR.\n* Data via `@omh/shared-data` content service; model against the confirmed `docs/migration/api-contracts/responses/content-display.md` family. Confirm notice list/detail schema coverage at fm-analyze and flag any BE gap.\n* i18n via `@omh/shared-i18n` (5 languages); UI via `@omh/shared-ui` primitives + layout shell.\n* **2-PR pattern**: (1) code PR with the nginx flag OFF; (2) one-line flag-ON PR.\n* Migrate via the frontend-migration-plugin pipeline: fm-analyze → fm-plan → fm-gen → fm-e2e → fm-verify → fm-flip.\n\n# Dependencies (Phase 0)\n\n* **Blocked by OMH-653** (test harness + Phase 1 visual baselines) and **OMH-659** (shared-ui) — both must merge first.\n* Needs **OMH-660** (layout/auth shell) + **OMH-661** (TanStack Query provider) for the app shell + content loaders.\n* Flag-ON additionally needs **OMH-663** (nginx route-flip gate) + ECS/CloudFront (OMH-697 / OMH-698).\n\n# Acceptance\n\n* /notice list + detail serve from web-pc in production via the nginx flag; legacy reachable by toggling the flag off.\n* Build output is static HTML (SSG); no runtime SSR cost.\n* Visual regression passes at desktop / tablet / mobile in all 5 languages within the 0.1% pixel tolerance.\n* SEO: URL inspection confirms the new page indexes correctly.\n* The **page-migration playbook** is drafted from this pilot (finalized in the Phase 1 retrospective Task)."
+ },
+ {
+  "type": "subtask",
+  "key": "OMH-705",
+  "id": "16740",
+  "author": "Mon",
+  "created": "2026-06-29T18:08:15.483+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-705",
+  "text": "Investigate and fix hotel name search indexing to trim leading and trailing spaces\nReview the hotelNameSearchLn generation used by Product List > Filter by > Hotel name on PC and MOweb. Normalize hotel names before indexing so leading/trailing spaces do not create false matches for consecutive-space searches. Ensure a 2-space query only returns hotels with an actual double space in the stored search name."
+ },
+ {
+  "type": "subtask",
+  "key": "OMH-704",
+  "id": "16739",
+  "author": "Mon",
+  "created": "2026-06-29T18:06:18.422+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-704",
+  "text": "Investigate and fix price-range boundary handling in hotel search API for USD\nReview the hotel search response and price filtering logic to ensure min=max price ranges include boundary hotels for USD, especially when UI-displayed values are rounded from actual prices. Update the backend filtering logic so the cheapest and most expensive hotels are returned when users search with the exact lowest or highest bound."
+ },
+ {
+  "type": "task",
+  "key": "ELS-2327",
+  "id": "16737",
+  "author": "Tracy",
+  "created": "2026-06-29T17:04:33.616+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2327",
+  "text": "Check if test reservation is reflected\nDear Team\n\n208576 - Sotetsu Fresa Inn Ueno Okachimachi\n\n221292 - Sotetsu Fresa Inn Tokyo Kinshicho\n\nWe have found that new promotions are currently not being reflected in test bookings.  \nWe would appreciate it if you could review the details.\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=cc35028f-35a9-4722-ac6d-6455c4b3d5bf&&collection=&height=879&occurrenceKey=null&width=1937&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)"
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2325",
+  "id": "16736",
+  "author": "Tom",
+  "created": "2026-06-29T16:15:50.369+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2325",
+  "text": "[BE] Bulk Margin audit log — QA round-1 fixes\nBackend fixes for QA round-1 (Tracy2) on the Bulk Margin audit-log query/apply (oh-api):\n\n* **f-02 (BE)** — Accept `hotelContractSeq` in the bulk-margin apply request schema and store it on the audit summary (so the Contract column is populated).\n* **f-03** — Order audit detail rows by `APPLIED_DATE` (then seq) instead of seq, so the detail grid sorts by date (as prototype).\n* **f-04** — Resolve the promotion name for promotion plans via `COALESCE(VENDOR_PROMOTION_NAME, ROOM_PLAN_NAME_EN)` joined through VD_VENDOR_ROOM_PLAN_PROMOTION → VD_VENDOR_PLAN_PROMOTION (Plan column shows promotion name, not the underlying rate plan).\n* **Contract display** — Contract column now shows \"{hotelContractTypeName} - {hotelContractSeq}\" (e.g. \"Shared Rate - 107063\"), resolving the type name from BS_DETAIL_CODE master HO023 by ${language}, matching Rate & Allotment.\n\nVerified via SQL + UI on hotel 606114 (audit seq 15, incl. promotion rows). All pass.\n\nBranch: oh-api `ELS-947-bulk-margin-audit-log` (commits f07bd785eb, ec7239e241); cherry-picked to develop + staging.\n\nNote: requires backend rebuild (mapper XML + schema changes)."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2324",
+  "id": "16735",
+  "author": "Tom",
+  "created": "2026-06-29T16:15:32.083+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2324",
+  "text": "[FE] Bulk Margin audit log — QA round-1 fixes\nFrontend fixes for QA round-1 (Tracy2) on the Bulk Margin audit-log tab (oh-admin):\n\n* **f-01** — Align list grid header/body column borders (remove scrollbar-gutter shift so column lines fit the header).\n* **f-02 (FE)** — Send `hotelContractSeq` on bulk-margin apply so the audit stores & shows the contract.\n* **f-05** — Add a space after \"Total:\" in the detail summary (\"Total: 60 successful, 0 failed\").\n* **f-06** — Suppress Kendo's built-in \"No records available.\" so only the custom \"No bulk margin update history found\" message shows (no duplicate empty state).\n* **f-07** — Show the applied Period line (\"Period: <from> \\~ <to>\") in the detail summary, between Margin and Total, parsed from dateRangeJson (matches prototype).\n\nVerified end-to-end on hotel 606114 (audit seq 15). All pass.\n\nBranch: oh-admin `ELS-947-bulk-margin-audit-log` (commit 58feaa138); cherry-picked to develop + staging."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2323",
+  "id": "16734",
+  "author": "Tracy",
+  "created": "2026-06-29T16:11:06.030+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2323",
+  "text": "Verify room view changes for room types 1711276 and 1711277 at Wafaifo Resort Hoi An in the system\nCheck that the room view for room type SEQ 1711276 is updated from City View to Garden View, and confirm the requested room view changes for room type SEQ 1711277 at Wafaifo Resort Hoi An."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2322",
+  "id": "16733",
+  "author": "Tracy",
+  "created": "2026-06-29T16:05:43.302+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2322",
+  "text": "Verify booking K26061711401H01 after stay date amendment and invoice update\nCheck that booking K26061711401H01 // 1128148642892187 reflects the updated stay dates (check-in 2026-06-21, check-out 2026-06-26) and that any related invoice or payment details are updated accordingly."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2321",
+  "id": "16732",
+  "author": "Tracy",
+  "created": "2026-06-29T16:03:32.466+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2321",
+  "text": "Verify booking 3304022088004926984 S26052811126H01 reflects the updated payment, cancellation, and zero-rate values\nCheck that booking 3304022088004926984 / S26052811126H01 for Wyndham Danang Golden Bay Hotel has been updated correctly: V Payment = Not Paid, VCC status = Fully Cancelled, Vendor CXL Charge Amt = 0, Vendor Sum Amt = 0, Vendor Revenue Amt = 0, and Billing Revenue = 0."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2320",
+  "id": "16731",
+  "author": "Tracy",
+  "created": "2026-06-29T15:59:27.110+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2320",
+  "text": "Verify room view changes for room types 1277364 and 1277361 in the system\nCheck that the two room types for 1001371 - Odays Osiria Residence have been updated from Ocean View to Partial Sea View and confirm the changes are reflected correctly in the system."
+ },
+ {
+  "type": "task",
+  "key": "ELS-2319",
+  "id": "16730",
+  "author": "Tracy",
+  "created": "2026-06-29T15:54:07.619+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2319",
+  "text": "Date change request booking K26061711401H01 // 1128148642892187\nDear Team, please support us to change the dates of booking K26061711401H01 // 1128148642892187 as below:\n\nCheck-in: **2026-06-21**  \nCheck-out **2026-06-27** => <custom data-type=\"date\" data-id=\"id-0\">6/26/2026</custom>\n\nOther information is unchanged.\n\nReason: Hotel and guests confirmed to refund the last night, hotel wants the new dates to be reflected. Thank you!\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=d7a9ad9f-0ba3-408b-b887-20ed63ba5977&&collection=&height=321&occurrenceKey=null&width=665&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)"
+ },
+ {
+  "type": "task",
+  "key": "ELS-2318",
+  "id": "16728",
+  "author": "Joseph",
+  "created": "2026-06-29T15:38:06.981+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2318",
+  "text": "[Request] Adding the VendorName and Room type name Column in excel downloading from Profit Share\nIn our Korean accounting system, customer management is currently based on the Vendor Name. If transactions are managed using the Hotel Name instead, bookings made through third-party channels will be displayed under the hotel name rather than the actual third-party name. This requires additional manual work for customer management and reconciliation.\n\nTherefore, we would like to request the addition of a \"Vendor Name\" column to facilitate more accurate and efficient customer management.\n\nIn addition, some hotels have a mix of Hard Block and Soft Block allocations. To clearly distinguish between these booking types and ensure accurate tracking and reconciliation, we would also like to request the addition of a \"Room Type Name\" column."
+ },
+ {
+  "type": "task",
+  "key": "OMH-703",
+  "id": "16727",
+  "author": "Joseph",
+  "created": "2026-06-29T15:33:52.318+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-703",
+  "text": "Update Open API Room Type Naming Logic to Use a Single Room Type Name per Room Type Code\n**Title**  \nUpdate Open API Room Type Naming Logic to Use a Single Room Type Name per Room Type Code\n\n---\n\n## Description\n\nUpdate the **Open API** Room Type naming logic to ensure each **Room Type Code** is associated with **only one standardized Room Type Name**.\n\nCurrently, the Open API appends suffixes such as **\"Single Use\"** to Room Type Names. This causes compatibility issues with channel partners, particularly **Dida**, whose room mapping logic relies on **Room Type Name** instead of **Room Type ID**.\n\nBecause the same Room Type ID may be returned with different Room Type Names (e.g., with and without the \"Single Use\" suffix), Dida treats them as different room types, resulting in mapping failures.\n\nTo improve compatibility, the Open API should always return a consistent Room Type Name for the same Room Type Code and remove the \"Single Use\" suffix from the Room Type Name. Single-use occupancy information should be determined using other fields (e.g., Rate Plan Name or occupancy attributes), rather than by modifying the Room Type Name.\n\n---\n\n## Objective\n\n* Standardize Room Type Name for each Room Type Code\n* Remove the \"Single Use\" suffix from Room Type Names\n* Improve compatibility with channel partners that map by Room Type Name\n* Prevent duplicate or failed room mappings\n\n---\n\n## Scope\n\n### In Scope\n\n* Review the current Room Type naming logic in the Open API\n* Remove the \"Single Use\" suffix from Room Type Names\n* Ensure one Room Type Code always returns one Room Type Name\n* Verify downstream compatibility with existing channel integrations\n* Validate that single-use information is still available through appropriate fields\n\n### Out of Scope\n\n* Changes to Room Type IDs\n* Channel-specific mapping logic\n* Rate Plan business logic\n\n---\n\n## Business Background\n\nCurrent behavior:\n\n* One Room Type Code may return multiple Room Type Names\n* Example:\n\n    * Deluxe Room\n    * Deluxe Room - Single Use\n    \n\nExpected behavior:\n\n* One Room Type Code → One standardized Room Type Name\n* Example:\n\n    * Deluxe Room\n    \n\nSingle-use occupancy should be identified through Rate Plan information or other dedicated fields instead of the Room Type Name.\n\n---\n\n## Acceptance Criteria\n\n**AC1**  \nEach Room Type Code returns only one standardized Room Type Name\n\n**AC2**  \nThe \"Single Use\" suffix is removed from Open API Room Type Names\n\n**AC3**  \nExisting room mapping remains functional for supported channels\n\n**AC4**  \nSingle-use occupancy information remains available through the appropriate API fields\n\n**AC5**  \nRegression testing completed for all affected Open API endpoints\n\n---\n\n## Definition of Done\n\n* Room Type naming logic updated\n* \"Single Use\" suffix removed\n* API responses validated\n* Channel compatibility verified\n* Documentation updated"
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2317",
+  "id": "16725",
+  "author": "Tracy2",
+  "created": "2026-06-29T15:25:16.335+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2317",
+  "text": "[Improvement] Make \"Discard change?\" alert appear when user click X button\nActual: when create new or adjust on region code. Then click X button on pop up (not saved yet) > there is no pop up “Discard change?” appear\n\nExpected: make alert pop up appear (sam behavior with click Cancel button)\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=0f1df73d-738f-4193-a0d8-149682a4c1e8&&collection=&height=1032&occurrenceKey=null&width=1920&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)"
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2316",
+  "id": "16724",
+  "author": "Tracy2",
+  "created": "2026-06-29T15:22:20.369+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2316",
+  "text": "City name not show on dropdown list even if still have data to select\n**Issue:**  \nThe **City** dropdown contains data, but the list is displayed as empty. However, when the user hovers over and clicks an empty item, the city can still be selected.\n\n**Expected:**  \nThe dropdown should display the **city names** correctly in the list, allowing users to see and select the desired city.\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=98a2b250-10eb-4757-a337-de75b5cc94da&&collection=&height=1032&occurrenceKey=null&width=1920&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)"
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2315",
+  "id": "16723",
+  "author": "Daniel",
+  "created": "2026-06-29T14:01:41.490+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2315",
+  "text": "[DEV] Test inbound CMS/PMS push-data APIs on web-api to verify inventory/rate/allotment ingestion\n## Glossary / Context\n\n* HotelCmsRoutes = bean `hotelCmsRoutes` in web-api (HotelCmsRouter.java) — the inbound HTTP endpoints that external CMS/PMS partners call to push ARI data INTO web-api (port 6400).\n* ARI = Availability / Rate / Inventory.\n* This sub-task covers the INBOUND push side (CMS/PMS -> web-api), which is the upstream trigger that feeds the outbound push-data mechanism under parent ELS-2213 (web-api/trigger-api -> channel-dispatch -> google-meta-search).\n* Scope = PUSH data endpoints only. EXCLUDED: all DAOL endpoints and all booking endpoints (confirmBooking, confirmReservation, getbooking, reservations).\n\n## Scope — 7 inbound PUSH APIs to test\n\n| # | Vendor | Method | Path | Data | Auth | compCode |\n| --- | --- | --- | --- | --- | --- | --- |\n| 1 | Sanha (산하) | POST | /WebService/AvailabilityAndRates | rate/price | IP-based | 840003 |\n| 2 | HotelLink | POST | /supplier/v1/notifyAllotmentPrices | allotment+price | none + downtime gate | 840004 |\n| 3 | HotelStory | POST | /v1/api/dynamic/push-available | availability | authId/authKey (body) | 840007 |\n| 4 | SiteMinder | POST | /v1/api/notify/inventory-rate | inventory+rate | none (validate) | 840008 |\n| 5 | D-Edge | POST | /planningUpdates | inventory+rate | domain whitelist | 840009 |\n| 6 | TL Lincoln | POST | /api/tl-push/dynamic | inventory/price | none (body-routed) | 840001 |\n| 7 | Neppan | POST | /neppan/ota | data in/out | none | 840006 (code) — confirm vs 840007 |\n\n## Technical Approach\n\n* Router: web-api/src/main/java/com/ohmy/api/router/hotel/HotelCmsRouter.java (bean hotelCmsRoutes)\n* Handler: com/ohmy/api/handler/hotel/HotelCmsHandler.java; services: HotelSanhaService.updateRatePlanPriceV2, HotelHotellinkService.allotmentNotification, HotelHotelStoryService.pushAvailable, HotelSiteMinderService.pushInventoryAndRate, HotelDEdgeService.pushInventoryAndRate, HotelTlLincolnService.receiveInventory/receiveDailyRate, HotelNeppanService.handleDataAsync.\n* Per-endpoint + shared QA checklist (happy path, validation fail, auth fail, malformed body, DB write correctness, idempotency, date/number boundaries, encoding, concurrency, vendor_transaction_log assertions) is documented in HotelCmsRoutes-QA-Checklist.md.\n* Ready-to-import Postman collection (7 push requests, baseUrl + per-vendor credential variables) is in HotelCmsRoutes.postman_collection.json.\n* Regression focus: TL Lincoln must NOT block the Netty event loop (ELS-1980 — Mono.defer + boundedElastic for @Transactional JDBC).\n\n## Constraints / Non-goals\n\n* Test/verification only — NO production code changes, NO DB schema changes, NO vendor contract changes.\n* Do NOT cover DAOL endpoints or any booking endpoints in this sub-task.\n* Confirm Neppan vendor comp code (code = NeppanHotelConfig.COMP_CODE = 840006; reported as 840007) before asserting log values — do not change the constant as part of this test task.\n* Neppan router has a \"정지 2024-07-14\" comment but the route is active and in use — treat as active.\n\n## Attachments (to be added manually)\n\n* HotelCmsRoutes-QA-Checklist.md — per-API QA checklist\n* HotelCmsRoutes.postman_collection.json — importable Postman collection (7 push APIs)\n\n## Definition of Done\n\n* Each of the 7 APIs has a recorded test result (Postman run or automated test) for happy path + at least the auth-fail and validation-fail cases.\n* vendor_transaction_log insert/update + errorYn verified per endpoint.\n* Idempotency and concurrency checked for inventory/rate pushes."
+ },
+ {
+  "type": "task",
+  "key": "OMH-702",
+  "id": "16722",
+  "author": "Joseph",
+  "created": "2026-06-29T13:53:01.837+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-702",
+  "text": "Check Dida statistic email 27th, 28th June\n**Request**  \nPlease recheck again Dida statistic email 27th, 28th June.   \n  \nRecheck 2 issue already resolved by Dida or not\n\n1. **Invalid roomTypeCode — 97 cases (51%)**\n2. **CancelPolicy_Mismatch — 44 cases (23%), all false positives**\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=e4204d67-b97f-49ca-9c38-0d1f9b50bea6&&collection=&height=580&occurrenceKey=null&width=1229&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=867c2148-f92c-4ecb-b8fc-c80da5eb3d28&&collection=&height=538&occurrenceKey=null&width=1216&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)"
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2314",
+  "id": "16721",
+  "author": "Mon",
+  "created": "2026-06-29T13:48:13.468+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2314",
+  "text": "Implement process save direct-link from Google Metasearch\nWe must save all the info from Google Metasearch for check the direct link from them\n\nSo this task will implement that flow\n\nExpect: Saved all the direct-link from Google Metasearch to us"
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2313",
+  "id": "16720",
+  "author": "Mon",
+  "created": "2026-06-29T13:41:45.787+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2313",
+  "text": "Support new case direct link Google Metasearch field RATE-PLAN-ID have both roomTypeSeq & ratePlanSeq\nDocument just descript like this\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=e5ccd95d-429d-4f69-8902-9602e8d4a898&&collection=&height=92&occurrenceKey=null&width=1038&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\nBut the real data response more than their intro\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=5839ef98-777e-47b2-ab35-324a5c994520&&collection=&height=199&occurrenceKey=null&width=1902&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\nExample link: [https://dev-newwww.ohmyhotel.com/landing/google?hotel_id=886622&check_in=2026-07-14&check_out=2026-07-15&adults=2&children=0&child_ages=&lang=en&currency=VND&user_country=VN&user_device=desktop&campaign_id=&click_source=&google_site=localuniversal&room_id=1269009&package_id=890980&rate_plan_id=1269009_890980&promo_code=&rate_rule_id=&user_list_id=&close_rate_rule_ids=](https://dev-newwww.ohmyhotel.com/landing/google?hotel_id=886622&check_in=2026-07-14&check_out=2026-07-15&adults=2&children=0&child_ages=&lang=en&currency=VND&user_country=VN&user_device=desktop&campaign_id=&click_source=&google_site=localuniversal&room_id=1269009&package_id=890980&rate_plan_id=1269009_890980&promo_code=&rate_rule_id=&user_list_id=&close_rate_rule_ids=)\n\nWith field rate_plan_id=1269009_890980 (<roomTypeSeq>\\_<roomPlanSeq>)\n\nSo we have to support both that case"
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2312",
+  "id": "16719",
+  "author": "Tom",
+  "created": "2026-06-29T13:12:47.045+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2312",
+  "text": "Fix Web API Freeze During Hotel Mapping Search\n## Goal\n\nFix the Web API freeze on repeated **Hotel Code Mapping** searches (root cause in ELS-2311) and make the search fast enough for normal use, without changing the returned data.\n\n## Endpoint / files\n\n* BE: `POST /admin/hotel/code-mapping` — `AdminHotelCodeMappingService` + `AdminHotelCodeMappingMapper.xml` (oh-api)\n* FE: Hotel Code Mapping search page (oh-admin)\n\n## Changes\n\n1. Eliminate the per-row `NOT EXISTS (FROM VM ...)` CTE re-execution (compute the boolean once).\n2. Remove `COUNT(*) OVER()`; split into separate data + count queries.\n3. Replace N! word-permutation REGEXP with order-independent AND-of-LIKE.\n4. Add per-statement timeout + slow-query logging; lower `connection-timeout` (fail fast).\n5. Deterministic paging tie-breaker; server-side page-size clamp.\n6. Thin-key pagination fast path for large countries.\n7. FE: disable the Search button while a request is in flight.\n\n## Acceptance\n\n* No freeze under repeated/concurrent searches; first page returns in seconds.\n* Returned data is **identical** to before (verified by row-count + full-result MD5 parity).\n\nDetailed results in the fix report comment. Branch: `ELS-2306-fix-hotel-mapping-search-hang` (oh-api + oh-admin)."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2311",
+  "id": "16718",
+  "author": "Tom",
+  "created": "2026-06-29T13:11:33.592+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2311",
+  "text": "Investigate and Reproduce Web API Freeze During Hotel Mapping Search\n## Goal\n\nReproduce the staging Web API hang triggered by repeated **Hotel Code Mapping** searches, capture the exact request pattern, and identify the root cause.\n\n## Scope\n\n* Endpoint: `POST /admin/hotel/code-mapping` (web-api `AdminHotelCodeMappingService.getCodeMapping`)\n* Reproduce by issuing the search 3+ times consecutively on staging (`test-admapi.ohmyhotel.com`).\n* Measure DB query cost, connection-pool behavior, and thread usage.\n* Determine whether the cause is application logic, slow SQL, pool exhaustion, or infrastructure.\n\n## Outcome\n\nRoot cause identified and documented (see investigation report comment). The fix is tracked in **ELS-2312**."
+ },
+ {
+  "type": "task",
+  "key": "ELS-2310",
+  "id": "16717",
+  "author": "Tom",
+  "created": "2026-06-29T13:10:39.157+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2310",
+  "text": "Optimize Hotel Mapping\n## Summary\n\nInvestigate an issue where performing the **Hotel Mapping search three consecutive times** causes the **Web API on the staging environment to become unresponsive**.\n\nThe application remains stuck for an extended period, and **no relevant application logs are generated**, making the root cause difficult to identify.\n\n---\n\n## Description\n\nWhen users repeatedly perform Hotel Mapping searches (approximately three consecutive requests), the staging Web API becomes unresponsive.\n\nObserved behavior:\n\n* The Web API hangs after several search requests.\n* The staging environment becomes unavailable for a period of time.\n* No exception or error logs are generated.\n* The service eventually recovers or requires manual intervention.\n\nThis issue needs to be investigated to determine whether it is caused by application logic, database blocking, thread starvation, deadlock, resource exhaustion, or infrastructure issues."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2309",
+  "id": "16716",
+  "author": "Tracy",
+  "created": "2026-06-29T12:33:31.295+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2309",
+  "text": "Verify the Le More Hotel bookings are updated to the Prepay/VCC payment method in Ellis\nCheck that the affected bookings reflect the new Prepay/VCC payment method in Ellis so billing can be completed without using the usual flow."
+ },
+ {
+  "type": "subtask",
+  "key": "OMH-701",
+  "id": "16715",
+  "author": "Holden",
+  "created": "2026-06-29T12:06:59.404+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-701",
+  "text": "Verify price filter behavior on Product List for PC and MOweb\nPerform QA validation on B2C PC and MOweb for the Price range filter, covering exact-boundary cases at the lowest and highest values, including typing values and dragging both slider handles to the ends."
+ },
+ {
+  "type": "task",
+  "key": "OMH-700",
+  "id": "16713",
+  "author": "Holden",
+  "created": "2026-06-29T11:58:07.186+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/OMH-700",
+  "text": "Product List - Price filter with min = max (lowest/highest bound) returns 0 hotels instead of the boundary hotel\nEnvironment: DEV/STG/PROD — Language EN, Currency USD\n\nComponent: B2C PC and MOweb > Product List > Filter by > Price range\n\nPre-condition: Search Destination = Ho Chi Minh City, Check-in/out set, click Search (range shows USD 4.00 \\~ 458.00)\n\nSteps to Reproduce:\n\n**Case 1 — min = max at the LOWEST bound**\n\n1. In Price range, set both min and max = 4.00 (by typing, or by dragging both slider handles to the leftmost).\n2. Click Apply.\n\nExpected: at least 1 hotel is shown (the cheapest hotel, at the minimum price).\n\nActual: \n\n* PC: 0 hotels found → \"No search results found. Please change your search criteria or filters.\"\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=4c7fa973-8550-47ec-a338-a6ad7109c8e7&&collection=&height=762&occurrenceKey=null&width=1258&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n* e,g: Show Min = 4.63\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=59a6ee6a-321f-4bc0-bd60-4d8d7b195093&&collection=&height=602&occurrenceKey=null&width=1252&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n* MOweb: 0 hotels found → \"No search results found. Please change your search criteria or filters.\"\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=5db832be-2bce-40f8-bb26-17cfc5939c4c&&collection=&height=617&occurrenceKey=null&width=503&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n**Case 2 — min = max at the HIGHEST bound**\n\n1. In Price range, set both min and max = 290.00 (typing, or dragging both handles to the rightmost).\n2. Click Apply.\n\nExpected: at least 1 hotel is shown (the most expensive hotel, at the maximum price).\n\nActual: 0 hotels found.\n\n* PC\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=4fdaeeea-8ebd-4b76-b2d1-644106f92f30&&collection=&height=766&occurrenceKey=null&width=1081&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n* MOweb\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=609dc3cf-8327-4aa6-9313-d255c5786946&&collection=&height=754&occurrenceKey=null&width=432&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\nNote (for dev): the displayed bounds USD 4.00 / 290.00 are rounded from the actual cheapest/priciest prices (4.63 / 290.00), so a single-point min = max range matches no hotel. The boundary (min/max) values should be inclusive enough to return the cheapest/most-expensive hotel."
+ },
+ {
+  "type": "task",
+  "key": "ELS-2308",
+  "id": "16712",
+  "author": "Tracy",
+  "created": "2026-06-29T11:32:03.742+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2308",
+  "text": "Request to change the room view 1001371 - Odays Osiria Residence\n\\[Helen RQ\\]\n\nDear team, \n\n419874 - Lavalse Hotel\n\nPlease support us change this information of 2 room types from Ocean View to **Partial Sea View** as the type name.  Thank you\n\n1277364 - Patial Ocean Terrace Suite Three Room\n\n1277361 - Patial Ocean Terrace Suite Two Room\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=7a786888-a039-49a5-a31f-4300aab23173&&collection=&height=381&occurrenceKey=null&width=568&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)"
+ },
+ {
+  "type": "task",
+  "key": "ELS-2307",
+  "id": "16709",
+  "author": "Tracy",
+  "created": "2026-06-29T11:23:55.908+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2307",
+  "text": "Request for Credential Key\nPlease create the credential key for below account: \n\nDev : 200263 JL Tour( API)\n\nProd: 200255 JL Tour( API)\n\nThank you."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2306",
+  "id": "16707",
+  "author": "Dan",
+  "created": "2026-06-29T11:20:14.059+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2306",
+  "text": "Investigate Web API Freeze During Hotel Mapping Search\n## Summary\n\nInvestigate an issue where performing the **Hotel Mapping search three consecutive times** causes the **Web API on the staging environment to become unresponsive**.\n\nThe application remains stuck for an extended period, and **no relevant application logs are generated**, making the root cause difficult to identify.\n\n---\n\n## Description\n\nWhen users repeatedly perform Hotel Mapping searches (approximately three consecutive requests), the staging Web API becomes unresponsive.\n\nObserved behavior:\n\n* The Web API hangs after several search requests.\n* The staging environment becomes unavailable for a period of time.\n* No exception or error logs are generated.\n* The service eventually recovers or requires manual intervention.\n\nThis issue needs to be investigated to determine whether it is caused by application logic, database blocking, thread starvation, deadlock, resource exhaustion, or infrastructure issues."
+ },
+ {
+  "type": "subtask",
+  "key": "ELS-2304",
+  "id": "16706",
+  "author": "Joseph",
+  "created": "2026-06-29T11:18:14.448+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2304",
+  "text": "Investigate Admin CPU High peek on 29th June\n**Request**:  \nInvestigate Admin CPU High peek on 29th June 2026\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=9772739c-9595-4c24-a1bc-553263947cc0&&collection=&height=336&occurrenceKey=null&width=1857&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)"
+ },
+ {
+  "type": "task",
+  "key": "ELS-2305",
+  "id": "16705",
+  "author": "Tracy",
+  "created": "2026-06-29T11:18:01.476+0900",
+  "url": "https://ohmyjira.atlassian.net/browse/ELS-2305",
+  "text": "Rate change request booking S26052811126H01 // Wyndham Danang Golden Bay Hotel\nDear Team,\n\nPlease support us to change the rates of booking 3304022088004926984 S26052811126H01 // Wyndham Danang Golden Bay Hotel as below:  \nV Payment: change to Not Paid  \nVCC status: change to Fully Cancelled  \nVendor CXL Charge Amt: change to 0  \nVendor Sum Amt: change to 0  \nVendor Revenue Amt: change to 0  \nBilling Revenue: change to 0  \n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=d4052386-bd65-40a3-a8f9-7e8b3454fd8d&&collection=&height=399&occurrenceKey=null&width=1803&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=5b61c295-6ba6-4c06-b767-6d6a1ff3b608&&collection=&height=751&occurrenceKey=null&width=1803&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n  \n  \nReason: Hotel agreed to free cancellation after charging VCC. Accounting confirm 2,200,000 VND was deducted to booking K26062511227H01. We need to change rates of this booking to 0 as free cancellation. Thank you\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=3b45e8be-5bc9-4f8c-bd29-7d8b437c6ead&&collection=&height=680&occurrenceKey=null&width=1221&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=null&id=b0e3fbd6-ab53-47f7-a7ed-c266dda239e2&&collection=&height=739&occurrenceKey=null&width=1195&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)"
+ }
+]

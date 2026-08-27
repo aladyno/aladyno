@@ -1,0 +1,470 @@
+[
+  {
+    "type": "comment",
+    "key": "ELS-1099",
+    "id": "18840",
+    "author": "Joo",
+    "created": "2026-07-03T11:42:39.499+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1099",
+    "text": "@Zia Hi,\n\nThe 20 hotels have already been approved and are now visible on Google.\n\nI’ve asked Harry to proceed with the STAGING deployment — he’ll need about **1 day to set up the environment and required resources**, and **1 additional day for verification** (please follow the task flow for more details: <custom data-type=\"smartlink\" data-id=\"id-0\">https://ohmyjira.atlassian.net/browse/ELS-2377</custom> ).\n\nToday, I’ll also share the necessary information and data flow with Tracy so she can prepare for testing.\n\nWe expect to **start testing on STAGING by Tuesday**, which is also our **target completion date**. However, if this needs to be prioritized more urgently, please let us know and we will do our best to adjust accordingly.\n\nThank you for your understanding."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1099",
+    "id": "18866",
+    "author": "Zia",
+    "created": "2026-07-03T14:30:11.955+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1099",
+    "text": "Dear<custom data-type=\"mention\" data-id=\"id-0\">@Joo</custom> \n\nThanks. great that the 20 are approved and visible.\n\nFour things:\n\n1. **Tracy's QA on staging** — before Tracy starts, I'd like Joseph, Tracy, and me to align first on the QA scope and plan. Could you hold on kicking off her testing until we've had that quick conversation? I'll set it up shortly — please give me a little time here.\n2. **Full hotel list** — I asked for the full \\~3,700 list to be uploaded today, but I don't see it addressed. Could you please proceed with it? If there's a reason it's being held, let me know what it is so we can resolve it — the full-list matching (ELS-1914) is the long-pole for soft launch, so I'd like it running in parallel rather than waiting.\n3. **Staging deployment time** — could you help me understand why deploying to staging needs about 2 days (1 day setup + 1 day verification)? The code is already built and verified on dev, so moving it to another environment feels like it should be faster. Is there specific setup/resource work driving the 2 days?\n4. **\"Tuesday = target completion\"** — since testing only _starts_ on Tuesday, that's really the **staging-deployment completion**, not the overall completion. Could you re-lay out what the actual completion milestone covers and when it lands? I want the wording precise so I set the right expectation.\n\n"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1099",
+    "id": "18867",
+    "author": "Zia",
+    "created": "2026-07-03T14:37:11.860+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1099",
+    "text": "Dear <custom data-type=\"mention\" data-id=\"id-0\">@Joseph</custom> <custom data-type=\"mention\" data-id=\"id-1\">@Tracy</custom> \n\nI'd like to discuss how we should proceed with QA for Google Meta Search.\n\nAs you know, we're currently preparing the Google Meta Search integration, and the API development is nearly complete, so we're now approaching the QA stage.\n\nMy plan is to first conduct the QA myself so that I can fully understand the overall flow and organize the key validation points. After that, I'd like to schedule a Teams meeting with Tracy and go through the actual QA process together, so I can explain the process and key checks in detail.\n\nGoogle Meta Search QA is not likely to be a one-time task. We may need to repeat it in the future whenever there are changes, such as adding more hotels to the integration. For that reason, I think it's important for the QA team to have a clear understanding of the process and be able to perform it continuously.\n\nI understand that Tracy2 has today joined in this ticket and that Joo is planning to share the relevant information with her. However, I'd like to suggest the following sequence: first, I will walk Tracy through the overall QA flow and validation process, and then Tracy and Joo can share the knowledge with Tracy2 as well.\n\nTo do that, I first need to complete my own QA and organize the process. My original plan was to schedule the meeting with Tracy after that step is complete.\n\nPlease let me know what you think about this approach. Thank you.\n\ncc. <custom data-type=\"mention\" data-id=\"id-2\">@Joo</custom> "
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1099",
+    "id": "18872",
+    "author": "Zia",
+    "created": "2026-07-03T15:28:09.964+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1099",
+    "text": "Dear <custom data-type=\"mention\" data-id=\"id-0\">@Joo</custom> \n\nThank you again for the repeated checks and detailed analysis.\n\nI understand that none of the approaches we discussed are practical to apply in this case. Based on that, I reviewed the data and came up with a new rule, which has also been confirmed with Julia.\n\nPlease add the trigger conditions and rules described below.\n\n> **Trigger — only when a hotel's Google-bound promotion count exceeds 500.** Hotels at/under 500 are unchanged: push all promotions as-is (do NOT apply the filter below to them — that would needlessly drop valid promotions).\n>\n> **When a hotel exceeds 500:**\n>\n> 1. **Drop promotions with 0 bookings in the last 12 months.** Per the analysis, this alone brings all 6 current hotels well under 500 (max 400) — the inflated counts are mostly never-selling rate-plan duplicates.\n> 2. If still >500 after step 1 (edge case, none today): keep the **top 500 by 12-month booking count**.\n> 3. If under 500 after step 1: **fill the remaining slots (up to 500) with the dropped zero-booking promotions**, ordered by discount depth (desc) → nearest check-in — so new/unsold-but-valuable deals aren't lost.\n> \n> **Notes:**\n>\n> * Make it a **conditional rule (>500), not hardcoded to the 6 hotels** — so a future hotel crossing 500 is handled automatically instead of being silently rejected by Google.\n> * **Re-evaluate periodically** (booking counts change), e.g. on the regular push job.\n> * Please confirm the counting unit (`PLAN_PROMOTION_SEQ`) matches Google's promotion unit. There's large headroom (100–450 free slots), so minor unit differences won't break the result.\n> * This is a **stopgap** while we consider a robust fix to the underlying 1-promotion : 1-rate-plan model.\n> \n> Booking-count source data attached.  \n\nThe six hotels you shared should not be excluded, considering their revenue and booking volume.\n\nCould you please estimate how much adding this condition will affect our current schedule? I would also appreciate a breakdown of the expected implementation time and the scope of impact.\n\nDoes this work need to be completed before Harry proceeds with the STG deployment, or can it be handled separately?\n\nThank you."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1099",
+    "id": "18895",
+    "author": "Tracy",
+    "created": "2026-07-03T17:21:26.303+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1099",
+    "text": "Dear <custom data-type=\"mention\" data-id=\"id-0\">@Zia</custom>   \nYes, i prefer your suggestion, since QA/QC team need to have more knowledge about this task before joining the testing. Therefore, if you can check on your side first and share with us the process as well as key point for testing this one. We are appreciated."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1099",
+    "id": "18898",
+    "author": "Zia",
+    "created": "2026-07-03T17:35:51.091+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1099",
+    "text": "<custom data-type=\"mention\" data-id=\"id-0\">@Tracy</custom> Thank you for confirming.\n\nSince I will need some time to conduct the QA on my side, I expect that we can discuss the schedule again toward the end of next week, probably on Thursday or Friday.\n\nDepending on the progress next week, I will reach out to Tracy to schedule a meeting. Once Harry completes the STG deployment on Tuesday, I’ll be able to start my QA.\n\nThank you!"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1099",
+    "id": "18900",
+    "author": "Joo",
+    "created": "2026-07-03T17:37:08.902+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1099",
+    "text": "<custom data-type=\"mention\" data-id=\"id-0\">@Zia</custom> Hi @Zia,\n\nThanks for the detailed proposal — I’ve reviewed it together with the actual data (see attached result), and the behavior aligns well with your expectation.\n\nFrom the data:\n\n* After **dropping promotions with 0 bookings in the last 12 months**, all 6 hotels are already **well below 500** (e.g. 1,092 → 182, 664 → 22, etc.)\n* The remaining slots (e.g. 318, 478, 438…) give sufficient **headroom to refill up to 500 if needed**\n* Final result for all hotels is `OK_UNDER_500`, meaning the rule works effectively without needing step 2 in practice\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=8b874d203c07&id=809104d4-a87b-407a-9489-9c60c35fe661&&collection=&height=183&occurrenceKey=null&width=1344&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n### 🚀 STG deployment\n\nThis work:\n\n* **Does NOT block STG deployment**\n* Can be implemented **in parallel as a follow-up**\n\n👉 Recommendation:\n\n* Proceed with **STG deployment as planned**\n* Apply this rule shortly after (before full-scale push if needed)\n\nI need to 1 -1,5 days:\n\n* Filter (0 booking in 12m): **\\~0.5 day**\n* Ranking + refill logic: **\\~0.5 day**\n* Testing & validation (6 hotels + regression): **\\~0.5 day**\n\nThanks"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1099",
+    "id": "18901",
+    "author": "Tracy",
+    "created": "2026-07-03T17:42:04.894+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1099",
+    "text": "<custom data-type=\"mention\" data-id=\"id-0\">@Zia</custom> I'm well noted"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1099",
+    "id": "18902",
+    "author": "Zia",
+    "created": "2026-07-03T17:44:24.879+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1099",
+    "text": "<custom data-type=\"mention\" data-id=\"id-0\">@Joo</custom> thanks for validating it against the real data. Confirmed: dropping 0-booking (12m) promotions alone puts all 6 under 500, and refilling to 500 gives full coverage. Happy to proceed.\n\nOne thing to confirm on the refill: for hotels where the 0-booking set exceeds the free slots (e.g. 103913: 899 zero-booking → only 307 refilled; 327376, 659629 similar), which ones make the cut should be **ordered by discount depth → nearest check-in**, not arbitrary — so the 500 we push are genuinely the most attractive. Could you confirm the refill uses that ordering?\n\nOtherwise: proceed with STG as planned, and this rule as a parallel follow-up. The 1–1.5 day estimate is fine. Thanks!"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1099",
+    "id": "18976",
+    "author": "Joo",
+    "created": "2026-07-06T10:50:25.893+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1099",
+    "text": "Hi <custom data-type=\"mention\" data-id=\"id-0\">@Zia</custom>\n\nDuring testing, i observed a small price discrepancy (\\~8%) between Google and B2C.\n\nThe root cause is that B2C applies additional hotel promotion logic, which affects the final displayed price. However, this logic cannot be applied to the Google side, because:\n\n* The discount is not fixed\n* It varies dynamically based on the user’s country\n\nTherefore, it cannot be represented as a single consistent price for Google\n\nPlease kindly take note of this behavior during validation.\n\nThank you.\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=5719705d4659&id=1ad64241-d758-48c2-8467-3a28d8620cc4&&collection=&height=1111&occurrenceKey=null&width=1917&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1099",
+    "id": "18977",
+    "author": "Zia",
+    "created": "2026-07-06T11:03:33.348+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1099",
+    "text": "Dear <custom data-type=\"mention\" data-id=\"id-0\">@Joo</custom> Thanks for surfacing this. I'd like to reframe it, though — an \\~8% systematic gap isn't something we can treat as \"small\" or just note during validation. In Google's Price Accuracy terms it's significant: the tolerance is low single digits and Google is actively tightening standards, so a persistent 8% gap will likely trigger a \"Poor price accuracy\" flag (reduced visibility / warnings). The direction is the safer one (B2C cheaper, not higher), but it also means we're advertising a higher-than-actual price on Google and losing competitiveness — so this needs a decision, not just a note.\n\nOn the constraint: the country-varying discount _can_ be represented on Google. Google supports **country-specific conditional rates** (\"rates only visible/bookable by users searching from a specific country,\" resolved by IP) via Rate Rules XML + the `<Rate>` element — which is exactly the \"price varies by user country\" case. So it doesn't have to be dropped.\n\nCould you please:\n\n1. Evaluate representing this via country-specific rates, and\n2. Provide an **effort estimate** for that implementation?\n\nOnce we have the estimate, we'll decide between closing the gap and consciously accepting it. Thanks.\n\nRef: <custom data-type=\"smartlink\" data-id=\"id-1\">https://developers.google.com/hotels/hotel-prices/dev-guide/fenced-rates</custom> "
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1099",
+    "id": "18978",
+    "author": "Zia",
+    "created": "2026-07-06T11:09:49.204+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1099",
+    "text": "and Dear <custom data-type=\"mention\" data-id=\"id-0\">@Joo</custom> . this is second one. \n\nOne broader point beyond this specific 8%. I understand a price gap like this can partly only surface at E2E comparison — but the root cause here is a **pre-existing B2C behavior** (the country-varying promotion) that we're only catching now, rather than one that was identified during the pricing design. That makes me concerned there may be other pricing layers we've similarly missed, which would keep surfacing one by one right up to launch.\n\nTo get ahead of it: **by end of today, could you list every pricing layer that composes the final B2C displayed price** (e.g. markup, FX, this country-varying promotion, plus anything else — coupons, membership rates, taxes/fees, channel-specific pricing, etc.) **and, for each, reconcile whether it is reflected in the Google feed or not** (reflected / not reflected / partial)?\n\nThat way we surface any remaining mismatches now, in one pass, instead of discovering them late. Thanks."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-1700",
+    "id": "18911",
+    "author": "Tracy2",
+    "created": "2026-07-03T18:37:21.460+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-1700",
+    "text": "<custom data-type=\"mention\" data-id=\"id-0\">@Dan</custom> retested on STG: issue is fixed\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=48014e78ab0d&id=b8158d53-5652-4278-8675-c10e4fff7450&&collection=&height=1032&occurrenceKey=null&width=1920&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2026",
+    "id": "18914",
+    "author": "Daniel",
+    "created": "2026-07-03T19:00:05.889+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2026",
+    "text": "MCP local connected\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=60abe56532d6&id=1f21a2f9-0c87-4ed2-9533-9b3b5dda872f&&collection=&height=643&occurrenceKey=null&width=1114&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2026",
+    "id": "18915",
+    "author": "Daniel",
+    "created": "2026-07-03T19:02:05.422+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2026",
+    "text": "Use Claude  fetches data from admin-api\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=2d26a21113c3&id=99c46a7e-ef3c-4a14-a17f-632d0fc8cf98&&collection=&height=1011&occurrenceKey=null&width=1834&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2026",
+    "id": "18916",
+    "author": "Daniel",
+    "created": "2026-07-03T19:03:17.080+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2026",
+    "text": "Attachment plan  \n "
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2065",
+    "id": "18922",
+    "author": "Tan",
+    "created": "2026-07-03T19:22:16.725+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2065",
+    "text": "## Technical Report — Migrating TL-push DB Credentials to Secrets Manager\n\n### Context\n\nELS-2065 moves the shared MySQL password used by TL-push (a deploy target of the web-api JAR running on Dev EC2 Docker) from the hardcoded literal in `application-dev.yml` (`spring.omota.writer.username` / `.password`) to AWS Secrets Manager at `omh/dev/tl-push-api/db-credentials`. This is one of the two \"credential moves\" the ADR-002 Phase C pilot required; the other (`api.kmsKey`, C-B3) is tracked in ELS-2066.\n\nNon-goals for this ticket (per ADR-002 amendment v2):\n\n* Rotate the shared DB user's password (would break the other 6 web-api services). That rotation is ELS-2054.\n* Roll out to PROD. Only Dev + Staging.\n\n### Chosen Approach\n\n**Direct JDBC driver replacement**, not Spring Cloud AWS:\n\n* Datasource driver → `com.amazonaws.secretsmanager.sql.AWSSecretsManagerMySQLDriver`\n* JDBC URL → `jdbc-secretsmanager:mysql://dev-proxysql.ohmytrip.com:16033/OMH_SUITE?...`\n* `spring.omota.writer.username` → the **secret name** (`omh/dev/tl-push-api/db-credentials`), not the DB user\n* `spring.omota.writer.password` → **omitted**; the driver fetches `{\"username\",\"password\"}` from the secret at connect time\n\nRationale: the JDBC driver satisfies ADR pilot success criterion #2 for free — on a MySQL auth failure it invalidates its `SecretCache` (from `aws-secretsmanager-caching-java`), re-fetches from Secrets Manager, and reconnects. No app restart, no `/actuator/refresh` webhook, no scheduled poll. This closes the \"rotation reload without redeploy\" loop that Spring Cloud AWS's boot-only property source doesn't.\n\n### Hurdles Hit and Fixes\n\n**1. Wrong driver major version (SDK v1 vs v2)**\n\nThe first pin was `aws-secretsmanager-jdbc:1.0.15` — the last 1.x line, which still uses AWS SDK for Java **v1** (`com.amazonaws.*`). SDK v1's `DefaultAWSCredentialsProviderChain` does not honor profile-config `role_arn` + `credential_source=Ec2InstanceMetadata` — so on Dev EC2 Docker the chain skipped `/root/.aws/config` entirely, picked up the host `EC2RoleforSSM` credentials via IMDS, and hit `AccessDeniedException` on `secretsmanager:DescribeSecret` (host role isn't scoped to `omh/dev/tl-push-api/*`).\n\nFix: bumped to `2.1.2` (latest stable, released 2026-05-13), which is built on SDK v2. SDK v2's `ProfileCredentialsProvider` does dispatch to role-based providers based on the profile config.\n\n**2. SDK v2 needs a separate \\`sts\\` module on the classpath**\n\nVersion 2.x of the JDBC driver bundles `software.amazon.awssdk:secretsmanager` + `aws-crt-client` but **not** `software.amazon.awssdk:sts`. Without the STS module, SDK v2's `ProfileCredentialsProvider` cannot instantiate `StsAssumeRoleWithSourceCredentialsProvider` — the class required to process `role_arn` + `credential_source=Ec2InstanceMetadata`. The provider silently returned no credentials and the chain fell through to `EC2RoleforSSM` again, producing the same AccessDenied.\n\nFix: added `implementation('software.amazon.awssdk:sts:2.41.3')` to `web-api/build.gradle`, pinned to match the `secretsmanager` version the driver bundles.\n\n**3. Trust policy on the scoped role**\n\nThe pre-existing trust policy on `arn:aws:iam::398231823080:role/tl-push-api-dev` only allowed `Service: ecs.amazonaws.com` (a legacy ECS service-linked-role principal, not `ecs-tasks.amazonaws.com`). No principal permitted the EC2 host role `EC2RoleforSSM` to `sts:AssumeRole`, so even with all classpath and profile-config pieces in place, STS would have denied. DevOps extended the trust policy with a second statement:\n\n```json\n{\n  \"Sid\": \"DevHostEC2RoleAssume\",\n  \"Effect\": \"Allow\",\n  \"Principal\": { \"AWS\": \"arn:aws:iam::398231823080:role/EC2RoleforSSM\" },\n  \"Action\": \"sts:AssumeRole\"\n}\n```\n\n**4. Dockerfile ordering — \\`mkdir /root/.aws\\` failed at build**\n\nThe base image `registry.access.redhat.com/ubi8/openjdk-21-runtime` runs as a non-root user by default (UID 185, `jboss`). The initial Dockerfile placed the `RUN mkdir -p /root/.aws && printf ... > /root/.aws/config` step **before** `USER root`, so `docker build` failed at step 2/26 with `mkdir: cannot create directory '/root/.aws': Permission denied`.\n\nFix: moved `USER root` and `WORKDIR /app` to run before the AWS-config block. Same pattern as sibling `Dockerfile.devOut` / `Dockerfile.devHotel`.\n\n**5. \\`$HOME\\` inheritance quirk (non-blocking, worth documenting)**\n\nEven with `USER root`, Docker does not automatically rewrite the `$HOME` env var inherited from the base image, so a shell inside the container shows `$HOME=/home/jboss` even though the user is `root`. This is why we explicitly set `AWS_CONFIG_FILE=/root/.aws/config` — relying on `~/.aws/config` would look at `/home/jboss/.aws/config` (nonexistent) and the provider would silently return no credentials. `AWS_CONFIG_FILE` is the belt-and-suspenders that makes the path unambiguous. (Later ELS-2066 investigation confirmed that Spring Cloud AWS respects this env var too when its config-data phase reads the profile file.)\n\n**6. AWS_ROLE_ARN env var was unnecessary and later actively harmful**\n\nThe first Dockerfile.devTL also set `ENV AWS_ROLE_ARN=arn:...:role/tl-push-api-dev` under the assumption that SDK v2 needed it to know which role to assume. It does not — the role ARN inside `/root/.aws/config` is authoritative for `ProfileCredentialsProvider`. Meanwhile, setting `AWS_ROLE_ARN` as an env var **activates** SDK v2's `WebIdentityTokenFileCredentialsProvider` (an EKS IRSA pattern), which then throws when `AWS_WEB_IDENTITY_TOKEN_FILE` isn't set. `DefaultAWSCredentialsProviderChain` for the JDBC driver caught that failure and kept going, so ELS-2065 worked despite the env var — but the sibling ELS-2066 (Spring Cloud AWS path) blew up on the same trap. The env var was removed for both tickets; the role ARN lives only inside `/root/.aws/config`.\n\n**7. Secret plaintext was a filename, not JSON**\n\nOn the first live test the driver threw `Could not parse SecretString JSON` at `AWSSecretsManagerDriver.connectWithSecret:363`. The Secrets Manager plaintext field literally contained a filename string that had been meant as a reference, not the file's contents. The driver's SDK v2 code path had no way to fetch a file; Secrets Manager doesn't resolve references, only its own literal payload.\n\nFix: repopulated the secret with the actual JSON payload — `{\"username\":\"...\",\"password\":\"...\",\"host\":\"...\",\"port\":16033,\"dbname\":\"OMH_SUITE\"}` (values redacted here). Only `username` and `password` are consumed by the JDBC driver; the rest are metadata for humans / DBAs.\n\n### Final Wiring\n\nFiles delivered on the `ELS-2065-tl-push-db-creds-sm` branch:\n\n* **\\`Dockerfile.devTL\\`** (new): builds the web-api JAR with the TL-push PM2 config as its entry point; sets `AWS_REGION=ap-northeast-2` and `AWS_CONFIG_FILE=/root/.aws/config`; creates `/root/.aws/config` under `USER root` with `role_arn` + `credential_source=Ec2InstanceMetadata`. **Does NOT** set `AWS_ROLE_ARN` as an env var (see hurdle #6). **Does NOT** carry the legacy AWS static-key env vars of the sibling images (satisfies ADR pilot success criterion #1: no static AWS keys in the image).\n\n* **\\`config/dev-tlpush.json\\`** (new): PM2 config for the TL-push EC2 container. Sets `SPRING_PROFILES_ACTIVE=dev,tlpush-dev`, `-Dspring.application.name=tlpush-api`, port 6200, memory 4-8G, standard fluent-bit sidecar.\n\n* **\\`web-api/build.gradle\\`**: adds `com.amazonaws.secretsmanager:aws-secretsmanager-jdbc:2.1.2` and `software.amazon.awssdk:sts:2.41.3`.\n\n* **\\`web-api/src/main/resources/application-tlpush-dev.yml\\`** (new): profile overlay activated on `tlpush-dev`, overrides `spring.omota.writer.{driverClassName, jdbc-url, username}` to route through the SM JDBC driver.\n\nThe base `application-dev.yml` and the other six services are byte-for-byte unchanged — they keep reading the literal shared credential until ELS-2054 rotates the shared user across the fleet.\n\n### Verification\n\nOn Dev (2026-06-29 / continued 2026-07-03), the boot sequence for `api-tl-push` shows:\n\n```\nInstanceProfileCredentialsProvider loaded credentials from IMDS\n→ sts.ap-northeast-2.amazonaws.com AssumeRole → 200 OK\nProfileCredentialsProvider loaded credentials\n→ secretsmanager.ap-northeast-2.amazonaws.com DescribeSecret → 200 OK\n→ secretsmanager.ap-northeast-2.amazonaws.com GetSecretValue → 200 OK\nHikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl\nHikariDataSource - Start completed.\nStarted OmApiApplication in 57.128 seconds\n```\n\nThe connection is via `dev-proxysql.ohmytrip.com:16033` (ProxySQL fronting the backend MySQL) — no direct hop to the backend host.\n\n### Rotation Behavior (aws-secretsmanager-jdbc 2.1.2)\n\nPer source (`AWSSecretsManagerDriver.connectWithSecret`):\n\n* `MAX_RETRY = 5`, no sleep between attempts.\n* On each auth failure the driver calls `SecretCache.refreshNow(secretId)`, forcing a fresh `GetSecretValue` before retrying the connect.\n* The underlying `aws-secretsmanager-caching-java` cache TTL defaults to **1 hour** (`DEFAULT_CACHE_ITEM_TTL = TimeUnit.HOURS.toMillis(1)`); items past TTL refresh synchronously on the next request.\n\n**Practical implications for testing rotation:**\n\n* Updating the SM plaintext alone does not migrate an already-running app until either (a) a connection auth-fails, or (b) the 1-hour cache TTL expires.\n* To exercise the \"rotation without redeploy\" path (ADR success #2) end-to-end, all three sides must move: **update SM first, then MySQL, then ProxySQL** — this order avoids a 1-2 second window in which the driver retries five times against SM that still holds the old password and the app crashes.\n* Because the pilot cannot rotate the shared DB user (would break the other six services), a full rotation drill requires a `tl-push-api`-only MySQL user first. That user provisioning is outside this ticket and can be run against ELS-2054 or a sub-task.\n\n### Cross-cutting Notes\n\nSame `/root/.aws/config` + STS dep + trust-policy setup is what ELS-2066 (Move `api.kmsKey` to SM) reuses for the `omh/dev/shared/*` path — and the same \"AWS_ROLE_ARN as an env var is a trap\" lesson from hurdle #6 is what unblocked ELS-2066's Spring Cloud AWS wiring. See the ELS-2066 comment for that library's specific quirk (`CredentialsProviderAutoConfiguration` misreading the STS classpath signal as an EKS IRSA cue).\n\n### Impact and Follow-ups\n\n* Internal engineering only — no user-facing effect.\n* Password value on MySQL is unchanged; only its **source** moved. All existing app traffic works.\n* **PROD-identity gate is not yet exercised.** PROD tl-api runs on ECS Fargate where the task role is delivered via `AWS_CONTAINER_CREDENTIALS_RELATIVE_URI` (no `/root/.aws/config`, no assume-role indirection). When Dan/team wires PROD, a separate `Dockerfile.prdTL` + `application-tlpush-prod.yml` without the `credentials.profile.*` workaround will be needed.\n* Rotation of the shared DB user remains blocked on all seven web-api services migrating (ELS-2054).\n\n_AI-Assisted: claude-code (analysis + write-up), reviewed by Tan._\n\n_Edit 2026-07-03: redacted inline credential values that appeared in the initial post. Refer to secrets by property name / SM path, not by value._"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2066",
+    "id": "18913",
+    "author": "Tan",
+    "created": "2026-07-03T18:58:13.402+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2066",
+    "text": "## Debug Report — Root Cause of `api.kmsKey` Boot Failure\n\n### Context\n\nELS-2066 moves the master AES encryption key `api.kmsKey` from a hardcoded YAML literal to AWS Secrets Manager at `omh/dev/shared/api-kms-key`, reusing the same identity path (`/root/.aws/config` → assume `tl-push-api-dev`) that ELS-2065 established for DB credentials. The chosen implementation followed ADR-002's reference design — `spring.cloud.aws.starter-secrets-manager` + `spring.config.import: aws-secretsmanager:...`.\n\n### Symptom\n\nApp failed to start with an opaque wrapper:\n\n```\nConfig data resource '[SecretsManagerConfigDataResource...]' via location\n'aws-secretsmanager:omh/dev/shared/api-kms-key' does not exist\n```\n\nDebugging was time-consuming because:\n\n* Spring Cloud AWS wraps **any** exception (AccessDenied, network, config error, missing secret) into `ConfigDataResourceNotFoundException` with the same \"does not exist\" message.\n* The failure fires inside `ConfigDataEnvironmentPostProcessor` — **before** Log4j2 finishes bootstrapping, so YAML log-level overrides and JVM `-Dlogging.level.*` properties never took effect. The container's `/logs/dev/app.log` only contained Spring Boot's `FailureAnalyzer` summary.\n* Only after adding `optional:` to the import (which lets boot proceed) did the underlying WARN surface — pointing to a WebIdentity token file requirement that doesn't apply on EC2/Docker.\n\n### Root Cause\n\nThe bug lives in Spring Cloud AWS 3.1.1's `io.awspring.cloud.autoconfigure.core.CredentialsProviderAutoConfiguration#createCredentialsProvider`:\n\n```java\nif (ClassUtils.isPresent(\"...WebIdentityTokenFileCredentialsProvider\", null)) {\n    try {\n        providers.add(StsCredentialsProviderFactory.create(sts, regionProvider));\n    } catch (IllegalStateException e) {\n        LOGGER.warn(\"Skipping StsCredentialsProvider... AWS_WEB_IDENTITY_TOKEN_FILE...\");\n    }\n}\nif (providers.isEmpty()) return DefaultCredentialsProvider.create();\n```\n\nChain of events:\n\n1. `aws-secretsmanager-jdbc:2.1.2` (ELS-2065's DB-creds driver) is built on AWS SDK v2 but does **not** bundle the STS module. We had to add `software.amazon.awssdk:sts:2.41.3` so SDK v2's `ProfileCredentialsProvider` could dispatch to `StsAssumeRoleWithSourceCredentialsProvider` for the `role_arn` + `credential_source=Ec2InstanceMetadata` pattern.\n2. Spring Cloud AWS's `ClassUtils.isPresent(...)` sees the STS class on the classpath and **assumes an EKS IRSA deployment**, so it eagerly tries `StsCredentialsProviderFactory`.\n3. `StsCredentialsProviderFactory.create()` requires `AWS_WEB_IDENTITY_TOKEN_FILE` (only set on EKS pods with an OIDC service account). On EC2/Docker Dev it isn't set → `IllegalStateException`.\n4. The catch fires and control falls through to `DefaultCredentialsProvider.create()` — but SDK v2's default chain **also** starts with `WebIdentityTokenFileCredentialsProvider`, whose failure surfaces the same message before the chain ever reaches `ProfileCredentialsProvider`.\n5. Result: the chain never reads `/root/.aws/config`, despite the file being present and correct.\n\nThe real conflict: the STS dependency required for ELS-2065's EC2 assume-role pattern is misread by Spring Cloud AWS 3.1.1 as \"the app is running on EKS with a web-identity token\".\n\n### Fix\n\nSet `spring.cloud.aws.credentials.profile.name=default` (plus `path: /root/.aws/config`) in `application-tlpush-dev.yml`:\n\n* Spring Cloud AWS adds a `ProfileCredentialsProvider` to its providers list.\n* The list is non-empty, so the `StsCredentialsProviderFactory` branch is **never entered**.\n* `ProfileCredentialsProvider` reads `/root/.aws/config`, sees `role_arn` + `credential_source=Ec2InstanceMetadata`, and — thanks to the STS dep — dispatches to `StsAssumeRoleWithSourceCredentialsProvider` to assume `tl-push-api-dev` via IMDS host credentials.\n\nSame identity path as the JDBC driver → both secrets resolve through one chain.\n\nThe workaround applies **only** to Dev/Staging (EC2 Docker). On PROD ECS Fargate the task role is delivered via `AWS_CONTAINER_CREDENTIALS_RELATIVE_URI` and picked up by `ContainerCredentialsProvider` automatically — the profile config must be omitted there. A \"DO NOT copy to PROD\" comment sits above the block in the YAML to prevent copy-paste.\n\n### Verification (boot log, 2026-07-03)\n\n```\nInstanceProfileCredentialsProvider loaded credentials from IMDS\n→ sts.ap-northeast-2.amazonaws.com AssumeRole → 200 OK\nProfileCredentialsProvider loaded credentials\n→ secretsmanager.ap-northeast-2.amazonaws.com DescribeSecret → 200 OK\n→ secretsmanager.ap-northeast-2.amazonaws.com GetSecretValue → 200 OK\nHikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl\nStarted OmApiApplication in 57.128 seconds\n```\n\nBoth `omh/dev/tl-push-api/db-credentials` (ELS-2065) and `omh/dev/shared/api-kms-key` (ELS-2066) resolve through the same assumed-role identity.\n\n### Lessons Learned\n\n1. **Config-data phase is debug-hostile.** Log4j2 isn't wired yet, so YAML/JVM log-level overrides are silent. Use `optional:` prefix to reach runtime logging when a config-data import fails.\n2. **Framework auto-config can misread classpath capability.** `ClassUtils.isPresent(\"<something>\")` triggers deployment-model assumptions (here: EKS IRSA) that don't hold everywhere.\n3. **Error wrapping loses signal.** Spring Cloud AWS collapses AccessDenied / network / wrong-path / config-error into one \"does not exist\" — worth watching if we adopt more of the library.\n4. **Always check the latest stable dep version.** We initially pinned `aws-secretsmanager-jdbc:1.0.15` (SDK v1) instead of `2.1.2` (SDK v2) which cost an earlier iteration on ELS-2065.\n5. **Environment identity models diverge.** EC2 Docker needs the profile-config workaround; ECS Fargate uses container creds automatically; EKS uses IRSA / WebIdentity. Config must be scoped per Spring profile, not shared.\n\n### Impact\n\n* Internal engineering only — no user-facing effect.\n* `api.kmsKey` value is byte-for-byte identical to the previous YAML literal, so existing AES ciphertext across the 17 tables / 38 columns in ELS-2049 §1.1 still decrypts unchanged. **No data migration.**\n* §3 rotation (change value + re-encrypt) remains explicitly deferred per Joseph's runbook amendment v2 (2026-06-25).\n\n### Follow-ups\n\n* Delete the hardcoded `api.kmsKey` literal from `PushHotelContentService.java:157` and `SESTest.java:100-103` before any future rotation (runbook §1.1 anomaly #1). Not blocking for this ticket.\n* Every future Secrets Manager import (TL-Lincoln vendor cred `omh/<env>/tl-push-api/tllincoln`, payment secrets, OAuth secrets, etc.) is now a single `spring.config.import` line — no additional code or dependencies.\n\n_AI-Assisted: claude-code (analysis + write-up), reviewed by Tan._"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2066",
+    "id": "18919",
+    "author": "Tan",
+    "created": "2026-07-03T19:13:36.475+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2066",
+    "text": "<custom data-type=\"mention\" data-id=\"id-0\">@Joseph</custom> When deploying to the Dev EC2 environment, this is currently being added. However, it is not needed when deploying to ECS.\n\n```\ncloud:\n  aws:\n    credentials:\n      profile:\n        name: default\n        path: /root/.aws/config\n```"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2334",
+    "id": "18912",
+    "author": "Tom",
+    "created": "2026-07-03T18:37:31.888+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2334",
+    "text": "Dear <custom data-type=\"mention\" data-id=\"id-0\">@Tracy</custom> , logs push ctrip  \n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=636fe8d5f152&id=00a6a6f9-9d9d-4c9d-9f50-ca2b6a2e60ab&&collection=&height=626&occurrenceKey=null&width=1616&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=d57a4efb7ea4&id=ecc23cb2-4d38-4d53-a6c8-35f159c795bd&&collection=&height=249&occurrenceKey=null&width=1611&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2346",
+    "id": "18917",
+    "author": "Holden",
+    "created": "2026-07-03T19:07:27.564+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2346",
+    "text": "<custom data-type=\"mention\" data-id=\"id-0\">@Calvin</custom> **QA Test Result — ELS-2346 (Open API availability cache migration) ✅ PASS**\n\nVerified on **staging** (`hotels/availability`, channel **200006** = new compressed-key read path) across **10 hotels** + multi-hotel search, via a Postman collection + automated Playwright inspector.\n\n* **TC1** — Stop-selling a room type (Ellis › Hotel Room Master, Open Sales=No) removes it from availability. ✅\n* **TC2** — Stop-selling a rate plan (Ellis › Hotel Plan Master, Open Sales=No) removes it. ✅\n* **TC3** — Setting a room's max ADT=1 excludes it from a 2-adult search (occupancy respected; single-use plans behave per OMH-703). ✅\n* **TC4** — `cancellationPolicy` in the API matches Hotel Plan Master exactly — verified including a **live change** (100% tier 3-days→1-day reflected immediately). ✅\n* **M01 / M02** — Searching **2 and 3 hotels in one request** returns all requested hotels, each with its correct rooms. ✅\n\nEvery Ellis change was reflected in availability immediately (dual-write → no stale cache). Per dev, channels 200006/200011 (new path) and legacy channels return identical results — 200006 covered here.\n\n**Coverage:** 10 hotels (TC1–TC3, +TC4 on 3) + 2 multi-hotel cases · staging. \n\n**Test cases:** <custom data-type=\"smartlink\" data-id=\"id-1\">https://ohmylab.sharepoint.com/:x:/s/pd.vn/IQC7ALwIgI42S6lf1533NxqJAddXdLAJLkdIjnJKqvzfT78?e=RTRcgu</custom> "
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2346",
+    "id": "18920",
+    "author": "Calvin",
+    "created": "2026-07-03T19:19:16.872+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2346",
+    "text": "<custom data-type=\"mention\" data-id=\"id-0\">@Holden</custom> Well noted, thank you"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2363",
+    "id": "18874",
+    "author": "Roy",
+    "created": "2026-07-03T15:46:46.020+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2363",
+    "text": "<custom data-type=\"mention\" data-id=\"id-0\">@Calvin</custom>  In the Technical Approach section, there is this sentence:\n\n> **Spec change: r7g.xlarge → m7g.xlarge → expect some downtime. After the new nodes are in place, deploy the Hotel Search services (hotel-api) to refresh their cached Redis IP.”**\n\nDo you clearly know why the Redis IP change is needed here?"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2363",
+    "id": "18918",
+    "author": "Calvin",
+    "created": "2026-07-03T19:12:32.586+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2363",
+    "text": "<custom data-type=\"mention\" data-id=\"id-0\">@Roy</custom>   \nAs Joseph explained in the chat, we've encountered this issue before. Based on my investigation, the cached IP is at the JVM level. Although Lettuce can automatically reconnect, it still uses the IP address cached by the JVM. If the ElastiCache node IP changes, the application may continue trying to connect to the old IP. That's why restarting the Hotel Search service is necessary—it forces the JVM to perform DNS resolution again and reconnect using the new IP address.  \nBased on the AWS recommendation, we should be able to address this by configuring the JVM DNS cache TTL, so the resolved IP is refreshed periodically instead of being cached indefinitely. However, we'll need to validate this first and plan it for a separate deployment.  \n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=793e39dcd80c&id=be5f568e-9bc1-4831-8040-e73aa2354dda&&collection=&height=450&occurrenceKey=null&width=1549&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2397",
+    "id": "18910",
+    "author": "planning",
+    "created": "2026-07-03T18:26:44.176+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2397",
+    "text": "Tracy created this task."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2397",
+    "id": "18924",
+    "author": "Tom",
+    "created": "2026-07-03T19:38:00.186+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2397",
+    "text": "Dear <custom data-type=\"mention\" data-id=\"id-0\">@Tracy</custom> ,   \nHiện tại em check case này thì thấy rằng D-Edge và bên mình đang setup mapping  2 hotel code khác nhau  \nD-Edge hotelId = **209006**  \nHotel Code Map bên mình = **VN001862**  \n  \nCần làm 2 thứ:  \nCần nói bên D-Edge  điều chỉnh hotelId  = **VN001862** để giống bên mình.   \nĐiều chỉnh thêm Vendor Contract (Traders) ở cột **CMS/PMS Hotel Code** = **VN001862**   \n  \nLogs hình:\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=e137e156400d&id=f4d41f25-f237-4fdb-b7a6-9e02d34268fb&&collection=&height=349&occurrenceKey=null&width=599&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=1738c53c94cb&id=5a93da17-a24c-4531-a5e1-11bd77a274f0&&collection=&height=404&occurrenceKey=null&width=608&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=283eef1b372a&id=5a90ec92-5c42-4a0d-856f-dc4540287a66&&collection=&height=537&occurrenceKey=null&width=1241&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n  \n  \n"
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2400",
+    "id": "18921",
+    "author": "planning",
+    "created": "2026-07-03T19:21:07.952+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2400",
+    "text": "Tracy created this task."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2401",
+    "id": "18923",
+    "author": "planning",
+    "created": "2026-07-03T19:36:49.574+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2401",
+    "text": "Tracy created this task."
+  },
+  {
+    "type": "comment",
+    "key": "ELS-2403",
+    "id": "18925",
+    "author": "planning",
+    "created": "2026-07-03T19:40:10.141+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/ELS-2403",
+    "text": "Tracy created this task."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-608",
+    "id": "18961",
+    "author": "Lexi",
+    "created": "2026-07-06T09:24:58.686+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-608",
+    "text": "<custom data-type=\"mention\" data-id=\"id-0\">@Daniel</custom>  Is this work currently in progress? Please share the progress. If it is being delayed, please let me know which task you are handling that is causing the delay."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-608",
+    "id": "18965",
+    "author": "Daniel",
+    "created": "2026-07-06T10:26:07.111+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-608",
+    "text": "Hi<custom data-type=\"mention\" data-id=\"id-0\">@Lexi</custom>, Not started yet — last week my capacity was fully allocated to the  \n   Google Meta Search integration. I'm picking this ticket up this week."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-678",
+    "id": "18843",
+    "author": "Lexi",
+    "created": "2026-07-03T11:57:50.850+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-678",
+    "text": "<custom data-type=\"mention\" data-id=\"id-0\">@Tracy</custom> <custom data-type=\"mention\" data-id=\"id-1\">@Harry</custom> — Based on our discussion so far, here's my final understanding. Could the two of you review this summary together and share your opinions / corrections?\n\n**Reference — policy definitions (Definitions of Rate Items):**\n\n```\nB. Product Amt   = B. Net Amt + B. M/U Amt   (channel markup)\nB. Promotion Amt = Discounted rate from B2C promotion\nB. Sum Amt       = If no promotion: same as B. Product Amt (may differ due to exchange rate)\n                   If promotion applied: B. Product Amt − B. Promotion Amt\n```\n\n## **1. Current display / storage logic per screen (my understanding)**\n\n| Domain | Screen | Diagnosis | As-Is (current) | To-Be (target) |\n| --- | --- | --- | --- | --- |\n| **B2C** (OMH/OMT) | Hotel-list page | 🔴 | `B. Product Amt` strikethrough (original price) shown **based on the promotion price** | `B. Product Amt = Net + M/U` |\n| **B2C** (OMH/OMT) | Room search results (room-type) | 🔴 | `B. Product Amt` strikethrough shown **based on the promotion price** | `B. Product Amt = Net + M/U` |\n| **B2C** (OMH/OMT) | Booking-detail / Voucher | 🟢 | `B. Product Amt` **not shown** (only the final paid price) | No change |\n| **Admin** | Booking-detail / rate-detail — **B2C booking** | 🟡 (needs confirmation) | Displays the stored value. **Suspected to be stored based on the promotion price** (unconfirmed whether it's Net+M/U) | If promotion-based, **fix that calculation / storage logic directly to** `Net + M/U` (from new bookings onward) |\n| **Admin** | Booking-detail / rate-detail — **B2B booking** | 🟢 | Promotion = 0, so `B. Product Amt = B. Sum Amt`; already `Net + M/U` | No change |\n\n> **Note:** If the Admin (B2C booking) item marked 🟡 turns out to need a fix, that will be handled as a **separate new ticket** — this ticket stays scoped to the display fix (hotel-list + room search results).\n\n## **2. Confirmed scope**\n\n* Target: `percent promotion` only (`manual promotion` is already correct)\n* Screens to fix: hotel-list + room search results (display)\n* No retroactive correction of existing bookings\n* OMT to reflect the same change (track together with OMT-74)\n\n## **3. The one thing I'd like to re-confirm — which is the B2C stored value, really?** Your two explanations **conflict on the stored value**:\n\n> (Harry, 3-a) \"This is a **data change**, not just a display change — because `B. Product Amt` is currently **stored using the promotion price (not the original plan price)**.\"\n\n> (Tracy) \"At this level the three fields already follow the Excel definitions … `B. Product Amt = B. Net Amt + B. M/U Amt` — **pre-promotion, origin plan (not promotion-derived)**.\"\n\nMy worry is that the `B. Product Amt` on the **B2C Admin booking-detail may be stored based on the promotion price (the strikethrough value), just like the customer screen.** Could you confirm:\n\n* For a **B2C booking with a percent promotion applied**, is the `B. Product Amt` stored on the Admin booking-detail `Net + M/U` **(origin plan), or promotion-based?**\n* If it's promotion-based, since there's no impact on B2B or existing bookings (see #4), I believe we can simply **fix that value's logic directly to** `Net + M/U` **— no separate new column needed**. If it's already `Net + M/U`, then the **display fix alone is enough**.\n\n## **4. Double-check on the B2B / OP risk** Earlier, these concerns were raised:\n\n> (Harry) \"Even if we try to protect B2B by adding a branch in the logic (`if B2C → new logic, else B2B → old logic`), this creates a new problem: `B. Product Amt` will then have two different meanings depending on the channel … the Operation team … will see the same field name (`B. Product Amt`) carrying two different semantics. This will very likely cause confusion in daily operations.\"\n\n> (Tracy) \"OP team is based on detail in B.Product Amt to check prices of each night. Therefore, if we changing as above, it will cause issue for Operation team that they could not check the amount of each night.\"\n\nGiven the understanding above (Promotion is a B2C-only field, so correcting B2C does not change B2B), could you both explicitly confirm that this B2B / OP-confusion risk **no longer applies** and does not need to be factored in?\n\nPlease review the above together and let me know your thoughts. Thank you!"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-678",
+    "id": "18875",
+    "author": "Tracy",
+    "created": "2026-07-03T15:48:12.701+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-678",
+    "text": "<custom data-type=\"mention\" data-id=\"id-0\">@Lexi</custom> I created bookings to give you an example\n\n| Hotel Name | 1001097 \\| TEST HOTEL |\n| --- | --- |\n| Check in / Out Date | 2026-07-14(Tue) \\~ 2026-07-17(Fri) - 3NTS |\n| Room Type / Counts | 1268360 \\| City View Standard Double x 1 |\n| Room Plan | 895860 \\| Free Breakfast |\n| Vendor Promotion | 651825 \\| Special Promotion-Special Promo |\n\nThe bookings were created under same condition as above, but 1 booking is B2B and 1 booking is B2C.\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=584f22c02085&id=f1a55f3d-c36e-4cc5-9624-6164e84c6de6&&collection=&height=1110&occurrenceKey=null&width=1899&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n  \nB2B booking: S26070310598H01\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=4e8a10af6a5e&id=52734645-3985-4bd0-884c-0a652aa2c101&&collection=&height=754&occurrenceKey=null&width=1801&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n  \n  \nB2C booking: K26070310687H01\n\n![](blob:https://media.staging.atl-paas.net/?type=file&localId=dcac756bb8a8&id=7f97a34d-c7e6-4d35-ac2e-0de7f6928c11&&collection=&height=787&occurrenceKey=null&width=1800&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\nAs you can see in the picture, bookings created under same hotel/room/rateplan/promotion/staydate/pax…everything is the same. The different is 1 channel is B2C and 1 channel is B2B.  \nSo, this promotion applied only for B2C bookings, not B2B. It mean the field B. Promotion Amt — this field only have value when it is B2C booking. B2C is applying 1 more time discount…  \nCan you catch my point?"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-678",
+    "id": "18885",
+    "author": "Lexi",
+    "created": "2026-07-03T16:44:45.346+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-678",
+    "text": "<custom data-type=\"mention\" data-id=\"id-0\">@Tracy</custom> Thanks for creating the examples.\n\nI understand that the promotion does not apply to B2B bookings. What I actually wanted to confirm was slightly different: **whether** `Billing Net Amt + Billing M/U Amt` **correctly adds up to** `Billing Product Amt` **in the Admin.**\n\nHaving re-checked both bookings myself, it does:\n\n* **B2B** (S26070310598): `55,088 + 2,645 = 57,733` = Billing Product Amt <custom data-type=\"emoji\" data-id=\"id-1\">:white_check_mark:</custom> \n* **B2C** (K26070310687): `55,088 + 8,264 = 63,352` = Billing Product Amt <custom data-type=\"emoji\" data-id=\"id-2\">:white_check_mark:</custom> \n\nSo the Admin's `B. Product Amt` is already calculated correctly per the Excel Rate Item definition (`B. Product Amt = B. Net Amt + B. M/U Amt`). **This means the Admin needs no change**, and only the two B2C screens need fixing.\n\nHere is my final summary:\n\n| Domain | Screen | Diagnosis | Action |\n| --- | --- | --- | --- |\n| **B2C** (OMH/OMT) | Hotel List | 🔴 | Fix the strikethrough price calculation logic |\n| **B2C** (OMH/OMT) | Room Search Results | 🔴 | Fix the strikethrough price calculation logic |\n| **B2C** (OMH/OMT) | Booking-detail / Voucher | 🟢 | No change (`B. Product Amt` is not shown) |\n| **Admin** | Booking-detail / rate-detail — B2C & B2B | 🟢 | No change (`Billing Net Amt + Billing M/U Amt = Billing Product Amt` confirmed) |\n\n**My final understanding:** this `B. Product Amt` fix will apply **only to the B2C site (OMH / OMT)**, will **not affect B2B booking prices**, and the **Admin display logic will not be modified**.\n\nIf I've misunderstood your intention, or if there's any additional issue I'm missing, please let me know. Thank you!\n\ncc. <custom data-type=\"mention\" data-id=\"id-3\">@Harry</custom> "
+  },
+  {
+    "type": "comment",
+    "key": "OMH-678",
+    "id": "18962",
+    "author": "Lexi",
+    "created": "2026-07-06T09:54:22.262+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-678",
+    "text": "<custom data-type=\"mention\" data-id=\"id-0\">@Harry</custom> To wrap this up: there are two screens we need to fix — Hotel List and Room Search Results.\n\nRight now, [OMH-738](https://ohmyjira.atlassian.net/browse/OMH-738) and [OMT-74](https://ohmyjira.atlassian.net/browse/OMT-74) only cover the Room Search Results screen. The Hotel List screen isn't included yet.\n\nCould you please **create a ticket for the Hotel List screen** and proceed with it as well, so that `B. Product Amt` is consistent between Hotel List and Room Search Results? (OMH/OMT both)\n\nAlso, just to confirm the overall direction: this fix applies **only to the B2C site display** — the Admin needs no change and **no separate Admin ticket is required.** Thank you.\n\n//cc. <custom data-type=\"mention\" data-id=\"id-1\">@Dante</custom> "
+  },
+  {
+    "type": "comment",
+    "key": "OMH-678",
+    "id": "18966",
+    "author": "planning",
+    "created": "2026-07-06T10:26:34.017+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-678",
+    "text": "## 📋 Final Summary (Resolved)\n\n**Goal:** Fix the issue (BTCS-35 / OMH-670) where `B. Product Amt` (the strikethrough original price) on the B2C site changed together when the promotion was switched, so that it follows the policy definition (`B. Product Amt = B. Net Amt + B. M/U Amt`, independent of the promotion).\n\n### ✅ Final diagnosis / action per screen\n\n| Domain | Screen | Diagnosis | Action |\n| --- | --- | --- | --- |\n| **B2C** (OMH/OMT) | Hotel List | 🔴 | Fix the strikethrough price calculation logic — **new ticket needed** |\n| **B2C** (OMH/OMT) | Room Search Results | 🔴 | Fix the strikethrough price calculation logic — in progress via [OMH-738](https://ohmyjira.atlassian.net/browse/OMH-738) / [OMT-74](https://ohmyjira.atlassian.net/browse/OMT-74) |\n| **B2C** (OMH/OMT) | Booking-detail / Voucher | 🟢 | No change (`B. Product Amt` is not shown) |\n| **Admin** | Booking-detail / rate-detail — B2C & B2B | 🟢 | No change (`Billing Net Amt + Billing M/U Amt = Billing Product Amt` confirmed) |\n\n### Confirmed scope\n\n* Target: `percent promotion` only (`manual promotion` is already correct, since origin plan = promotion)\n* **Only the B2C site (OMH/OMT) display logic** is fixed\n* **No Admin change → no separate Admin ticket required** (Net + M/U = Product confirmed)\n* **No retroactive correction of existing bookings**\n* **No impact on B2B booking prices** (`B. Promotion Amt` is a B2C-only field; 0 for B2B)\n\n**Status:** IN REVIEW · **Assignee:** Dante"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-692",
+    "id": "18960",
+    "author": "Lexi",
+    "created": "2026-07-06T09:22:18.692+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-692",
+    "text": "<custom data-type=\"mention\" data-id=\"id-0\">@Joo</custom> The STG release date you set has passed, and the due date is today. If this work is delayed further, please let me know the reason (which task is causing the delay) along with by when it can be completed. If you are unable to proceed with the task as scheduled, please let me know in advance."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-692",
+    "id": "18971",
+    "author": "Joo",
+    "created": "2026-07-06T10:37:49.992+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-692",
+    "text": "Hi,<custom data-type=\"mention\" data-id=\"id-0\">@Lexi</custom> \n\nDue to additional work arising from task [ELS-1099](https://ohmyjira.atlassian.net/browse/ELS-1099), I will need to reschedule this task to Thursday, July 9.\n\nThank you for your understanding, and I appreciate your patience.\n\nBest regards,"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-706",
+    "id": "18862",
+    "author": "Justin",
+    "created": "2026-07-03T13:56:29.860+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-706",
+    "text": "**PC /notice pagination — latent dead-wire bug; v2 will fix it (accepted behavior change)**\n\n**Finding (legacy PC** `pages/my-page/notice/`): the notice-list pagination UI is fully built but **non-functional**. `<app-pagination>` (`PaginationModule`, `notice.module.ts:7,20`) is wired via `(pageEvent)=\"setPage($event)\"` (`notice.component.html:61`), but:\n\n* `pager` (`notice.component.ts:22`) is assigned ONLY inside `setPage()` (`:114`);\n* `setPage()`'s only caller is that `pageEvent`;\n* `<app-pagination>` renders only `*ngIf=\"pager && pager.pages.length > 1\"` (`:57`).\n\nThe initial load (`ngOnInit → loadNoticeList`, `:80`) and the result subscription never seed `pager`, so the `*ngIf` gate never opens → `setPage` never fires → **deadlock**. **Observable legacy behavior: only the first 10 notices show (**`limits [0,10]`, `:17`); the pagination control never appears and notices past #10 are unreachable on PC. (Mobile/Hana use functional infinite scroll — `setPage → loadNoticeList`.)\n\n**Root cause:** a one-line latent bug — the load path never seeds `pager` (e.g. a missing `setPage(1)` once `totalCount` arrives).\n\n**Decision (owner, 2026-07-03): v2 FIXES this** — web-pc ships working numbered pagination. This is a **deliberate behavior change** vs legacy (legacy = 10-item cap; v2 = full paginated list), explicitly accepted — not a silent parity break.\n\n**Migration-gate implication:** the visual/e2e parity gate registers this as an **accepted behavior-change delta** (v2 renders pagination + notices beyond #10 that legacy cannot), so it is not flagged as a parity miss. Recorded in `docs/migration/pc/notice/analysis.json` (`codexReconciliation` F1 + `acceptedBehaviorChanges` BC-1); surfaced by the analyze-stage Codex audit."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-710",
+    "id": "18847",
+    "author": "Justin",
+    "created": "2026-07-03T12:23:25.522+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-710",
+    "text": "<custom data-type=\"mention\" data-id=\"id-0\">@Harry</custom> — heads up: the flag-on prerequisites below (OMH-697 / OMH-698) are on your plate.\n\n**Status: full gate chain passed; CloudFront flip prepared, flag OFF (PR #94).**\n\nAll seven pipeline stages pass (analyze → plan → gen → verify → e2e → parity → route). The flip is prepared as append-only, inactive entries in `infra/cloudfront/v2-routes.json` (6 entries, flagKey `v2.pc.privacy`). Merge is production-traffic-neutral.\n\n1. **flag-on is deferred to a separate follow-up PR.** I will not run `fm-route --flag-on` until the flip is operationally ready. Per the recorded flag-on checklist (6 blocking items in `codex-audit.json`), that needs the v2 SSR origin provisioned (OMH-697) and the CloudFront manifest applied out-of-band under OMH-502 (OMH-698). 2-PR pattern: this is the code PR (flag OFF); flag-on is a one-line manifest flip later.\n2. **Mechanism/rendering correction vs. this ticket's original text.** The flip is at the CloudFront edge (`mechanism: cloudfront`), and rendering is SSR + CloudFront edge cache (`ssr-cached`) — per the settled 2026-07-01 decision (OMH-697/710), which supersedes the original \"SSG / nginx flag / no runtime fetch\" wording here. I'll update the description to match unless there's an objection.\n3. **Batch the flag-on with other pages.** Once more PC v2 pages are ready, I'd rather batch their CloudFront manifest flips (`infra/cloudfront/v2-routes.json`) into fewer flag-on PRs than flip privacy alone. The CloudFront flip-mechanism gate is OMH-663 (re-scoped 2026-07-03 from nginx to CloudFront; blocked by OMH-697/698), with this privacy pilot as its SSR sample.\n4. I'll ping here when the other route-flip verification pages are ready.\n\n"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-710",
+    "id": "18863",
+    "author": "Harry",
+    "created": "2026-07-03T13:58:12.591+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-710",
+    "text": "Hi <custom data-type=\"mention\" data-id=\"id-0\">@Justin</custom> \n\nThanks for the detailed flip-readiness summary. Items 1–5 of your checklist look right to us — no objection. Below: your item 6, our first PR #94 review finding, and one extra point outside your checklist.\n\n1. **Your item 6 (r1) — our call: no r1 change needed.** We re-checked the legacy source: both legacy-pc and legacy-mobile already have `handleLanguagePrefixUrl` (an APP_INITIALIZER that runs before routing) — it strips the `/{lang}/` prefix, saves the locale, and lands on the bare path. So:\n\n* `m.ohmyhotel.com/{locale}/privacy` already works today — no 404 case.\n* Rollback is also safe: if we ever flag-off, the prefixed URLs fall back to legacy-pc, and the same handler serves them fine.\n\nOne consequence to record, since the new behaviors do not carry r1: after the flip, mobile users opening privacy URLs on `www` will see the v2 PC page instead of the 301 to `m`. We think this is OK for a legal document, and we can revisit attaching r1 when web-mobile ships. Please confirm and we note it in the manifest comment.\n\n2. **PR #94 review — first finding: the v2 UI currently differs from legacy.** We started the review. We opened the v2 `/{locale}/privacy` from PR #94 and compared it with the live legacy `/privacy` — the UI looks different   \n  V2:\n\n    ![](blob:https://media.staging.atl-paas.net/?type=file&localId=8080d8cab481&id=e0c1d749-6d90-47dc-9de2-0281a8acbaa6&&collection=&height=804&occurrenceKey=null&width=1189&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n\n    .   \n    Legacy :   \n\n\n\n    ![](blob:https://media.staging.atl-paas.net/?type=file&localId=662192324379&id=071b34dd-4cdb-4d4f-9e53-dd70940bb8aa&&collection=&height=413&occurrenceKey=null&width=483&__contextId=null&__displayType=null&__external=false&__fileMimeType=null&__fileName=null&__fileSize=null&__mediaTraceId=null&url=null)\n\n      \n      \n     Could you re-run the parity check on the current branch head? Happy to sit together and compare what we each see. Flag-on waits on OMH-697 anyway, so there is time to reconcile this first.\n\n\n\n3. **One point outside your checklist — content updates: clear the cache from the admin save itself.** Today the legacy page is CSR, so when an admin saves new legal text it shows right away. With SSR + edge cache, the same edit could take up to 1 hour to appear — a new delay we would be introducing. Admins change this text whenever they need to, and we do not know when, so a manual runbook step does not work. Proposal:\n\n* Hook the CloudFront invalidation into the admin save: after saves content privacy successfully, the backend invalidates the five `/{locale}/privacy` paths. No new button — saving is the trigger.\n* Fail-safe: if the invalidation fails we only log it; the admin save never fails because of it.\n* Effort is small: Backend is already on AWS SDK v2, so this is change small .\n* IAM: one narrow permission (CreateInvalidation on this distribution only). Cost \\~zero; the change shows in about a minute, and we keep s-maxage=3600 as is.\n* This backend change should land before or together with the flag-on.\n\n"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-710",
+    "id": "18868",
+    "author": "Justin",
+    "created": "2026-07-03T15:11:52.174+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-710",
+    "text": "**Parity round 7 (scope extension) pushed to PR #94** — `a17277cc9`.\n\nJustin caught the 표시 설정 (locale) modal diverging from legacy: the H3 shell port had replaced the 245-line legacy stylesheet with shadcn primitives under a **code-comment-only** rationale (\"the modal is never open in the baselines, so only behavior/content are gate-relevant\") — an unapproved silent scope reduction of exactly the kind the gate-acceptance rules exist to prevent. Revoked per decision (a):\n\n* **Full legacy mirror**: 480px/r16 box, no modal title (the underline tab bar is the header — active `#EF7F29` 700 + 3px underline; tab line-height pinned to legacy's `normal` after tailwind's 1.5 inflated the bar +6px), flat option rows (`#FFF4EB` + orange + tick when selected), currency rows back in the `CODE - Name` hyphen form, legacy primary save button, `btn-modal-close`/`ico-ticked` assets.\n* **Bug found in the same review, fixed + unit-pinned**: the initial-selection fallback showed **English/USD** when no locale was stored (legacy never hits that path); now URL-language + KRW.\n* **Gate hardened**: `visualGateAcceptance` criterion F — modal open-state, BOTH tabs × ALL 5 languages, symmetric element captures. Round-7 numbers: **height delta 0px in all 10 pairs** (v2 tracks legacy's per-language heights, 408/414px), diff 0.05–3.15%, **zero diff pixels outside the dilated ink mask in every pair** (render phase only — inside the recorded AA accept's scope); fresh-container verify 5/5 with zero updates. Suite 223/223.\n\nOMH-709 (PR #96) rebased onto this and cites the shell-owner evidence explicitly (same shell component; citation carries a break condition). Reviewers: the 20 new `*-modal-*` baselines under `e2e/__screenshots__/` are the open-state evidence pairs."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-710",
+    "id": "18878",
+    "author": "Harry",
+    "created": "2026-07-03T16:01:26.782+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-710",
+    "text": "Hi <custom data-type=\"mention\" data-id=\"id-0\">@Justin</custom> \n\nI has reviewed."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-710",
+    "id": "18880",
+    "author": "Justin",
+    "created": "2026-07-03T16:12:32.920+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-710",
+    "text": "<custom data-type=\"mention\" data-id=\"id-0\">@Harry</custom> — replying to 18863, all three items closed:\n\n### 1. r1 — CONFIRMED, recorded in the manifest\n\nYour call stands: no r1 attachment. The accepted consequence (post-flip, mobile-UA users opening these URLs on www see the v2 PC page instead of the 301 to m; revisit at web-mobile) is now noted on all six privacy entries' apply notes (commit `3adfff0ca`) and mirrored on the six common-agreement entries (PR #96).\n\n### 2. UI difference — resolved; re-run done on the current head\n\n* Two things happened since your capture: Justin caught the same class of issue in the locale modal, which led to parity rounds 7-8 (comment 18868) — the shell's interactive states (locale modal, promo QR panel) are now fully mirrored AND gated (criteria F/G, 30 new baseline pairs).\n* Per your request, the FULL visual gate re-ran on the current branch head: 16/16 green (criteria A-G, all 5 languages) in a fresh pinned container with ZERO baseline updates — the branch is pixel-parity with live legacy.\n* Likely cause of what you saw (besides the since-fixed modal): if the local server runs in dev/mock mode (VITE_ENABLE_MOCKS=true), the page renders MSW fixture text ('\\[KO\\] Privacy Policy / Mock CMS body…'), not the real document. The gate protocol is: production build + OMH_ENV=prod react-router-serve (real prod CMS) — the exact commands are in the spec header of e2e/privacy-visual.e2e.ts. Happy to sit together and run it side by side any time.\n\n### 3. Admin-save invalidation — AGREED, ticketed as OMH-746\n\nExactly as you proposed (save = trigger, log-only fail-safe, narrow CreateInvalidation IAM, s-maxage stays), with one extension: the hook covers BOTH documents — 100060 → the five /{locale}/privacy paths and 100057 → the five /{locale}/common-agreement paths (bare redirects are no-store, nothing to invalidate) — as a termsSeq→paths lookup so notice/faq/event can extend it later. Recorded as a flag-on prerequisite in both migration plans (`cacheInvalidation` field). [OMH-746](https://ohmyjira.atlassian.net/browse/OMH-746) is unassigned — please route it to the right BE owner."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-738",
+    "id": "18964",
+    "author": "Dante",
+    "created": "2026-07-06T10:23:44.337+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-738",
+    "text": "<custom data-type=\"mention\" data-id=\"id-0\">@Tracy2</custom> This task only applies to the Room Detail page."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-738",
+    "id": "18968",
+    "author": "Tracy2",
+    "created": "2026-07-06T10:32:02.317+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-738",
+    "text": "<custom data-type=\"mention\" data-id=\"id-0\">@Dante</custom> What about the Product List page? Do we have a separate task for that? I recall Harry and Lexi discussing that both the Room Details page and the Product List page should be improved."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-738",
+    "id": "18970",
+    "author": "Dante",
+    "created": "2026-07-06T10:34:56.855+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-738",
+    "text": "<custom data-type=\"mention\" data-id=\"id-0\">@Tracy2</custom> the task for hotel list <custom data-type=\"smartlink\" data-id=\"id-1\">https://ohmyjira.atlassian.net/browse/OMH-761</custom> "
+  },
+  {
+    "type": "comment",
+    "key": "OMH-738",
+    "id": "18973",
+    "author": "Tracy2",
+    "created": "2026-07-06T10:40:22.457+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-738",
+    "text": "<custom data-type=\"mention\" data-id=\"id-0\">@Dante</custom> Noted. Please make sure this is deployed to STG only after both tasks have passed. This will help avoid any inconsistencies in pricing between the two pages. Thank you!"
+  },
+  {
+    "type": "comment",
+    "key": "OMH-745",
+    "id": "18869",
+    "author": "Justin",
+    "created": "2026-07-03T15:21:51.352+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-745",
+    "text": "<custom data-type=\"mention\" data-id=\"id-0\">@Mon</custom> <custom data-type=\"mention\" data-id=\"id-1\">@Harry</custom> — heads up on this OMH-604 subtask (the notice/faq/event board + terms contract confirmation that 606/607 scoped out).\n\nDivision mirrors 606/607: <custom data-type=\"mention\" data-id=\"id-2\">@Dante</custom> is assigned (response side, as on OMH-606). <custom data-type=\"mention\" data-id=\"id-3\">@Mon</custom> — request side (boardMasterSeq / stationTypeCode / itemCategoryCode / termsSeqs), as on OMH-607. <custom data-type=\"mention\" data-id=\"id-4\">@Harry</custom> — CC as B2C lead. Full re-onboarding context + the self-contained questions are in the description; the FE proposals are linked there (branch OMH-706-notice).\n\n**Highest-value answer to prioritise:** the ⭐ PAGE_VIEW_COUNT increment-on-read question (notice/faq/event detail). If detail-GET mutates the view count, v2 cannot edge-cache the detail document — so that one yes/no per endpoint unblocks the whole rendering/caching design."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-745",
+    "id": "18871",
+    "author": "Justin",
+    "created": "2026-07-03T15:28:08.117+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-745",
+    "text": "**Independent Codex cross-check — passed** (read-only, task `task-mr4ic0lr-d1mh46`).\n\nA Codex pass independently re-checked the FE claims behind every question above and **confirmed them all** — agreeing with a separate Claude-side legacy-code sweep (**zero refuted**, from two independent angles). It surfaced 2 refinements, now folded into the proposals (branch `OMH-706-notice`):\n\n1. **event** `eventHtml` rendering is not uniform across apps. PC + OhMyHotel Mobile render via `<iframe srcdoc>`, but **Hana renders via sanitised** `[innerHTML]` (no iframe) — and the FE DOMPurify config **allows** `<script>`. So the §5-j trust-boundary question is the pointed one: does BE store `eventHtml` raw or pre-sanitised, and can it carry `<script>` / external assets (v2 CSP must allow)? _(The description's \"iframe srcdoc\" parenthetical is PC/Mobile-only.)_\n2. **terms.md** citation-path fix (`../01-common.md`) — cosmetic.\n\nNet: the question set is verified two independent ways; no question was refuted."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-745",
+    "id": "18926",
+    "author": "Justin",
+    "created": "2026-07-04T00:05:46.901+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-745",
+    "text": "<custom data-type=\"mention\" data-id=\"id-0\">@Harry</custom> — one sub-question from §5-e now needs a decision from you: the DOMAIN of `attachedFileUrl`. It just landed on the **notice (OMH-706)** critical path — the e2e gate surfaced an attachment-download behavior delta whose resolution depends entirely on this one fact.\n\n### Why this became a decision (notice attachment download)\n\nnotice detail renders one download link per admin-uploaded attachment (`attachedFiles[]`). Legacy wraps every `<a download>` in a global directive (`common/directive/download/download.directive.ts`):\n\n* same-origin / data: / blob: → does nothing; native browser download (`:77`).\n* cross-origin → blob-fetches the file to FORCE a download (browsers ignore `<a download>` across origins); if CORS blocks the fetch it falls back to just OPENING the file (`:90-116`).\n\nv2 ships a plain `<a href download target=\"_blank\">` and intentionally does NOT port that CORS blob-fetch fallback (registered as accepted delta **BC-2** on OMH-706; Codex's e2e audit flagged it). Whether that drop is a real regression or a pure no-op hinges 100% on where `attachedFileUrl` points:\n\n* **root-relative / same-origin** (resolved against www.ohmyhotel.com) → v2 and legacy behave IDENTICALLY (both download). BC-2 is a no-op; nothing to build.\n* **cross-origin absolute** (CDN/S3/file host) with permissive CORS → legacy force-downloads, v2 opens a new tab. REAL delta → v2 must restore a fetch-blob fallback, or we formally accept open-in-tab before the notice flip.\n\n### What to confirm (`CO_BOARD_ATTACHED_FILE.ATTACHED_FILE_URL`)\n\n1. Is it stored/served as (a) a root-relative path against the page origin, (b) a fully-qualified absolute URL on a different host (CDN/S3/file server), or (c) a storage key the client must prefix?\n2. If cross-origin: does that host send permissive CORS (Access-Control-Allow-Origin) — i.e. would a fetch-blob even succeed? (If CORS is blocked, BOTH legacy and v2 already open-in-tab → no delta either way.)\n3. Same host/scheme across dev/staging/prod? Legacy only rewrites to dev-newwww on localhost (`notice-detail.component.ts:23-24`), which HINTS root-relative — but that is an FE inference, not confirmed.\n\nThis is the same §5-e(iii) already in Dante's response-side list — I'm only elevating the URL-domain sub-part to a decision because notice reached it first at the e2e gate. A one-line answer (per environment) closes BC-2 either as a no-op or as a concrete pre-flip follow-up. Not blocking the notice gate today (recorded as an accepted delta + owner-confirm); needed before the CloudFront route flip."
+  },
+  {
+    "type": "comment",
+    "key": "OMH-748",
+    "id": "18909",
+    "author": "Justin",
+    "created": "2026-07-03T18:21:09.868+0900",
+    "url": "https://ohmyjira.atlassian.net/browse/OMH-748",
+    "text": "**Legacy bug found during analysis — stale consent-document reference in the social-signup path (2026-07-03).**\n\nThe login modal's social-signup **terms step hard-codes** the consent seqs (`terms.component.ts:264`) instead of using the `TermsSeq` enum, so when the legal docs were revised in 2026 the social path was left pointing at the 2023 versions. Confirmed against the live CMS (KO):\n\n| seq | title | appliedFrom | used by |\n| --- | --- | --- | --- |\n| **100003** | 서비스이용약관 | **2023-01-01** | social signup (hard-coded) |\n| **100057** | 서비스이용약관 | **2026-03-12** | email signup / /common-agreement / booking VENDOR (enum) |\n| **100051** | 개인정보 수집 및 이용 | 2023-05-01 | social signup (hard-coded) |\n| **100060** | 개인정보 처리방침 | 2026-05-20 | email signup / /privacy (enum) |\n\n**Two-axis conflict:**\n\n* **Terms of Service** — 100003 and 100057 are the **same document, two versions** (identical title, 2023 vs 2026). The social path consents users to the **old 2023 TOS**; everyone else uses the current 2026 one. Clear stale-reference bug.\n* **Privacy** — 100051 (수집·이용 **동의서**) vs 100060 (**처리방침** full policy) are **different document types**; the social path also uses the older 2023 doc.\n\n**Compliance impact:** new **social joiners today consent to different-vintage legal documents** than email joiners — a real consent-integrity issue, not cosmetic.\n\n**Legacy is sealed — not modifying it.** v2 (this ticket) **corrects on migration** per Justin's decision: unify BOTH signup paths to the enum-current documents — **TOS 100057 + Privacy 100060** (+ 100004 over-14, + 100059 marketing), referencing `TermsSeq` enum only, no hard-coded seqs. This is a deliberate exception to the \"replicate legacy exactly\" build approach: copying the stale reference would perpetuate the bug. Recorded in `docs/migration/pc/login-modal/analysis.json` (`consentCanonicalDecision`). Prior partial record: OMH-709 + `docs/migration/mobile-hana-notes.md` (mobile replicates the same split — fix there too when web-mobile ships)."
+  }
+]
