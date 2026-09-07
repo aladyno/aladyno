@@ -50,3 +50,8 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+### Node / Firestore service account
+node_modules/
+scripts/firestore-memory/key.json
+*-firebase-adminsdk-*.json

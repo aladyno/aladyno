@@ -11,6 +11,27 @@ Two things live together in this repo:
 
 There is no application code, build system, package manager, or test suite. "Development" here means editing prompt files (`.claude/skills/*/SKILL.md`, `.claude/agents/*.md`), the daily-report prompt/templates, and the PowerShell scheduler script.
 
+## Persistent memory (cross-machine, Firestore-backed)
+
+Durable notes (user preferences, feedback/corrections, project context, external references)
+live in **Firestore** (Firebase project `dzungdo-brain`, Standard edition, region
+`asia-southeast1`, collection `memory`) — not as files in this repo. This is separate from
+Claude Code's local per-machine memory dir.
+
+**Read memory at the start of work in this repo:**
+```
+cd scripts/firestore-memory && node memory.js list
+```
+Use `node memory.js search <query>` to look something up, `node memory.js get <slug>` for full
+content, and `node memory.js add <slug> <type>` (type: `user|feedback|project|reference`,
+JSON `{"description","content"}` piped via stdin) to write a new one — same shape Claude Code's
+own memory system uses (rule/fact + **Why:** + **How to apply:**).
+
+**Cross-machine caveat:** `scripts/firestore-memory/key.json` (the service account key) is
+gitignored and does NOT travel with `git clone`. On a new machine: copy `key.json` there
+out-of-band (not via git), then run `npm install` once in `scripts/firestore-memory/` before
+`node memory.js` works.
+
 ## Structure
 
 ```
